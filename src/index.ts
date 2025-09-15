@@ -32,7 +32,8 @@ app.register(cors, {
     'http://localhost:5173',
     'https://dimbop-digital-dasboard.netlify.app',
     'https://dimbop-users-site.vercel.app',
-    'https://dimbop-digital-marketing-dashboard.vercel.app'
+    'https://dimbop-digital-marketing-dashboard.vercel.app',
+     'https://dimbop-digital-marketing-dashboard-c4u3iq736.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
