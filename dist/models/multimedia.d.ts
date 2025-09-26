@@ -5,12 +5,12 @@ export declare const multimediaSchema: z.ZodObject<{
     file_url: z.ZodString;
     extracted_text: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    file_type: "pdf" | "image" | "audio" | "video" | "document";
+    file_type: "image" | "audio" | "pdf" | "video" | "document";
     file_url: string;
     user_id?: number | undefined;
     extracted_text?: string | undefined;
 }, {
-    file_type: "pdf" | "image" | "audio" | "video" | "document";
+    file_type: "image" | "audio" | "pdf" | "video" | "document";
     file_url: string;
     user_id?: number | undefined;
     extracted_text?: string | undefined;

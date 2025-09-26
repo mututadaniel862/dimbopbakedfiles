@@ -5,13 +5,13 @@ export declare const orderItemSchema: z.ZodObject<{
     quantity: z.ZodNumber;
     price: z.ZodNumber;
 }, "strip", z.ZodTypeAny, {
-    quantity: number;
     price: number;
+    quantity: number;
     product_id?: number | null | undefined;
     order_id?: number | null | undefined;
 }, {
-    quantity: number;
     price: number;
+    quantity: number;
     product_id?: number | null | undefined;
     order_id?: number | null | undefined;
 }>;

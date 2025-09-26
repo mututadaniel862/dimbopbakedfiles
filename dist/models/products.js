@@ -21,5 +21,8 @@ exports.productSchema = zod_1.z.object({
     order_items: zod_1.z.array(orderitem_1.orderItemSchema).optional(),
     category_name: zod_1.z.string().optional(),
     reviews: zod_1.z.array(review_1.reviewSchema).optional(),
+    review_likes: zod_1.z.array(review_1.reviewLikeSchema).optional(),
+    review_comments: zod_1.z.array(review_1.reviewCommentSchema).optional(),
+    product_views: zod_1.z.array(review_1.productViewSchema).optional(),
 });
 //# sourceMappingURL=products.js.map

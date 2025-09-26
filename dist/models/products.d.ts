@@ -31,35 +31,77 @@ export declare const productSchema: z.ZodObject<{
         quantity: z.ZodNumber;
         price: z.ZodNumber;
     }, "strip", z.ZodTypeAny, {
-        quantity: number;
         price: number;
+        quantity: number;
         product_id?: number | null | undefined;
         order_id?: number | null | undefined;
     }, {
-        quantity: number;
         price: number;
+        quantity: number;
         product_id?: number | null | undefined;
         order_id?: number | null | undefined;
     }>, "many">>;
     category_name: z.ZodOptional<z.ZodString>;
     reviews: z.ZodOptional<z.ZodArray<z.ZodObject<{
-        user_id: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
-        product_id: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
-        rating: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
-        comment: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        user_id: z.ZodNumber;
+        product_id: z.ZodNumber;
+        rating: z.ZodNumber;
+        comment: z.ZodString;
+        username: z.ZodDefault<z.ZodString>;
         created_at: z.ZodOptional<z.ZodDate>;
     }, "strip", z.ZodTypeAny, {
+        username: string;
+        user_id: number;
+        product_id: number;
+        rating: number;
+        comment: string;
         created_at?: Date | undefined;
-        user_id?: number | null | undefined;
-        product_id?: number | null | undefined;
-        rating?: number | null | undefined;
-        comment?: string | null | undefined;
     }, {
+        user_id: number;
+        product_id: number;
+        rating: number;
+        comment: string;
+        username?: string | undefined;
         created_at?: Date | undefined;
-        user_id?: number | null | undefined;
-        product_id?: number | null | undefined;
-        rating?: number | null | undefined;
-        comment?: string | null | undefined;
+    }>, "many">>;
+    review_likes: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        user_id: z.ZodNumber;
+        is_like: z.ZodBoolean;
+    }, "strip", z.ZodTypeAny, {
+        user_id: number;
+        is_like: boolean;
+    }, {
+        user_id: number;
+        is_like: boolean;
+    }>, "many">>;
+    review_comments: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        user_id: z.ZodOptional<z.ZodNumber>;
+        comment: z.ZodString;
+        username: z.ZodDefault<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        username: string;
+        comment: string;
+        user_id?: number | undefined;
+    }, {
+        comment: string;
+        username?: string | undefined;
+        user_id?: number | undefined;
+    }>, "many">>;
+    product_views: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        user_id: z.ZodOptional<z.ZodNumber>;
+        ip_address: z.ZodOptional<z.ZodString>;
+        user_agent: z.ZodOptional<z.ZodString>;
+        username: z.ZodDefault<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        username: string;
+        user_id?: number | undefined;
+        ip_address?: string | undefined;
+        user_agent?: string | undefined;
+    }, {
+        username?: string | undefined;
+        user_id?: number | undefined;
+        ip_address?: string | undefined;
+        user_agent?: string | undefined;
     }>, "many">>;
 }, "strip", z.ZodTypeAny, {
     name: string;
@@ -67,6 +109,7 @@ export declare const productSchema: z.ZodObject<{
     stock_quantity: number;
     discount_percentage: number;
     views: number;
+    description?: string | undefined;
     created_at?: Date | undefined;
     updated_at?: Date | undefined;
     cart?: {
@@ -76,24 +119,40 @@ export declare const productSchema: z.ZodObject<{
         product_id?: number | null | undefined;
     }[] | undefined;
     reviews?: {
+        username: string;
+        user_id: number;
+        product_id: number;
+        rating: number;
+        comment: string;
         created_at?: Date | undefined;
-        user_id?: number | null | undefined;
-        product_id?: number | null | undefined;
-        rating?: number | null | undefined;
-        comment?: string | null | undefined;
     }[] | undefined;
-    description?: string | undefined;
+    review_likes?: {
+        user_id: number;
+        is_like: boolean;
+    }[] | undefined;
+    review_comments?: {
+        username: string;
+        comment: string;
+        user_id?: number | undefined;
+    }[] | undefined;
+    product_views?: {
+        username: string;
+        user_id?: number | undefined;
+        ip_address?: string | undefined;
+        user_agent?: string | undefined;
+    }[] | undefined;
+    image_url?: string | undefined;
     order_items?: {
-        quantity: number;
         price: number;
+        quantity: number;
         product_id?: number | null | undefined;
         order_id?: number | null | undefined;
     }[] | undefined;
-    image_url?: string | undefined;
     category_name?: string | undefined;
 }, {
     name: string;
     price: number;
+    description?: string | undefined;
     created_at?: Date | undefined;
     updated_at?: Date | undefined;
     cart?: {
@@ -103,22 +162,37 @@ export declare const productSchema: z.ZodObject<{
         product_id?: number | null | undefined;
     }[] | undefined;
     reviews?: {
+        user_id: number;
+        product_id: number;
+        rating: number;
+        comment: string;
+        username?: string | undefined;
         created_at?: Date | undefined;
-        user_id?: number | null | undefined;
-        product_id?: number | null | undefined;
-        rating?: number | null | undefined;
-        comment?: string | null | undefined;
     }[] | undefined;
-    description?: string | undefined;
-    order_items?: {
-        quantity: number;
-        price: number;
-        product_id?: number | null | undefined;
-        order_id?: number | null | undefined;
+    review_likes?: {
+        user_id: number;
+        is_like: boolean;
+    }[] | undefined;
+    review_comments?: {
+        comment: string;
+        username?: string | undefined;
+        user_id?: number | undefined;
+    }[] | undefined;
+    product_views?: {
+        username?: string | undefined;
+        user_id?: number | undefined;
+        ip_address?: string | undefined;
+        user_agent?: string | undefined;
     }[] | undefined;
     stock_quantity?: number | undefined;
     image_url?: string | undefined;
     discount_percentage?: number | undefined;
     views?: number | undefined;
+    order_items?: {
+        price: number;
+        quantity: number;
+        product_id?: number | null | undefined;
+        order_id?: number | null | undefined;
+    }[] | undefined;
     category_name?: string | undefined;
 }>;

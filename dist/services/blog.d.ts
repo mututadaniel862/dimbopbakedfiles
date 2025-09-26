@@ -9,13 +9,15 @@ export declare const BlogService: {
         }[];
     } & {
         status: string | null;
+        title: string;
+        description: string;
         id: number;
         created_at: Date | null;
-        description: string;
         image_url: string | null;
         categories: string | null;
-        title: string;
         content: string;
+        author_id: number | null;
+        blog_type_id: number | null;
         hero_image: string | null;
         blog_image_one: string | null;
         blog_image_two: string | null;
@@ -52,8 +54,6 @@ export declare const BlogService: {
         meta_facebook_id: string | null;
         meta_site_name: string | null;
         meta_post_twitter: string | null;
-        author_id: number | null;
-        blog_type_id: number | null;
     }) | null>;
     getBlogById(id: number): Promise<({
         blog_images: {
@@ -63,13 +63,15 @@ export declare const BlogService: {
         }[];
     } & {
         status: string | null;
+        title: string;
+        description: string;
         id: number;
         created_at: Date | null;
-        description: string;
         image_url: string | null;
         categories: string | null;
-        title: string;
         content: string;
+        author_id: number | null;
+        blog_type_id: number | null;
         hero_image: string | null;
         blog_image_one: string | null;
         blog_image_two: string | null;
@@ -106,8 +108,6 @@ export declare const BlogService: {
         meta_facebook_id: string | null;
         meta_site_name: string | null;
         meta_post_twitter: string | null;
-        author_id: number | null;
-        blog_type_id: number | null;
     }) | null>;
     getAllBlogs(page?: number, limit?: number, status?: "visible" | "hidden" | "draft"): Promise<{
         data: ({
@@ -118,13 +118,15 @@ export declare const BlogService: {
             }[];
         } & {
             status: string | null;
+            title: string;
+            description: string;
             id: number;
             created_at: Date | null;
-            description: string;
             image_url: string | null;
             categories: string | null;
-            title: string;
             content: string;
+            author_id: number | null;
+            blog_type_id: number | null;
             hero_image: string | null;
             blog_image_one: string | null;
             blog_image_two: string | null;
@@ -161,8 +163,6 @@ export declare const BlogService: {
             meta_facebook_id: string | null;
             meta_site_name: string | null;
             meta_post_twitter: string | null;
-            author_id: number | null;
-            blog_type_id: number | null;
         })[];
         meta: {
             total: number;
@@ -179,13 +179,15 @@ export declare const BlogService: {
         }[];
     } & {
         status: string | null;
+        title: string;
+        description: string;
         id: number;
         created_at: Date | null;
-        description: string;
         image_url: string | null;
         categories: string | null;
-        title: string;
         content: string;
+        author_id: number | null;
+        blog_type_id: number | null;
         hero_image: string | null;
         blog_image_one: string | null;
         blog_image_two: string | null;
@@ -222,18 +224,18 @@ export declare const BlogService: {
         meta_facebook_id: string | null;
         meta_site_name: string | null;
         meta_post_twitter: string | null;
-        author_id: number | null;
-        blog_type_id: number | null;
     }) | null>;
     deleteBlog(id: number): Promise<{
         status: string | null;
+        title: string;
+        description: string;
         id: number;
         created_at: Date | null;
-        description: string;
         image_url: string | null;
         categories: string | null;
-        title: string;
         content: string;
+        author_id: number | null;
+        blog_type_id: number | null;
         hero_image: string | null;
         blog_image_one: string | null;
         blog_image_two: string | null;
@@ -270,8 +272,6 @@ export declare const BlogService: {
         meta_facebook_id: string | null;
         meta_site_name: string | null;
         meta_post_twitter: string | null;
-        author_id: number | null;
-        blog_type_id: number | null;
     }>;
     addBlogImage(blogId: number, imageUrl: string): Promise<{
         id: number;

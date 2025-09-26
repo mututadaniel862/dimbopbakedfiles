@@ -16,18 +16,18 @@ export declare const OrderService: {
             id: number;
             created_at: Date | null;
             updated_at: Date | null;
+            price: Prisma.Decimal;
             product_id: number | null;
             quantity: number;
             order_id: number | null;
-            price: Prisma.Decimal;
         }[];
         financials: {
             type: string | null;
+            description: string | null;
             id: number;
             created_at: Date | null;
             order_id: number | null;
             amount: Prisma.Decimal;
-            description: string | null;
         }[];
     } & {
         status: string | null;
@@ -52,18 +52,18 @@ export declare const OrderService: {
             id: number;
             created_at: Date | null;
             updated_at: Date | null;
+            price: Prisma.Decimal;
             product_id: number | null;
             quantity: number;
             order_id: number | null;
-            price: Prisma.Decimal;
         }[];
         financials: {
             type: string | null;
+            description: string | null;
             id: number;
             created_at: Date | null;
             order_id: number | null;
             amount: Prisma.Decimal;
-            description: string | null;
         }[];
     } & {
         status: string | null;
@@ -88,18 +88,18 @@ export declare const OrderService: {
             id: number;
             created_at: Date | null;
             updated_at: Date | null;
+            price: Prisma.Decimal;
             product_id: number | null;
             quantity: number;
             order_id: number | null;
-            price: Prisma.Decimal;
         }[];
         financials: {
             type: string | null;
+            description: string | null;
             id: number;
             created_at: Date | null;
             order_id: number | null;
             amount: Prisma.Decimal;
-            description: string | null;
         }[];
     } & {
         status: string | null;
@@ -136,10 +136,10 @@ export declare const OrderService: {
         id: number;
         created_at: Date | null;
         updated_at: Date | null;
+        price: Prisma.Decimal;
         product_id: number | null;
         quantity: number;
         order_id: number | null;
-        price: Prisma.Decimal;
     }>;
     updateOrderItem(itemId: number, data: {
         quantity?: number;
@@ -148,19 +148,19 @@ export declare const OrderService: {
         id: number;
         created_at: Date | null;
         updated_at: Date | null;
+        price: Prisma.Decimal;
         product_id: number | null;
         quantity: number;
         order_id: number | null;
-        price: Prisma.Decimal;
     }>;
     removeOrderItem(itemId: number): Promise<{
         id: number;
         created_at: Date | null;
         updated_at: Date | null;
+        price: Prisma.Decimal;
         product_id: number | null;
         quantity: number;
         order_id: number | null;
-        price: Prisma.Decimal;
     }>;
     updateOrderStatus(id: number, status: string): Promise<{
         status: string | null;
@@ -185,18 +185,18 @@ export declare const OrderService: {
             id: number;
             created_at: Date | null;
             updated_at: Date | null;
+            price: Prisma.Decimal;
             product_id: number | null;
             quantity: number;
             order_id: number | null;
-            price: Prisma.Decimal;
         }[];
         financials: {
             type: string | null;
+            description: string | null;
             id: number;
             created_at: Date | null;
             order_id: number | null;
             amount: Prisma.Decimal;
-            description: string | null;
         }[];
     } & {
         status: string | null;

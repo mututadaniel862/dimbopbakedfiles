@@ -77,8 +77,8 @@ export declare const blogSchema: z.ZodObject<{
         blog_id?: number | undefined;
     }>, "many">>;
 }, "strip", z.ZodTypeAny, {
-    description: string;
     title: string;
+    description: string;
     content: string;
     status?: "visible" | "hidden" | "draft" | undefined;
     created_at?: Date | undefined;
@@ -125,8 +125,8 @@ export declare const blogSchema: z.ZodObject<{
         blog_id?: number | undefined;
     }[] | undefined;
 }, {
-    description: string;
     title: string;
+    description: string;
     content: string;
     status?: "visible" | "hidden" | "draft" | undefined;
     created_at?: Date | undefined;

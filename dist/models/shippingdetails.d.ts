@@ -22,32 +22,32 @@ export declare const shippingDetailsSchema: z.ZodObject<{
     }>>;
 }, "strip", z.ZodTypeAny, {
     email: string;
+    phone: string;
     full_name: string;
     country: string;
     city: string;
     street: string;
     postal_code: string;
-    phone: string;
-    created_at?: Date | undefined;
     user?: {
         email: string;
         id: number;
     } | undefined;
+    created_at?: Date | undefined;
     user_id?: number | null | undefined;
     apartment?: string | undefined;
 }, {
     email: string;
+    phone: string;
     full_name: string;
     country: string;
     city: string;
     street: string;
     postal_code: string;
-    phone: string;
-    created_at?: Date | undefined;
     user?: {
         email: string;
         id: number;
     } | undefined;
+    created_at?: Date | undefined;
     user_id?: number | null | undefined;
     apartment?: string | undefined;
 }>;

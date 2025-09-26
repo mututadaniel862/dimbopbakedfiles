@@ -4,26 +4,36 @@ export declare const registerSchema: z.ZodEffects<z.ZodObject<{
     email: z.ZodString;
     password: z.ZodString;
     confirmPassword: z.ZodString;
+    phone: z.ZodString;
+    role: z.ZodDefault<z.ZodEnum<["user", "admin"]>>;
 }, "strip", z.ZodTypeAny, {
     username: string;
     email: string;
     password: string;
     confirmPassword: string;
+    phone: string;
+    role: "user" | "admin";
 }, {
     username: string;
     email: string;
     password: string;
     confirmPassword: string;
+    phone: string;
+    role?: "user" | "admin" | undefined;
 }>, {
     username: string;
     email: string;
     password: string;
     confirmPassword: string;
+    phone: string;
+    role: "user" | "admin";
 }, {
     username: string;
     email: string;
     password: string;
     confirmPassword: string;
+    phone: string;
+    role?: "user" | "admin" | undefined;
 }>;
 export declare const loginSchema: z.ZodObject<{
     email: z.ZodString;
@@ -84,9 +94,61 @@ export declare const forgotPasswordSchema: z.ZodObject<{
 }, {
     email: string;
 }>;
-export declare const zodToJsonSchema: (schema: z.ZodTypeAny) => {
+export declare const zodToJsonSchema: (schema: z.ZodTypeAny) => ({
+    anyOf: import("zod-to-json-schema").JsonSchema7DateType[];
+} & {
     title?: string;
     default?: any;
     description?: string;
     markdownDescription?: string;
-};
+}) | ({
+    type: "object" | "array";
+} & {
+    title?: string;
+    default?: any;
+    description?: string;
+    markdownDescription?: string;
+}) | ({
+    type: ("string" | "number" | "boolean" | "integer" | "null") | ("string" | "number" | "boolean" | "integer" | "null")[];
+} & {
+    title?: string;
+    default?: any;
+    description?: string;
+    markdownDescription?: string;
+}) | ({
+    anyOf: import("zod-to-json-schema").JsonSchema7Type[];
+} & {
+    title?: string;
+    default?: any;
+    description?: string;
+    markdownDescription?: string;
+}) | (import("zod-to-json-schema").JsonSchema7UndefinedType & {
+    title?: string;
+    default?: any;
+    description?: string;
+    markdownDescription?: string;
+}) | (import("zod-to-json-schema").JsonSchema7AnyType & {
+    title?: string;
+    default?: any;
+    description?: string;
+    markdownDescription?: string;
+}) | ({
+    anyOf: [import("zod-to-json-schema").JsonSchema7Type, import("zod-to-json-schema").JsonSchema7NullType];
+} & {
+    title?: string;
+    default?: any;
+    description?: string;
+    markdownDescription?: string;
+}) | ({
+    type: [string, "null"];
+} & {
+    title?: string;
+    default?: any;
+    description?: string;
+    markdownDescription?: string;
+}) | (import("zod-to-json-schema").JsonSchema7AllOfType & {
+    title?: string;
+    default?: any;
+    description?: string;
+    markdownDescription?: string;
+});

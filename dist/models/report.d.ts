@@ -7,12 +7,12 @@ export declare const reportSchema: z.ZodObject<{
     user_id: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     user_id?: number | undefined;
-    report_type?: "custom" | "monthly" | "annual" | "financial" | "user_activity" | "inventory" | "multimedia" | undefined;
+    report_type?: "custom" | "inventory" | "financial" | "user_activity" | "monthly" | "annual" | "multimedia" | undefined;
     report_content?: string | undefined;
     report_date?: Date | undefined;
 }, {
     user_id?: number | undefined;
-    report_type?: "custom" | "monthly" | "annual" | "financial" | "user_activity" | "inventory" | "multimedia" | undefined;
+    report_type?: "custom" | "inventory" | "financial" | "user_activity" | "monthly" | "annual" | "multimedia" | undefined;
     report_content?: string | undefined;
     report_date?: Date | undefined;
 }>;

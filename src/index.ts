@@ -42,64 +42,6 @@ app.register(cors, {
   strictPreflight: true
 });
 
-// 2. Add explicit OPTIONS handler for all routes
-
-
-
-// app.register(cors, {
-//   origin: [
-//     'http://localhost:5173',
-//     'http://localhost:3000',
-//     'https://dimbop-digital-dasboard.netlify.app',
-//     'https://dimbop-users-site.vercel.app',
-//     'https://dimbop-digital-marketing-dashboard.vercel.app'
-//   ],
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//   credentials: true
-// });
-
-
-// UPDATED CORS CONFIGURATION - This is the key fix
-// app.register(cors, {
-//   origin: (origin, callback) => {
-//     const allowedOrigins = [
-//       'http://localhost:3000',
-//       'http://localhost:5173',
-//       'https://dimbop-digital-dasboard.netlify.app',
-//       'https://dimbop-users-site.vercel.app',
-//       'https://dimbop-digital-marketing-dashboard.vercel.app',
-//     ];
-
-//     // Allow requests with no origin (like mobile apps, curl, Postman)
-//     if (!origin) {
-//       return callback(null, true);
-//     }
-
-//     // Normalize origin by removing trailing slash if present
-//     const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
-
-//     // Check if the normalized origin is in the allowed list
-//     if (allowedOrigins.includes(normalizedOrigin)) {
-//       return callback(null, true);
-//     }
-
-//     // Block other origins
-//     console.error(`CORS blocked for origin: ${origin}`);
-//     return callback(new Error('Not allowed by CORS'), false);
-//   },
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-//   exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
-//   preflightContinue: false,
-//   optionsSuccessStatus: 204,
-// });
-
-
-// ADD EXPLICIT OPTIONS HANDLER
-// app.options('*', async (request, reply) => {
-//   return reply.code(204).send();
-// });
 
 
 // app.register(multipart);// In your main server file (around line 55)

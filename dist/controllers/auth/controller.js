@@ -37,6 +37,31 @@ exports.deleteUser = exports.getAllUsers = exports.getUser = exports.resetPasswo
 const schemas_1 = require("../../utils/schemas");
 const authService = __importStar(require("../../services/auth")); // Updated import path
 const jwt_1 = require("../../utils/jwt");
+// export const register = async (request: FastifyRequest, reply: FastifyReply) => {
+//   try {
+//     const validatedData = registerSchema.parse(request.body);
+//     const user = await authService.registerUser(validatedData);
+//     const token = generateToken(user);
+//     reply.code(201).send({
+//       success: true,
+//       data: {
+//         user: {
+//           id: user.id,
+//           username: user.username,
+//           email: user.email,
+//           role: user.role
+//         },
+//         token
+//       }
+//     });
+//   } catch (error: any) {
+//     reply.code(400).send({
+//       success: false,
+//       error: error.message || 'Registration failed'
+//     });
+//   }
+// };
+// In your register controller
 const register = async (request, reply) => {
     try {
         const validatedData = schemas_1.registerSchema.parse(request.body);
@@ -49,6 +74,7 @@ const register = async (request, reply) => {
                     id: user.id,
                     username: user.username,
                     email: user.email,
+                    phone: user.phone, // Include phone in response
                     role: user.role
                 },
                 token

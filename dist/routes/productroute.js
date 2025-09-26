@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const productController = __importStar(require("../controllers/products/controller"));
 const products_1 = require("../models/products");
 const schemas_1 = require("../utils/schemas");
+const controller_1 = require("../controllers/products/controller");
 exports.default = async (fastify) => {
     // Get all products
     fastify.get('/', productController.getProductsHandler);
@@ -49,6 +50,27 @@ exports.default = async (fastify) => {
         // Remove schema validation for body to allow multipart/form-data
         // Validation is handled manually in createProductHandler
     });
+    // llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll
+    // ------------------- REVIEWS -------------------
+    // fastify.post('/:id/reviews', productController.addReviewHandler);
+    // fastify.get('/:id/reviews', productController.getReviewsHandler);
+    // ------------------- REVIEWS -------------------
+    fastify.post('/:id/reviews', controller_1.ReviewController.addReview);
+    fastify.get('/:id/reviews', controller_1.ReviewController.getReviews);
+    fastify.delete('/reviews/:reviewId', controller_1.ReviewController.deleteReview);
+    // ------------------- REVIEW LIKES -------------------
+    fastify.post('/reviews/:reviewId/like', controller_1.ReviewLikeController.toggleLike);
+    fastify.get('/reviews/:reviewId/like-status', controller_1.ReviewLikeController.getLikeStatus);
+    // ------------------- REVIEW COMMENTS -------------------
+    fastify.post('/reviews/:reviewId/comments', controller_1.ReviewCommentController.addComment);
+    fastify.get('/reviews/:reviewId/comments', controller_1.ReviewCommentController.getComments);
+    fastify.delete('/review-comments/:commentId', controller_1.ReviewCommentController.deleteComment);
+    // ------------------- PRODUCT VIEWS -------------------
+    fastify.post('/:id/view', controller_1.ProductViewController.trackView);
+    fastify.get('/:id/views', controller_1.ProductViewController.getViewStats);
+    fastify.get('/:id/with-views', controller_1.ProductViewController.getProductWithViews);
+    fastify.get('/most-viewed', controller_1.ProductViewController.getMostViewed);
+    // lllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll
     // Update product
     fastify.put('/:id', {
         handler: productController.updateProductHandler,
@@ -62,11 +84,18 @@ exports.default = async (fastify) => {
     fastify.post('/:userId/cart', {
         handler: productController.addProductToCartHandler,
         schema: {
+            params: {
+                type: 'object',
+                properties: {
+                    userId: { type: 'string' },
+                },
+                required: ['userId'],
+            },
             body: {
                 type: 'object',
                 properties: {
-                    productId: { type: 'number' },
-                    quantity: { type: 'number', minimum: 1 },
+                    productId: { type: ['number', 'string'] }, // Allow both number and string
+                    quantity: { type: ['number', 'string'], minimum: 1 },
                 },
                 required: ['productId', 'quantity'],
             },

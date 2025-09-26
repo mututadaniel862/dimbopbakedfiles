@@ -42,8 +42,10 @@ const cors_1 = __importDefault(require("@fastify/cors"));
 const jwt_1 = __importDefault(require("@fastify/jwt"));
 const db_1 = __importDefault(require("./config/db"));
 const auth_1 = __importDefault(require("./routes/auth"));
+const serachroute_1 = __importDefault(require("./routes/serachroute"));
 const productroute_1 = __importDefault(require("./routes/productroute"));
 const blog_1 = __importDefault(require("./routes/blog"));
+const aiRouts_1 = __importDefault(require("./routes/aiRouts"));
 const analytics_1 = __importDefault(require("./routes/analytics"));
 const order_1 = __importDefault(require("./routes/order"));
 const multipart_1 = __importDefault(require("@fastify/multipart"));
@@ -54,35 +56,29 @@ dotenv.config();
 const app = (0, fastify_1.default)({
     logger: true,
 });
-// CORS config with whitelist and preflight support
 app.register(cors_1.default, {
-    origin: (origin, cb) => {
-        const allowedOrigins = [
-            'https://dimbop-digital-dasboard.netlify.app',
-            'https://dimbop-users-site.vercel.app/',
-            'https://dimbop-digital-marketing-dashboard.vercel.app',
-            'http://localhost:5173',
-        ];
-        if (!origin) {
-            // Allow requests with no origin like curl or server-to-server
-            cb(null, true);
-            return;
-        }
-        if (allowedOrigins.includes(origin)) {
-            cb(null, origin);
-        }
-        else {
-            console.error(`CORS blocked for origin: ${origin}`);
-            cb(new Error('Not allowed by CORS'), false);
-        }
-    },
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'https://dimbop-digital-dasboard.netlify.app',
+        'https://dimbop-users-site.vercel.app',
+        'https://dimbop-digital-marketing-dashboard.vercel.app',
+        'https://dimbop-digital-marketing-dashboard-c4u3iq736.vercel.app'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
+    exposedHeaders: ['Content-Length'],
+    strictPreflight: true
 });
-app.register(multipart_1.default);
+// app.register(multipart);// In your main server file (around line 55)
+app.register(multipart_1.default, {
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB limit
+        files: 3, // Maximum 3 files
+        fieldSize: 1024 * 1024, // 1MB field size limit
+    }
+});
 // Serve static uploads with proper CORS headers
 app.register(static_1.default, {
     root: path_1.default.join(__dirname, 'Uploads'),
@@ -113,6 +109,8 @@ app.register(productroute_1.default, { prefix: '/api/products' });
 app.register(blog_1.default, { prefix: '/api/blogs' });
 app.register(analytics_1.default, { prefix: '/api/analytics' });
 app.register(order_1.default, { prefix: '/api/order' });
+app.register(aiRouts_1.default, { prefix: '/api/assitence' });
+app.register(serachroute_1.default, { prefix: '/api/search' });
 // Health check endpoint  
 // ...............here
 app.get('/', async (request, reply) => {
@@ -171,4 +169,6 @@ start().catch((err) => {
 // $env:Path += ";C:\Program Files\PostgreSQL\17\bin"
 // pg_dump -U postgres -d inventortest > inventortest_dump.sql 
 // Get-Content inventortest_dump.sql | psql "postgresql://postgres:CEJtqVqKtvmApKPMuKAsCbrwXHoNuRtz@caboose.proxy.rlwy.net:29455/railway"
+// https://platform.openai.com/docs/overview
+// https://platform.openai.com/api-keys
 //# sourceMappingURL=index.js.map

@@ -25,11 +25,12 @@ export declare const AnalyticsService: {
         users: {
             username: string;
             email: string;
+            phone: string | null;
+            role: string | null;
             id: number;
             password_hash: string;
             created_at: Date | null;
             updated_at: Date | null;
-            role: string | null;
             email_verification_token: string | null;
             email_verified: boolean | null;
             login_token: string | null;

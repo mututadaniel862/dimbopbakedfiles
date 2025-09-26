@@ -22,4 +22,7 @@ const verifyToken = (token) => {
     return jsonwebtoken_1.default.verify(token, JWT_SECRET);
 };
 exports.verifyToken = verifyToken;
+// FzaYveYQlxmiCEtU
+// mongodb+srv://mututadaniel54:FzaYveYQlxmiCEtU@cluster0.j1hrmmg.mongodb.net/
+// mongodb+srv://mututadaniel54:<db_password>@cluster0.j1hrmmg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
 //# sourceMappingURL=jwt.js.map
