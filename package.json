@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-   "build": "tsc && if not exist dist\\Uploads mkdir dist\\Uploads",
+    "build": "tsc && if not exist dist\\Uploads mkdir dist\\Uploads",
     "start": "node dist/index.js",
     "dev": "nodemon --watch \"src/**/*\" --ext ts,json --exec \"ts-node\" src/index.ts",
     "prisma:generate": "prisma generate",
@@ -53,6 +53,7 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.17",
     "@types/pg": "^8.11.11",
+    "mkdirp": "^3.0.1",
     "nodemon": "^3.1.9",
     "prisma": "^6.8.2",
     "ts-node": "^10.9.2",
