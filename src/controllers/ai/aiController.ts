@@ -216,6 +216,17 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { aiQuerySchema, aiResponseSchema } from '../../models/Aischema';
 import { askPhoneAI, generateReport } from '../../services/aiService';
