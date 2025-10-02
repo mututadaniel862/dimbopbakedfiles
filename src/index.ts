@@ -194,7 +194,7 @@ import fastifyJwt from '@fastify/jwt';
 import prisma from './config/db';
 import authRoutes from './routes/auth';
 import serachroute from './routes/serachroute';
-import userpayments from './routes/user';
+// import userpayments from './routes/user';
 import productRoutes from './routes/productroute';
 import blogRoutes from './routes/blog';
 import aiRoutes from './routes/aiRouts';
@@ -262,7 +262,7 @@ app.register(analytics, { prefix: '/api/analytics' });
 app.register(oderRoutes, { prefix: '/api/order' });
 app.register(aiRoutes, { prefix: '/api/assitence' });
 app.register(serachroute, { prefix: '/api/search' });
-app.register(userpayments, { prefix: '/api/userpayments' });
+// app.register(userpayments, { prefix: '/api/userpayments' });
 
 // Health check endpoints
 app.get('/', async (request, reply) => {
