@@ -3,6 +3,6 @@ declare function handleAIQuery(input: unknown): Promise<{
     report_type?: string | undefined;
     start_date?: string | undefined;
     end_date?: string | undefined;
-    analysis_type?: "text" | "image" | "audio" | "multimodal" | undefined;
+    analysis_type?: "image" | "text" | "audio" | "multimodal" | undefined;
 }>;
 export { handleAIQuery };

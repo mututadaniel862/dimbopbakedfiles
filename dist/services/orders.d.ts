@@ -11,15 +11,16 @@ export declare const OrderService: {
             order_id: number | null;
             payment_method: string | null;
             transaction_id: string;
+            customerMsisdn: string | null;
         }[];
         order_items: {
             id: number;
             created_at: Date | null;
             updated_at: Date | null;
             price: Prisma.Decimal;
-            product_id: number | null;
             quantity: number;
             order_id: number | null;
+            product_id: number | null;
         }[];
         financials: {
             type: string | null;
@@ -47,15 +48,16 @@ export declare const OrderService: {
             order_id: number | null;
             payment_method: string | null;
             transaction_id: string;
+            customerMsisdn: string | null;
         }[];
         order_items: {
             id: number;
             created_at: Date | null;
             updated_at: Date | null;
             price: Prisma.Decimal;
-            product_id: number | null;
             quantity: number;
             order_id: number | null;
+            product_id: number | null;
         }[];
         financials: {
             type: string | null;
@@ -83,15 +85,16 @@ export declare const OrderService: {
             order_id: number | null;
             payment_method: string | null;
             transaction_id: string;
+            customerMsisdn: string | null;
         }[];
         order_items: {
             id: number;
             created_at: Date | null;
             updated_at: Date | null;
             price: Prisma.Decimal;
-            product_id: number | null;
             quantity: number;
             order_id: number | null;
+            product_id: number | null;
         }[];
         financials: {
             type: string | null;
@@ -137,9 +140,9 @@ export declare const OrderService: {
         created_at: Date | null;
         updated_at: Date | null;
         price: Prisma.Decimal;
-        product_id: number | null;
         quantity: number;
         order_id: number | null;
+        product_id: number | null;
     }>;
     updateOrderItem(itemId: number, data: {
         quantity?: number;
@@ -149,18 +152,18 @@ export declare const OrderService: {
         created_at: Date | null;
         updated_at: Date | null;
         price: Prisma.Decimal;
-        product_id: number | null;
         quantity: number;
         order_id: number | null;
+        product_id: number | null;
     }>;
     removeOrderItem(itemId: number): Promise<{
         id: number;
         created_at: Date | null;
         updated_at: Date | null;
         price: Prisma.Decimal;
-        product_id: number | null;
         quantity: number;
         order_id: number | null;
+        product_id: number | null;
     }>;
     updateOrderStatus(id: number, status: string): Promise<{
         status: string | null;
@@ -180,15 +183,16 @@ export declare const OrderService: {
             order_id: number | null;
             payment_method: string | null;
             transaction_id: string;
+            customerMsisdn: string | null;
         }[];
         order_items: {
             id: number;
             created_at: Date | null;
             updated_at: Date | null;
             price: Prisma.Decimal;
-            product_id: number | null;
             quantity: number;
             order_id: number | null;
+            product_id: number | null;
         }[];
         financials: {
             type: string | null;

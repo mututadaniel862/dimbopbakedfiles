@@ -7,11 +7,11 @@ export declare const orderItemSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     price: number;
     quantity: number;
-    product_id?: number | null | undefined;
     order_id?: number | null | undefined;
+    product_id?: number | null | undefined;
 }, {
     price: number;
     quantity: number;
-    product_id?: number | null | undefined;
     order_id?: number | null | undefined;
+    product_id?: number | null | undefined;
 }>;

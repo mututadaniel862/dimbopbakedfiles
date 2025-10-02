@@ -8,8 +8,8 @@ export declare const getAllProducts: () => Promise<({
         updated_at: Date | null;
         user_id: number | null;
         price: Prisma.Decimal;
-        product_id: number | null;
         quantity: number;
+        product_id: number | null;
     }[];
     reviews: {
         username: string;
@@ -25,9 +25,9 @@ export declare const getAllProducts: () => Promise<({
         created_at: Date | null;
         updated_at: Date | null;
         price: Prisma.Decimal;
-        product_id: number | null;
         quantity: number;
         order_id: number | null;
+        product_id: number | null;
     }[];
     categories: {
         name: string;
@@ -53,8 +53,8 @@ export declare const getProductById: (id: number) => Promise<({
         updated_at: Date | null;
         user_id: number | null;
         price: Prisma.Decimal;
-        product_id: number | null;
         quantity: number;
+        product_id: number | null;
     }[];
     reviews: {
         username: string;
@@ -70,9 +70,9 @@ export declare const getProductById: (id: number) => Promise<({
         created_at: Date | null;
         updated_at: Date | null;
         price: Prisma.Decimal;
-        product_id: number | null;
         quantity: number;
         order_id: number | null;
+        product_id: number | null;
     }[];
     categories: {
         name: string;
@@ -92,7 +92,9 @@ export declare const getProductById: (id: number) => Promise<({
     views: number | null;
 }) | null>;
 export declare const createProduct: (data: z.infer<typeof productSchema>, file?: {
+    buffer: Buffer;
     filename: string;
+    mimetype: string;
 }) => Promise<{
     cart: {
         id: number;
@@ -100,8 +102,8 @@ export declare const createProduct: (data: z.infer<typeof productSchema>, file?:
         updated_at: Date | null;
         user_id: number | null;
         price: Prisma.Decimal;
-        product_id: number | null;
         quantity: number;
+        product_id: number | null;
     }[];
     reviews: {
         username: string;
@@ -117,9 +119,9 @@ export declare const createProduct: (data: z.infer<typeof productSchema>, file?:
         created_at: Date | null;
         updated_at: Date | null;
         price: Prisma.Decimal;
-        product_id: number | null;
         quantity: number;
         order_id: number | null;
+        product_id: number | null;
     }[];
     categories: {
         name: string;
@@ -158,8 +160,8 @@ export declare const addProductToCart: (userId: number, productId: number, quant
     updated_at: Date | null;
     user_id: number | null;
     price: Prisma.Decimal;
-    product_id: number | null;
     quantity: number;
+    product_id: number | null;
 }>;
 export declare const updateCartItemQuantity: (cartItemId: number, userId: number, newQuantity: number) => Promise<{
     products: {
@@ -172,8 +174,8 @@ export declare const updateCartItemQuantity: (cartItemId: number, userId: number
     updated_at: Date | null;
     user_id: number | null;
     price: Prisma.Decimal;
-    product_id: number | null;
     quantity: number;
+    product_id: number | null;
 }>;
 export declare const deleteCartItem: (cartItemId: number, userId: number, restoreStock?: boolean) => Promise<{
     products: {
@@ -186,8 +188,8 @@ export declare const deleteCartItem: (cartItemId: number, userId: number, restor
     updated_at: Date | null;
     user_id: number | null;
     price: Prisma.Decimal;
-    product_id: number | null;
     quantity: number;
+    product_id: number | null;
 }>;
 export declare const getUserCart: (userId: number) => Promise<{
     items: ({
@@ -215,8 +217,8 @@ export declare const getUserCart: (userId: number) => Promise<{
         updated_at: Date | null;
         user_id: number | null;
         price: Prisma.Decimal;
-        product_id: number | null;
         quantity: number;
+        product_id: number | null;
     })[];
     subtotal: number;
     totalItems: number;
@@ -224,7 +226,43 @@ export declare const getUserCart: (userId: number) => Promise<{
     grandTotal: number;
 }>;
 export declare const clearUserCart: (userId: number) => Promise<Prisma.BatchPayload>;
-export declare const updateProduct: (id: number, data: Partial<z.infer<typeof productSchema>>) => Promise<{
+export declare const updateProduct: (id: number, data: Partial<z.infer<typeof productSchema>>, file?: {
+    buffer: Buffer;
+    filename: string;
+    mimetype: string;
+}) => Promise<{
+    cart: {
+        id: number;
+        created_at: Date | null;
+        updated_at: Date | null;
+        user_id: number | null;
+        price: Prisma.Decimal;
+        quantity: number;
+        product_id: number | null;
+    }[];
+    reviews: {
+        username: string;
+        id: number;
+        created_at: Date | null;
+        user_id: number | null;
+        product_id: number | null;
+        rating: number | null;
+        comment: string | null;
+    }[];
+    order_items: {
+        id: number;
+        created_at: Date | null;
+        updated_at: Date | null;
+        price: Prisma.Decimal;
+        quantity: number;
+        order_id: number | null;
+        product_id: number | null;
+    }[];
+    categories: {
+        name: string;
+        id: number;
+    } | null;
+} & {
     description: string | null;
     name: string;
     id: number;

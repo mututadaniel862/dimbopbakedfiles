@@ -14,13 +14,13 @@ export declare const orderSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         price: number;
         quantity: number;
-        product_id?: number | null | undefined;
         order_id?: number | null | undefined;
+        product_id?: number | null | undefined;
     }, {
         price: number;
         quantity: number;
-        product_id?: number | null | undefined;
         order_id?: number | null | undefined;
+        product_id?: number | null | undefined;
     }>, "many">>;
     financials: z.ZodOptional<z.ZodArray<z.ZodObject<{
         order_id: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
@@ -46,6 +46,7 @@ export declare const orderSchema: z.ZodObject<{
         user_id: z.ZodNullable<z.ZodOptional<z.ZodNumber>>;
         payment_method: z.ZodOptional<z.ZodString>;
         transaction_id: z.ZodString;
+        customerMsisdn: z.ZodNullable<z.ZodOptional<z.ZodString>>;
         status: z.ZodDefault<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         status: string;
@@ -53,12 +54,14 @@ export declare const orderSchema: z.ZodObject<{
         user_id?: number | null | undefined;
         order_id?: number | null | undefined;
         payment_method?: string | undefined;
+        customerMsisdn?: string | null | undefined;
     }, {
         transaction_id: string;
         status?: string | undefined;
         user_id?: number | null | undefined;
         order_id?: number | null | undefined;
         payment_method?: string | undefined;
+        customerMsisdn?: string | null | undefined;
     }>, "many">>;
 }, "strip", z.ZodTypeAny, {
     status: string;
@@ -71,13 +74,14 @@ export declare const orderSchema: z.ZodObject<{
         user_id?: number | null | undefined;
         order_id?: number | null | undefined;
         payment_method?: string | undefined;
+        customerMsisdn?: string | null | undefined;
     }[] | undefined;
     user_id?: number | null | undefined;
     order_items?: {
         price: number;
         quantity: number;
-        product_id?: number | null | undefined;
         order_id?: number | null | undefined;
+        product_id?: number | null | undefined;
     }[] | undefined;
     browser_used?: string | undefined;
     financials?: {
@@ -98,13 +102,14 @@ export declare const orderSchema: z.ZodObject<{
         user_id?: number | null | undefined;
         order_id?: number | null | undefined;
         payment_method?: string | undefined;
+        customerMsisdn?: string | null | undefined;
     }[] | undefined;
     user_id?: number | null | undefined;
     order_items?: {
         price: number;
         quantity: number;
-        product_id?: number | null | undefined;
         order_id?: number | null | undefined;
+        product_id?: number | null | undefined;
     }[] | undefined;
     browser_used?: string | undefined;
     financials?: {

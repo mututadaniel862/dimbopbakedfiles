@@ -23,13 +23,13 @@ export declare const aiResponseSchema: z.ZodObject<{
     report_type?: string | undefined;
     start_date?: string | undefined;
     end_date?: string | undefined;
-    analysis_type?: "text" | "image" | "audio" | "multimodal" | undefined;
+    analysis_type?: "image" | "text" | "audio" | "multimodal" | undefined;
 }, {
     message: string;
     report_type?: string | undefined;
     start_date?: string | undefined;
     end_date?: string | undefined;
-    analysis_type?: "text" | "image" | "audio" | "multimodal" | undefined;
+    analysis_type?: "image" | "text" | "audio" | "multimodal" | undefined;
 }>;
 export declare const reportRequestSchema: z.ZodObject<{
     report_type: z.ZodEnum<["products", "product-sales", "inventory", "users", "user-activity", "customers", "blogs", "content", "articles", "sales", "revenue", "financial", "general", "overview"]>;

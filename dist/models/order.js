@@ -39,39 +39,4 @@ exports.orderSchema = zod_1.z.object({
     financials: zod_1.z.array(finacial_1.financialSchema).optional(),
     payments: zod_1.z.array(payment_1.paymentSchema).optional(),
 });
-// {
-//   "total_price": 100,
-//   "status": "Pending",
-//   "created_at": "2025-04-20T17:01:52.186Z",
-//   "updated_at": "2025-04-20T17:01:52.186Z",
-//   "browser_used": "Chrome",
-//   "users": {
-//     "connect": {
-//       "id": 1
-//     }
-//   },
-//   "financials": [
-//     {
-//       "amount": 100,
-//       "type": "income",
-//       "description": "Income for order",
-//       "created_at": "2025-04-20T17:01:52.186Z"
-//     }
-//   ],
-//   "payments": [
-//     {
-//       "transaction_id": "TX12345",
-//       "status": "Completed",
-//       "payment_method": "Credit Card",
-//       "user_id": 1,
-//       "created_at": "2025-04-20T17:01:52.186Z"
-//     }
-//   ],
-//   "order_items": [
-//     {
-//       "quantity": 2,
-//       "price": 50
-//     }
-//   ]
-// }
 //# sourceMappingURL=order.js.map

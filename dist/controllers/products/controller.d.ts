@@ -1,10 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { productSchema } from '../../models/products';
-import { z } from 'zod';
 type ProductParams = {
     id: string;
 };
-type ProductBody = z.infer<typeof productSchema>;
 export declare const createProductHandler: (request: FastifyRequest, reply: FastifyReply) => Promise<undefined>;
 export declare const getProductsHandler: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
 export declare const getProductImagesHandler: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
@@ -42,7 +39,6 @@ export declare const getProductHandler: (request: FastifyRequest<{
 }>, reply: FastifyReply) => Promise<void>;
 export declare const updateProductHandler: (request: FastifyRequest<{
     Params: ProductParams;
-    Body: Partial<ProductBody>;
 }>, reply: FastifyReply) => Promise<void>;
 export declare const deleteProductHandler: (request: FastifyRequest<{
     Params: ProductParams;

@@ -8,11 +8,11 @@ export declare const multimediaQuerySchema: z.ZodObject<{
     limit: number;
     page: number;
     user_id?: number | undefined;
-    file_type?: "image" | "audio" | "pdf" | "video" | "document" | undefined;
+    file_type?: "image" | "video" | "pdf" | "audio" | "document" | undefined;
 }, {
     user_id?: number | undefined;
     limit?: number | undefined;
     page?: number | undefined;
-    file_type?: "image" | "audio" | "pdf" | "video" | "document" | undefined;
+    file_type?: "image" | "video" | "pdf" | "audio" | "document" | undefined;
 }>;
 export type MultimediaQuery = z.infer<typeof multimediaQuerySchema>;
