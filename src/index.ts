@@ -187,6 +187,13 @@
 
 
 
+
+
+
+
+
+
+
 import * as dotenv from 'dotenv';
 import fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
@@ -199,7 +206,7 @@ import productRoutes from './routes/productroute';
 import blogRoutes from './routes/blog';
 import aiRoutes from './routes/aiRouts';
 import analytics from './routes/analytics';
-import oderRoutes from './routes/order';
+// import oderRoutes from './routes/order';
 import { JwtUser } from './utils/jwt';
 import multipart from '@fastify/multipart';
 
@@ -259,7 +266,7 @@ app.register(authRoutes, { prefix: '/api/auth' });
 app.register(productRoutes, { prefix: '/api/products' });
 app.register(blogRoutes, { prefix: '/api/blogs' });
 app.register(analytics, { prefix: '/api/analytics' });
-app.register(oderRoutes, { prefix: '/api/order' });
+// app.register(oderRoutes, { prefix: '/api/order' });
 app.register(aiRoutes, { prefix: '/api/assitence' });
 app.register(serachroute, { prefix: '/api/search' });
 // app.register(userpayments, { prefix: '/api/userpayments' });
