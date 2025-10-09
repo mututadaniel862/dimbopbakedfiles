@@ -30,6 +30,7 @@
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
     "dotenv": "^16.5.0",
+    "express-session": "^1.18.2",
     "fastify": "^4.29.1",
     "fastify-multipart": "^5.3.1",
     "ffmpeg-static": "^5.2.0",
@@ -39,6 +40,8 @@
     "nodemailer": "^6.10.0",
     "openai": "^5.12.2",
     "or": "^0.2.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
     "pdf-parse": "^1.1.1",
     "pg": "^8.14.1",
     "puppeteer": "^24.10.0",
@@ -51,8 +54,11 @@
     "zod-to-json-schema": "^3.24.5"
   },
   "devDependencies": {
+    "@types/express-session": "^1.18.2",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.17",
+    "@types/passport": "^1.0.17",
+    "@types/passport-google-oauth20": "^2.0.16",
     "@types/pg": "^8.11.11",
     "@types/uuid": "^10.0.0",
     "mkdirp": "^3.0.1",

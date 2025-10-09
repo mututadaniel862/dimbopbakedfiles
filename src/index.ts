@@ -340,7 +340,7 @@ const start = async () => {
 });
 
 start().catch((err) => {
-  console.error('❌ Server failed to start:', err);
+  console.error('Server failed to start:', err);
   process.exit(1);
 });
 
