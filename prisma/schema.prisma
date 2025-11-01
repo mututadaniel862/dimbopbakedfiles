@@ -370,43 +370,134 @@ model multimedia_data {
 }
 
 
+// model users {
+//   id                       Int                @id @default(autoincrement())
+//   username                 String             @unique @db.VarChar(100)
+//   email                    String             @unique @db.VarChar(100)
+//     phone                    String?            @db.VarChar(20) 
+//   password_hash            String             @db.VarChar(255)
+//   created_at               DateTime?          @default(now()) @db.Timestamp(6)
+//   updated_at               DateTime?          @default(now()) @db.Timestamp(6)
+//   role                     String?            @default("user") @db.VarChar(50)
+//   email_verification_token String?            @db.VarChar(255)
+//   email_verified           Boolean?           @default(false)
+//   login_token              String?            @db.VarChar(255)
+//   login_token_expires      DateTime?
+//   password_changed_at      DateTime?
+//   password_reset_expires   DateTime?
+//   password_reset_token     String?            @db.VarChar(255)
+//   refresh_token            String?            @db.VarChar(255)
+//   refresh_token_expires    DateTime?
+//   blogs                    blogs[]
+//   cart                     cart[]
+//   orders                   orders[]
+//   password_resets          password_resets[]
+//   payments                 payments[]
+//   reviews                  reviews[]
+//   review_likes    review_likes[]
+//   review_comments review_comments[]
+//   product_views   product_views[]
+//   sessions                 sessions[]
+//   shipping_details         shipping_details[]
+//   user_analytics           user_analytics[]
+//   user_roles               user_roles[]
+//   multimedia_data  multimedia_data[] 
+
+//   @@index([password_reset_token, password_reset_expires], map: "idx_password_reset_composite")
+//   @@index([email_verification_token], map: "idx_email_verification_token")
+//   @@index([refresh_token], map: "idx_refresh_token")
+//   @@index([login_token], map: "idx_login_token")
+//   @@index([phone], map: "idx_phone")
+//   @@schema("auth")
+// }
+
+
+
+
 model users {
   id                       Int                @id @default(autoincrement())
-  username                 String             @unique @db.VarChar(100)
+  username                 String?            @unique @db.VarChar(100) // Made optional for social logins
+  name                     String?            @db.VarChar(100) // For clients (customers)
+  merchant_name            String?            @db.VarChar(200) // For client_admins (merchants)
   email                    String             @unique @db.VarChar(100)
-    phone                    String?            @db.VarChar(20) 
-  password_hash            String             @db.VarChar(255)
+  phone                    String?            @unique @db.VarChar(20) // Made unique
+  password_hash            String?            @db.VarChar(255) // Made optional for social logins
+  
+  // Role and status
+  role                     String?            @default("client") @db.VarChar(50) // super_admin, digital_marketer_admin, client_admin, client
+  is_active                Boolean?           @default(true)
+  
+  // Merchant-specific fields (for client_admin)
+  physical_address         String?            @db.Text
+  geo_latitude             Float?             // Latitude coordinate
+  geo_longitude            Float?             // Longitude coordinate
+  
+  // Social authentication providers
+  auth_provider            String             @default("email") @db.VarChar(50) // email, google, apple, facebook
+  google_id                String?            @unique @db.VarChar(255)
+  apple_id                 String?            @unique @db.VarChar(255)
+  facebook_id              String?            @unique @db.VarChar(255)
+  
+  // Session management
+  last_login               DateTime?          @db.Timestamp(6)
+  
+  // Existing fields
   created_at               DateTime?          @default(now()) @db.Timestamp(6)
-  updated_at               DateTime?          @default(now()) @db.Timestamp(6)
-  role                     String?            @default("user") @db.VarChar(50)
+  updated_at               DateTime?          @default(now()) @updatedAt @db.Timestamp(6)
   email_verification_token String?            @db.VarChar(255)
   email_verified           Boolean?           @default(false)
   login_token              String?            @db.VarChar(255)
-  login_token_expires      DateTime?
-  password_changed_at      DateTime?
-  password_reset_expires   DateTime?
+  login_token_expires      DateTime?          @db.Timestamp(6)
+  password_changed_at      DateTime?          @db.Timestamp(6)
+  password_reset_expires   DateTime?          @db.Timestamp(6)
   password_reset_token     String?            @db.VarChar(255)
   refresh_token            String?            @db.VarChar(255)
-  refresh_token_expires    DateTime?
+  refresh_token_expires    DateTime?          @db.Timestamp(6)
+  
+  // Relations
   blogs                    blogs[]
   cart                     cart[]
   orders                   orders[]
   password_resets          password_resets[]
   payments                 payments[]
   reviews                  reviews[]
-  review_likes    review_likes[]
-  review_comments review_comments[]
-  product_views   product_views[]
+  review_likes             review_likes[]
+  review_comments          review_comments[]
+  product_views            product_views[]
   sessions                 sessions[]
   shipping_details         shipping_details[]
   user_analytics           user_analytics[]
   user_roles               user_roles[]
-  multimedia_data  multimedia_data[] 
+  multimedia_data          multimedia_data[]
+  otps                     otps[] // Add this relation
 
   @@index([password_reset_token, password_reset_expires], map: "idx_password_reset_composite")
   @@index([email_verification_token], map: "idx_email_verification_token")
   @@index([refresh_token], map: "idx_refresh_token")
   @@index([login_token], map: "idx_login_token")
   @@index([phone], map: "idx_phone")
+  @@index([google_id], map: "idx_google_id")
+  @@index([apple_id], map: "idx_apple_id")
+  @@index([facebook_id], map: "idx_facebook_id")
+  @@index([auth_provider], map: "idx_auth_provider")
+  @@index([geo_latitude, geo_longitude], map: "idx_geo_location")
+  @@schema("auth")
+}
+
+// OTP Table for email verification
+model otps {
+  id            Int       @id @default(autoincrement())
+  user_id       Int?      // Made optional for pre-registration OTPs
+  email         String    @db.VarChar(100)
+  otp_code      String    @db.VarChar(10)
+  purpose       String    @db.VarChar(50) // registration, login, verification
+  is_used       Boolean   @default(false)
+  expires_at    DateTime  @db.Timestamp(6)
+  created_at    DateTime  @default(now()) @db.Timestamp(6)
+  
+  users         users?    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@index([email, otp_code], map: "idx_otp_lookup")
+  @@index([expires_at], map: "idx_otp_expires")
   @@schema("auth")
 }
