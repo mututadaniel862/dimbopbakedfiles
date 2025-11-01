@@ -1,159 +1,369 @@
-// src/routes/oauth.ts
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import passport from '../config/oauth';
-import { generateToken } from '../utils/jwt';
-import * as authService from '../services/auth';
+// src/routes/auth.ts
+import { FastifyInstance } from 'fastify';
+import * as authController from '../controllers/auth/controller';
+import { authenticate } from '../middlewares/auth';
 
 export default async (app: FastifyInstance) => {
+  // ============================================
+  // SEED ROUTE (Run once to create predefined users)
+  // ============================================
+  app.post('/seed', authController.seedUsers);
   
   // ============================================
-  // GOOGLE OAUTH - INITIATE
+  // OTP MANAGEMENT
   // ============================================
-  app.get('/google', async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      // Manually construct Google OAuth URL with proper scope
-      const googleAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-      
-      googleAuthUrl.searchParams.append('client_id', process.env.GOOGLE_CLIENT_ID!);
-      googleAuthUrl.searchParams.append('redirect_uri', process.env.GOOGLE_CALLBACK_URL!);
-      googleAuthUrl.searchParams.append('response_type', 'code');
-      googleAuthUrl.searchParams.append('scope', 'profile email');
-      googleAuthUrl.searchParams.append('access_type', 'offline');
-      googleAuthUrl.searchParams.append('prompt', 'consent');
-      
-      reply.redirect(googleAuthUrl.toString());
-    } catch (error: any) {
-      reply.code(500).send({
-        success: false,
-        error: 'Failed to initiate Google authentication',
-        details: error.message
-      });
-    }
-  });
-
+  app.post('/otp/request', authController.requestOTP);
+  app.post('/otp/verify', authController.verifyOTPCode);
+  
   // ============================================
-  // GOOGLE OAUTH - CALLBACK
+  // REGISTRATION
   // ============================================
-  app.get('/google/callback', async (request: FastifyRequest, reply: FastifyReply) => {
-    passport.authenticate('google', { 
-      session: false,
-      failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=google_auth_failed`
-    }, async (err: any, user: any, info: any) => {
-      if (err) {
-        console.error('Google OAuth Error:', err);
-        return reply.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=auth_error`);
-      }
-      
-      if (!user) {
-        console.error('No user returned from Google');
-        return reply.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=no_user`);
-      }
-
-      try {
-        // Check if user exists
-        let existingUser = await authService.getUser({ email: user.email });
-
-        if (!existingUser) {
-          // Register new user
-          console.log('Registering new user from Google:', user.email);
-          existingUser = await authService.registerClient({
-            name: user.name,
-            email: user.email,
-            phone: '', // They'll add phone later
-            authProvider: 'google',
-            googleId: user.googleId,
-            role: 'client'
-          });
-        } else {
-          console.log('Existing user found:', user.email);
-        }
-
-        // Generate JWT token
-        const token = generateToken(existingUser as any);
-        
-        // Redirect to frontend with token
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        reply.redirect(`${frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
-          id: existingUser.id,
-          name: existingUser.name,
-          email: existingUser.email,
-          role: existingUser.role
-        }))}`);
-      } catch (error: any) {
-        console.error('Error processing Google callback:', error);
-        reply.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=${encodeURIComponent(error.message)}`);
-      }
-    })(request.raw, reply.raw);
-  });
+  // Client Admin (Merchant) Registration - Google Sign-up
+  app.post('/register/client-admin', authController.registerClientAdmin);
+  
+  // Client (Customer) Registration - Social or Email with OTP
+  app.post('/register/client', authController.registerClient);
+  
+  // ============================================
+  // LOGIN (All user types)
+  // ============================================
+  app.post('/login', authController.login);
+  
+  // ============================================
+  // PASSWORD MANAGEMENT
+  // ============================================
+  app.post('/change-password', { preHandler: [authenticate] }, authController.changePassword);
+  app.post('/forgot-password', authController.forgotPassword);
+  app.post('/reset-password', authController.resetPassword);
 
   // ============================================
-  // FACEBOOK OAUTH - INITIATE
+  // USER MANAGEMENT
   // ============================================
-  app.get('/facebook', async (request: FastifyRequest, reply: FastifyReply) => {
-    passport.authenticate('facebook', {
-      scope: ['email', 'public_profile']
-    })(request.raw, reply.raw);
-  });
+  app.get('/user', authController.getUser);
+  app.get('/users', { preHandler: [authenticate] }, authController.getAllUsers);
+  app.delete('/users/:id', { preHandler: [authenticate] }, authController.deleteUser);
 
   // ============================================
-  // FACEBOOK OAUTH - CALLBACK
+  // API DOCUMENTATION & EXAMPLES
   // ============================================
-  app.get('/facebook/callback', async (request: FastifyRequest, reply: FastifyReply) => {
-    passport.authenticate('facebook', { 
-      session: false,
-      failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=facebook_auth_failed`
-    }, async (err: any, user: any) => {
-      if (err || !user) {
-        return reply.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=auth_failed`);
-      }
-
-      try {
-        let existingUser = await authService.getUser({ email: user.email });
-
-        if (!existingUser) {
-          existingUser = await authService.registerClient({
-            name: user.name,
-            email: user.email,
-            phone: '',
-            authProvider: 'facebook',
-            facebookId: user.facebookId,
-            role: 'client'
-          });
-        }
-
-        const token = generateToken(existingUser as any);
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        reply.redirect(`${frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
-          id: existingUser.id,
-          name: existingUser.name,
-          email: existingUser.email,
-          role: existingUser.role
-        }))}`);
-      } catch (error: any) {
-        reply.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=${encodeURIComponent(error.message)}`);
-      }
-    })(request.raw, reply.raw);
-  });
-
-  // ============================================
-  // HEALTH CHECK FOR OAUTH
-  // ============================================
-  app.get('/oauth/status', async (request: FastifyRequest, reply: FastifyReply) => {
-    reply.send({
-      success: true,
-      providers: {
-        google: {
-          enabled: !!process.env.GOOGLE_CLIENT_ID,
-          clientId: process.env.GOOGLE_CLIENT_ID ? 'configured' : 'missing',
-          callbackUrl: process.env.GOOGLE_CALLBACK_URL
-        },
-        facebook: {
-          enabled: !!process.env.FACEBOOK_APP_ID,
-          appId: process.env.FACEBOOK_APP_ID ? 'configured' : 'missing',
-          callbackUrl: process.env.FACEBOOK_CALLBACK_URL
-        }
-      }
-    });
-  });
+  /*
+  
+  🌱 SEED PREDEFINED USERS (Run once)
+  POST /api/auth/seed
+  
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  
+  📧 REQUEST OTP (For email registration)
+  POST /api/auth/otp/request
+  Body: {
+    "email": "customer@example.com",
+    "purpose": "registration"
+  }
+  
+  ✅ VERIFY OTP
+  POST /api/auth/otp/verify
+  Body: {
+    "email": "customer@example.com",
+    "otp": "123456"
+  }
+  
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  
+  🏪 REGISTER CLIENT ADMIN (MERCHANT) - Google Sign-up
+  POST /api/auth/register/client-admin
+  Body: {
+    "merchantName": "Dan's Dental Clinic",
+    "email": "dan@dentalclinic.com",
+    "phone": "+263771234567",
+    "physicalAddress": "123 Main St, Harare",
+    "geoLocation": {
+      "latitude": -17.8252,
+      "longitude": 31.0335
+    },
+    "authProvider": "google",
+    "googleId": "google_user_id_here",
+    "role": "client_admin"
+  }
+  
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  
+  👤 REGISTER CLIENT (CUSTOMER) - Google
+  POST /api/auth/register/client
+  Body: {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "+263772345678",
+    "authProvider": "google",
+    "googleId": "google_user_id_here",
+    "role": "client"
+  }
+  
+  👤 REGISTER CLIENT (CUSTOMER) - Apple
+  POST /api/auth/register/client
+  Body: {
+    "name": "Jane Smith",
+    "email": "jane@example.com",
+    "phone": "+263773456789",
+    "authProvider": "apple",
+    "appleId": "apple_user_id_here",
+    "role": "client"
+  }
+  
+  👤 REGISTER CLIENT (CUSTOMER) - Facebook
+  POST /api/auth/register/client
+  Body: {
+    "name": "Mike Johnson",
+    "email": "mike@example.com",
+    "phone": "+263774567890",
+    "authProvider": "facebook",
+    "facebookId": "facebook_user_id_here",
+    "role": "client"
+  }
+  
+  👤 REGISTER CLIENT (CUSTOMER) - Email with OTP
+  Step 1: Request OTP (POST /api/auth/otp/request)
+  Step 2: Verify OTP (POST /api/auth/otp/verify)
+  Step 3: Register (POST /api/auth/register/client)
+  Body: {
+    "name": "Sarah Williams",
+    "email": "sarah@example.com",
+    "phone": "+263775678901",
+    "password": "SecurePass123",
+    "confirmPassword": "SecurePass123",
+    "authProvider": "email",
+    "role": "client"
+  }
+  
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  
+  🔐 LOGIN EXAMPLES
+  
+  Super Admin (First time - must provide phone):
+  POST /api/auth/login
+  Body: {
+    "username": "super_admin",
+    "password": "SAdm%2025!G7kL",
+    "phone": "+263771234567",
+    "role": "super_admin"
+  }
+  
+  Super Admin (Subsequent logins):
+  POST /api/auth/login
+  Body: {
+    "username": "super_admin",
+    "password": "SAdm%2025!G7kL",
+    "role": "super_admin"
+  }
+  
+  Digital Marketer Admin:
+  POST /api/auth/login
+  Body: {
+    "username": "dmark_alpha",
+    "password": "DMkt!Alpha2025#",
+    "role": "digital_marketer_admin"
+  }
+  
+  Client Admin (Merchant) - Google:
+  POST /api/auth/login
+  Body: {
+    "email": "dan@dentalclinic.com",
+    "authProvider": "google",
+    "googleId": "google_user_id_here",
+    "role": "client_admin"
+  }
+  
+  Client (Customer) - Google:
+  POST /api/auth/login
+  Body: {
+    "email": "john@example.com",
+    "authProvider": "google",
+    "googleId": "google_user_id_here",
+    "role": "client"
+  }
+  
+  Client (Customer) - Apple:
+  POST /api/auth/login
+  Body: {
+    "email": "jane@example.com",
+    "authProvider": "apple",
+    "appleId": "apple_user_id_here",
+    "role": "client"
+  }
+  
+  Client (Customer) - Facebook:
+  POST /api/auth/login
+  Body: {
+    "email": "mike@example.com",
+    "authProvider": "facebook",
+    "facebookId": "facebook_user_id_here",
+    "role": "client"
+  }
+  
+  Client (Customer) - Email:
+  POST /api/auth/login
+  Body: {
+    "email": "sarah@example.com",
+    "password": "SecurePass123",
+    "authProvider": "email",
+    "role": "client"
+  }
+  
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  
+  🔒 PASSWORD MANAGEMENT
+  
+  Change Password (Requires authentication):
+  POST /api/auth/change-password
+  Headers: { Authorization: "Bearer <token>" }
+  Body: {
+    "currentPassword": "OldPass123",
+    "newPassword": "NewPass456",
+    "confirmNewPassword": "NewPass456"
+  }
+  
+  Forgot Password:
+  POST /api/auth/forgot-password
+  Body: {
+    "email": "user@example.com"
+  }
+  
+  Reset Password:
+  POST /api/auth/reset-password
+  Body: {
+    "token": "reset_token_from_email",
+    "newPassword": "NewPass789",
+    "confirmNewPassword": "NewPass789"
+  }
+  
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  
+  👥 USER MANAGEMENT
+  
+  Get User:
+  GET /api/auth/user?email=user@example.com
+  
+  Get All Users (Requires authentication):
+  GET /api/auth/users
+  Headers: { Authorization: "Bearer <token>" }
+  
+  Delete User (Requires authentication):
+  DELETE /api/auth/users/:id
+  Headers: { Authorization: "Bearer <token>" }
+  
+  */
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // src/routes/auth.ts
+// import { FastifyInstance } from 'fastify';
+// import * as authController from '../controllers/auth/controller';
+// import { authenticate } from '../middlewares/auth';
+
+// export default async (app: FastifyInstance) => {
+//   // ============================================
+//   // SEED ROUTE (Run once to create predefined users)
+//   // ============================================
+//   app.post('/seed', authController.seedUsers);
+  
+//   // ============================================
+//   // REGISTRATION (Only clients can register)
+//   // ============================================
+//   app.post('/register/client', authController.registerClient);
+  
+//   // ============================================
+//   // LOGIN (All user types)
+//   // ============================================
+//   app.post('/login', authController.login);
+  
+//   // ============================================
+//   // PASSWORD MANAGEMENT
+//   // ============================================
+//   app.post('/change-password', { preHandler: [authenticate] }, authController.changePassword);
+//   app.post('/forgot-password', authController.forgotPassword);
+//   app.post('/reset-password', authController.resetPassword);
+
+//   // ============================================
+//   // USER MANAGEMENT
+//   // ============================================
+//   app.get('/user', authController.getUser);
+//   app.get('/users', { preHandler: [authenticate] }, authController.getAllUsers);
+//   app.delete('/users/:id', { preHandler: [authenticate] }, authController.deleteUser);
+
+//   // ============================================
+//   // EXAMPLE USAGE:
+//   // ============================================
+//   // Seed users: POST http://localhost:3000/api/auth/seed
+//   // 
+//   // Register Client: POST http://localhost:3000/api/auth/register/client
+//   // Body: { username, email, password, confirmPassword, phone, role: "client" }
+//   //
+//   // Login Super Admin (first time): POST http://localhost:3000/api/auth/login
+//   // Body: { username: "super_admin_dan", password: "SAdm%2025!G7kL", phone: "+263771234567" }
+//   //
+//   // Login Digital Marketer: POST http://localhost:3000/api/auth/login
+//   // Body: { username: "dmark_alpha", password: "DMkt!Alpha2025#" }
+//   //
+//   // Login Client Admin (first time): POST http://localhost:3000/api/auth/login
+//   // Body: { username: "client_one", password: "Client!One2025$", phone: "+263772345678" }
+//   //
+//   // Login Client: POST http://localhost:3000/api/auth/login
+//   // Body: { username: "their_username", password: "their_password" }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // import { FastifyInstance } from 'fastify';
+// // import * as authController from '../controllers/auth/controller';
+// // import { authenticate } from '../middlewares/auth';
+
+// // export default async (app: FastifyInstance) => {
+// //   app.post('/register', authController.register);
+// //   app.post('/login', authController.login);
+  
+// //   // Protected routes
+// //   app.post('/change-password', { preHandler: [authenticate] }, authController.changePassword); // Authorization Bearer
+    
+// //   app.post('/forgot-password', authController.forgotPassword);
+// //   app.post('/reset-password', authController.resetPassword);
+
+// //   // New route for getting a user by username or email
+// //   app.get('/user', authController.getUser);
+// //   // http://localhost:3000/api/auth/user?username=testuser
+
+
+// //   app.get('/users', { preHandler: [authenticate] }, authController.getAllUsers); // Get all users (protected)
+// //   // app.get('/users', authController.getAllUsers);
+// //   app.delete('/users/:id', { preHandler: [authenticate] }, authController.deleteUser); // Delete user by ID (protected)
+
+// //   // Example URLs:
+// //   // Get user by username: http://localhost:3000/api/auth/user?username=testuser
+// //   // Get user by email: http://localhost:3000/api/auth/user?email=test@example.com
+// //   // Get all users: http://localhost:3000/api/auth/users
+// //   // Delete user: http://localhost:3000/api/auth/users/123 (DELETE)
+  
+// // };

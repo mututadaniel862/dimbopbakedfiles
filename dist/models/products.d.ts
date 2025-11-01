@@ -33,13 +33,13 @@ export declare const productSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         price: number;
         quantity: number;
-        order_id?: number | null | undefined;
         product_id?: number | null | undefined;
+        order_id?: number | null | undefined;
     }, {
         price: number;
         quantity: number;
-        order_id?: number | null | undefined;
         product_id?: number | null | undefined;
+        order_id?: number | null | undefined;
     }>, "many">>;
     category_name: z.ZodOptional<z.ZodString>;
     reviews: z.ZodOptional<z.ZodArray<z.ZodObject<{
@@ -145,8 +145,8 @@ export declare const productSchema: z.ZodObject<{
     order_items?: {
         price: number;
         quantity: number;
-        order_id?: number | null | undefined;
         product_id?: number | null | undefined;
+        order_id?: number | null | undefined;
     }[] | undefined;
     category_name?: string | undefined;
 }, {
@@ -191,8 +191,8 @@ export declare const productSchema: z.ZodObject<{
     order_items?: {
         price: number;
         quantity: number;
-        order_id?: number | null | undefined;
         product_id?: number | null | undefined;
+        order_id?: number | null | undefined;
     }[] | undefined;
     category_name?: string | undefined;
 }>;

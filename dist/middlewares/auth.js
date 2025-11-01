@@ -1,6 +1,4 @@
 "use strict";
-// import { FastifyRequest, FastifyReply } from 'fastify';
-// import { verifyToken, JwtUser } from '../utils/jwt';
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authorize = exports.authenticate = void 0;
 const jwt_1 = require("../utils/jwt");

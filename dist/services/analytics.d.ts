@@ -23,12 +23,23 @@ export declare const AnalyticsService: {
     }[]>;
     getAnalyticsById(id: number): Promise<({
         users: {
-            username: string;
             email: string;
             phone: string | null;
             role: string | null;
+            name: string | null;
+            username: string | null;
             id: number;
-            password_hash: string;
+            merchant_name: string | null;
+            password_hash: string | null;
+            is_active: boolean | null;
+            physical_address: string | null;
+            geo_latitude: number | null;
+            geo_longitude: number | null;
+            auth_provider: string;
+            google_id: string | null;
+            apple_id: string | null;
+            facebook_id: string | null;
+            last_login: Date | null;
             created_at: Date | null;
             updated_at: Date | null;
             email_verification_token: string | null;

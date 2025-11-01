@@ -14,13 +14,13 @@ export declare const orderSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         price: number;
         quantity: number;
-        order_id?: number | null | undefined;
         product_id?: number | null | undefined;
+        order_id?: number | null | undefined;
     }, {
         price: number;
         quantity: number;
-        order_id?: number | null | undefined;
         product_id?: number | null | undefined;
+        order_id?: number | null | undefined;
     }>, "many">>;
     financials: z.ZodOptional<z.ZodArray<z.ZodObject<{
         order_id: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
@@ -80,8 +80,8 @@ export declare const orderSchema: z.ZodObject<{
     order_items?: {
         price: number;
         quantity: number;
-        order_id?: number | null | undefined;
         product_id?: number | null | undefined;
+        order_id?: number | null | undefined;
     }[] | undefined;
     browser_used?: string | undefined;
     financials?: {
@@ -108,8 +108,8 @@ export declare const orderSchema: z.ZodObject<{
     order_items?: {
         price: number;
         quantity: number;
-        order_id?: number | null | undefined;
         product_id?: number | null | undefined;
+        order_id?: number | null | undefined;
     }[] | undefined;
     browser_used?: string | undefined;
     financials?: {
