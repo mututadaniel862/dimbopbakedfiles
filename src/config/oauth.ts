@@ -10,7 +10,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:8000/api/oauth/google/callback',
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || 'https://dimbopbakedfiles.onrender.com/api/oauth/google/callback',
       scope: ['profile', 'email'], // Request profile and email from Google
     },
     async (accessToken, refreshToken, profile, done) => {
