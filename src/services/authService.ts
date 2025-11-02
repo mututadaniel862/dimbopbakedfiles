@@ -124,11 +124,70 @@ export const verifyOTP = async (data: any): Promise<boolean> => {
 // ============================================
 // CLIENT ADMIN (MERCHANT) REGISTRATION
 // ============================================
+// export const registerClientAdmin = async (data: any): Promise<users> => {
+//   const { merchantName, email, phone, physicalAddress, geoLocation, authProvider, googleId } = 
+//     clientAdminRegisterSchema.parse(data);
+
+//   // Check if merchant already exists
+//   const existingUser = await prisma.users.findFirst({
+//     where: {
+//       OR: [
+//         { email },
+//         { phone }
+//       ]
+//     }
+//   });
+  
+//   if (existingUser) {
+//     if (existingUser.email === email) throw new Error('Email already in use');
+//     if (existingUser.phone === phone) throw new Error('Phone number already in use');
+//   }
+  
+//   // Create client admin (merchant) - FIX: Convert undefined to null
+//   const user = await prisma.users.create({
+//     data: {
+//       merchant_name: merchantName,
+//       email,
+//       phone,
+//       physical_address: physicalAddress,
+//       geo_latitude: geoLocation.latitude,
+//       geo_longitude: geoLocation.longitude,
+//       role: 'client_admin',
+//       auth_provider: authProvider,
+//       google_id: googleId || null, // FIX: undefined to null
+//       password_hash: null,
+//       last_login: new Date()
+//     }
+//   });
+  
+//   return user;
+// };
+
+
+
+// In registerClientAdmin function, add Google ID validation:
+
 export const registerClientAdmin = async (data: any): Promise<users> => {
   const { merchantName, email, phone, physicalAddress, geoLocation, authProvider, googleId } = 
     clientAdminRegisterSchema.parse(data);
 
-  // Check if merchant already exists
+  // CRITICAL: For Google registration, googleId MUST be present
+  if (authProvider === 'google' && !googleId) {
+    throw new Error('Google ID is required for Google registration. Please use the Google Sign-In button.');
+  }
+
+  // Check if this Google ID already exists
+  if (googleId) {
+    const existingGoogleUser = await prisma.users.findFirst({
+      where: { google_id: googleId }
+    });
+    
+    if (existingGoogleUser) {
+      throw new Error('This Google account is already registered');
+    }
+  }
+
+  // Check if email already exists
   const existingUser = await prisma.users.findFirst({
     where: {
       OR: [
@@ -143,7 +202,7 @@ export const registerClientAdmin = async (data: any): Promise<users> => {
     if (existingUser.phone === phone) throw new Error('Phone number already in use');
   }
   
-  // Create client admin (merchant) - FIX: Convert undefined to null
+  // Create client admin (merchant) - ONLY with verified Google ID
   const user = await prisma.users.create({
     data: {
       merchant_name: merchantName,
@@ -154,12 +213,13 @@ export const registerClientAdmin = async (data: any): Promise<users> => {
       geo_longitude: geoLocation.longitude,
       role: 'client_admin',
       auth_provider: authProvider,
-      google_id: googleId || null, // FIX: undefined to null
+      google_id: googleId || null,
       password_hash: null,
       last_login: new Date()
     }
   });
   
+  console.log('✅ Client Admin registered with verified Google account:', email);
   return user;
 };
 
