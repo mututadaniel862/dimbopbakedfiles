@@ -58,12 +58,12 @@ exports.BlogController = {
             const fields = {};
             const blogImages = [];
             const uploadedUrls = {};
-            // const parts = await request.parts({ limits: { fileSize: 10 * 1024 * 1024 } });
-            // CHANGE IT TO:
+            // ✅ FIXED: Increase file limit and add better limits
             const parts = await request.parts({
                 limits: {
                     fileSize: 10 * 1024 * 1024, // 10MB per file
-                    files: 20 // ✅ ADD THIS - Allow 15 files
+                    files: 20, // Allow up to 20 files
+                    fields: 50 // ✅ Allow more fields
                 }
             });
             for await (const part of parts) {
@@ -120,13 +120,21 @@ exports.BlogController = {
                     }
                 }
                 else {
-                    fields[part.fieldname] = part.value;
-                    request.log.info(`Received field: ${part.fieldname}=${part.value}`);
+                    // ✅ FIXED: Safely handle undefined/null values
+                    const value = part.value;
+                    // Only add field if it has a valid value
+                    if (value !== undefined && value !== null && value !== '') {
+                        fields[part.fieldname] = value;
+                        request.log.info(`Received field: ${part.fieldname}=${String(value).substring(0, 50)}...`);
+                    }
+                    else {
+                        request.log.warn(`Skipping empty field: ${part.fieldname}`);
+                    }
                 }
             }
             console.log('📋 uploadedUrls:', uploadedUrls);
             console.log('📋 blogImages:', blogImages);
-            console.log('📋 fields:', fields);
+            console.log('📋 fields:', Object.keys(fields)); // Just log field names, not full content
             // Validate required fields
             const requiredFields = ['title', 'description', 'content'];
             for (const field of requiredFields) {
@@ -137,50 +145,55 @@ exports.BlogController = {
                     return;
                 }
             }
+            // ✅ FIXED: Better null handling for optional fields
+            const getFieldValue = (fieldName) => {
+                const value = fields[fieldName];
+                return (value && value.trim() !== '') ? value : null;
+            };
             // Prepare blog data with Cloudinary URLs
             const blogData = {
                 title: fields.title,
                 description: fields.description,
                 content: fields.content,
                 status: fields.status || 'visible',
-                categories: fields.categories || null,
-                meta_description: fields.meta_description || null,
-                meta_author: fields.meta_author || null,
-                keywords: fields.keywords || null,
-                meta_og_title: fields.meta_og_title || null,
-                meta_og_url: fields.meta_og_url || null,
+                categories: getFieldValue('categories'),
+                meta_description: getFieldValue('meta_description'),
+                meta_author: getFieldValue('meta_author'),
+                keywords: getFieldValue('keywords'),
+                meta_og_title: getFieldValue('meta_og_title'),
+                meta_og_url: getFieldValue('meta_og_url'),
                 meta_og_image: uploadedUrls.meta_og_image || null,
-                meta_facebook_id: fields.meta_facebook_id || null,
-                meta_site_name: fields.meta_site_name || null,
-                meta_post_twitter: fields.meta_post_twitter || null,
+                meta_facebook_id: getFieldValue('meta_facebook_id'),
+                meta_site_name: getFieldValue('meta_site_name'),
+                meta_post_twitter: getFieldValue('meta_post_twitter'),
                 image_url: uploadedUrls.image_url || null,
                 hero_image: uploadedUrls.hero_image || null,
                 blog_image_one: uploadedUrls.blog_image_one || null,
                 blog_image_two: uploadedUrls.blog_image_two || null,
                 blog_image_three: uploadedUrls.blog_image_three || null,
                 author_avatar: uploadedUrls.author_avatar || null,
-                epigraph: fields.epigraph || null,
-                first_paragraph: fields.first_paragraph || null,
-                second_paragraph: fields.second_paragraph || null,
-                third_paragraph: fields.third_paragraph || null,
-                fourth_paragraph: fields.fourth_paragraph || null,
-                fifth_paragraph: fields.fifth_paragraph || null,
+                epigraph: getFieldValue('epigraph'),
+                first_paragraph: getFieldValue('first_paragraph'),
+                second_paragraph: getFieldValue('second_paragraph'),
+                third_paragraph: getFieldValue('third_paragraph'),
+                fourth_paragraph: getFieldValue('fourth_paragraph'),
+                fifth_paragraph: getFieldValue('fifth_paragraph'),
                 annotation_image_one: uploadedUrls.annotation_image_one || null,
                 annotation_image_two: uploadedUrls.annotation_image_two || null,
                 annotation_image_three: uploadedUrls.annotation_image_three || null,
                 annotation_image_four: uploadedUrls.annotation_image_four || null,
                 annotation_image_five: uploadedUrls.annotation_image_five || null,
-                point_one_title: fields.point_one_title || null,
-                point_two_title: fields.point_two_title || null,
-                point_three_title: fields.point_three_title || null,
-                point_four_title: fields.point_four_title || null,
-                point_five_title: fields.point_five_title || null,
-                point_one_description: fields.point_one_description || null,
-                point_two_description: fields.point_two_description || null,
-                point_three_description: fields.point_three_description || null,
-                point_four_description: fields.point_four_description || null,
-                point_five_description: fields.point_five_description || null,
-                more_blogs: fields.more_blogs || null,
+                point_one_title: getFieldValue('point_one_title'),
+                point_two_title: getFieldValue('point_two_title'),
+                point_three_title: getFieldValue('point_three_title'),
+                point_four_title: getFieldValue('point_four_title'),
+                point_five_title: getFieldValue('point_five_title'),
+                point_one_description: getFieldValue('point_one_description'),
+                point_two_description: getFieldValue('point_two_description'),
+                point_three_description: getFieldValue('point_three_description'),
+                point_four_description: getFieldValue('point_four_description'),
+                point_five_description: getFieldValue('point_five_description'),
+                more_blogs: getFieldValue('more_blogs'),
                 blog_images: blogImages.length > 0 ? blogImages : [],
             };
             const blog = await blog_1.BlogService.createBlog(blogData);
