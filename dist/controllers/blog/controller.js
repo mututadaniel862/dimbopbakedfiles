@@ -58,7 +58,14 @@ exports.BlogController = {
             const fields = {};
             const blogImages = [];
             const uploadedUrls = {};
-            const parts = await request.parts({ limits: { fileSize: 10 * 1024 * 1024 } });
+            // const parts = await request.parts({ limits: { fileSize: 10 * 1024 * 1024 } });
+            // CHANGE IT TO:
+            const parts = await request.parts({
+                limits: {
+                    fileSize: 10 * 1024 * 1024, // 10MB per file
+                    files: 20 // ✅ ADD THIS - Allow 15 files
+                }
+            });
             for await (const part of parts) {
                 if (part.type === 'file') {
                     const fieldname = part.fieldname;
