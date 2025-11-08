@@ -117,6 +117,9 @@ exports.BlogController = {
                     request.log.info(`Received field: ${part.fieldname}=${part.value}`);
                 }
             }
+            console.log('📋 uploadedUrls:', uploadedUrls);
+            console.log('📋 blogImages:', blogImages);
+            console.log('📋 fields:', fields);
             // Validate required fields
             const requiredFields = ['title', 'description', 'content'];
             for (const field of requiredFields) {
