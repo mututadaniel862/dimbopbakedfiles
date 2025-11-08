@@ -1,8 +1,4 @@
 "use strict";
-// import { FastifyInstance } from 'fastify';
-// import  {BlogController} from '../controllers/blog/controller';
-// import { blogSchema, blogImageSchema } from '../models/blogs';
-// import { zodToJsonSchema } from '../utils/schemas';
 Object.defineProperty(exports, "__esModule", { value: true });
 const controller_1 = require("../controllers/blog/controller");
 const schemas_1 = require("../utils/schemas");

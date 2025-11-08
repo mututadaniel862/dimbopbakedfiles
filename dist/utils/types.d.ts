@@ -1,15 +1,7 @@
 import { z } from 'zod';
-import { clientRegisterSchema, clientAdminRegisterSchema, loginSchema, changePasswordSchema, resetPasswordSchema, requestOTPSchema, verifyOTPSchema, updateUserSchema, superAdminLoginSchema, digitalMarketerAdminLoginSchema, clientAdminLoginSchema, forgotPasswordSchema } from './schemas';
-export type ClientRegisterInput = z.infer<typeof clientRegisterSchema>;
+import { clientRegisterSchema, clientAdminRegisterSchema, loginSchema, changePasswordSchema, resetPasswordSchema } from './schemas';
+export type RegisterInput = z.infer<typeof clientRegisterSchema>;
 export type ClientAdminRegisterInput = z.infer<typeof clientAdminRegisterSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
-export type SuperAdminLoginInput = z.infer<typeof superAdminLoginSchema>;
-export type DigitalMarketerAdminLoginInput = z.infer<typeof digitalMarketerAdminLoginSchema>;
-export type ClientAdminLoginInput = z.infer<typeof clientAdminLoginSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
-export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
-export type RequestOTPInput = z.infer<typeof requestOTPSchema>;
-export type VerifyOTPInput = z.infer<typeof verifyOTPSchema>;
-export type UpdateUserInput = z.infer<typeof updateUserSchema>;
-export type RegisterInput = ClientRegisterInput;

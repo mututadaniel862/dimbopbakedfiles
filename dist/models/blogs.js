@@ -19,8 +19,6 @@ exports.blogSchema = zod_1.z.object({
     description: zod_1.z.string(),
     content: zod_1.z.string(),
     image_url: zod_1.z.string().url().optional().nullable(),
-    //   author_id: z.number().int().positive().optional().nullable(),
-    //   blog_type_id: z.number().int().positive().optional().nullable(),
     created_at: zod_1.z.coerce.date().optional(),
     hero_image: zod_1.z.string().url().optional().nullable(),
     blog_image_one: zod_1.z.string().url().optional().nullable(),

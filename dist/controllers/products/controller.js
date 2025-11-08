@@ -1,30 +1,4 @@
 "use strict";
-// import { FastifyRequest, FastifyReply } from 'fastify';
-// import {
-//   getAllProducts,
-//   getProductById,
-//   createProduct,
-//   updateProduct,
-//   deleteProduct,
-//   addProductToCart,
-//   updateCartItemQuantity,
-//   deleteCartItem,
-//   getUserCart,
-//   getAllProductImages,
-//     ReviewService, 
-//   ReviewLikeService, 
-//   ReviewCommentService, 
-//   ProductViewService 
-//   // addReview, 
-//   // getProductReviews
-// } from '../../services/productservice';
-// import { productSchema } from '../../models/products';
-// import { z } from 'zod';
-// import { MultipartFile, MultipartFields } from '@fastify/multipart';
-// import { pipeline } from 'stream';
-// import util from 'util';
-// import fs from 'fs';
-// import path from 'path';
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductViewController = exports.ReviewCommentController = exports.ReviewLikeController = exports.ReviewController = exports.deleteProductHandler = exports.updateProductHandler = exports.getProductHandler = exports.updateCartItemQuantityHandler = exports.addProductToCartHandler = exports.deleteCartItemHandler = exports.getUserCartHandler = exports.getProductImagesHandler = exports.getProductsHandler = exports.createProductHandler = void 0;
 const productservice_1 = require("../../services/productservice");

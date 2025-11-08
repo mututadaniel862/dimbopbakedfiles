@@ -22,8 +22,6 @@ export const blogSchema = z.object({
   description: z.string(),
   content: z.string(),
   image_url: z.string().url().optional().nullable(),
-//   author_id: z.number().int().positive().optional().nullable(),
-//   blog_type_id: z.number().int().positive().optional().nullable(),
   created_at: z.coerce.date().optional(),
   hero_image: z.string().url().optional().nullable(),
   blog_image_one: z.string().url().optional().nullable(),
