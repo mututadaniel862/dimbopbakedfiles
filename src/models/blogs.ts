@@ -3,8 +3,10 @@ import { z } from "zod";
 // Schema for blog images
 export const blogImageSchema = z.object({
 
+  // blog_id: z.number().int().positive().optional(),
+  // image_url: z.string().url(),
+  image_url: z.string(),  // ✅ Removed .url() - too strict
   blog_id: z.number().int().positive().optional(),
-  image_url: z.string().url(),
 });
 
 // Schema for blog types

@@ -4,8 +4,10 @@ exports.blogSchema = exports.blogTypeSchema = exports.blogImageSchema = void 0;
 const zod_1 = require("zod");
 // Schema for blog images
 exports.blogImageSchema = zod_1.z.object({
+    // blog_id: z.number().int().positive().optional(),
+    // image_url: z.string().url(),
+    image_url: zod_1.z.string(), // ✅ Removed .url() - too strict
     blog_id: zod_1.z.number().int().positive().optional(),
-    image_url: zod_1.z.string().url(),
 });
 // Schema for blog types
 exports.blogTypeSchema = zod_1.z.object({

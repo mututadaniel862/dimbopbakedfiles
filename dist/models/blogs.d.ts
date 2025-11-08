@@ -1,7 +1,7 @@
 import { z } from "zod";
 export declare const blogImageSchema: z.ZodObject<{
-    blog_id: z.ZodOptional<z.ZodNumber>;
     image_url: z.ZodString;
+    blog_id: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     image_url: string;
     blog_id?: number | undefined;
@@ -67,8 +67,8 @@ export declare const blogSchema: z.ZodObject<{
     meta_post_twitter: z.ZodNullable<z.ZodOptional<z.ZodString>>;
     status: z.ZodOptional<z.ZodDefault<z.ZodEnum<["visible", "hidden", "draft"]>>>;
     blog_images: z.ZodOptional<z.ZodArray<z.ZodObject<{
-        blog_id: z.ZodOptional<z.ZodNumber>;
         image_url: z.ZodString;
+        blog_id: z.ZodOptional<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
         image_url: string;
         blog_id?: number | undefined;
