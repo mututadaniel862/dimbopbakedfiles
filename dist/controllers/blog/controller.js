@@ -67,6 +67,10 @@ exports.BlogController = {
                 }
             });
             for await (const part of parts) {
+                if (!part || !part.fieldname) {
+                    request.log.warn('Received invalid part without fieldname');
+                    continue;
+                }
                 if (part.type === 'file') {
                     const fieldname = part.fieldname;
                     const filename = part.filename;
@@ -118,9 +122,29 @@ exports.BlogController = {
                         });
                         return;
                     }
+                    //     }
+                    //      else {
+                    //       if (!part || typeof part !== 'object' || !('value' in part)) {
+                    //   request.log.warn(`Skipping invalid field part: ${JSON.stringify(part)}`);
+                    //   continue;
+                    // }
+                    //       // ✅ FIXED: Safely handle undefined/null values
+                    //       const value = part.value;
+                    //       // Only add field if it has a valid value
+                    //       if (value !== undefined && value !== null && value !== '') {
+                    //         fields[part.fieldname] = value;
+                    //         request.log.info(`Received field: ${part.fieldname}=${String(value).substring(0, 50)}...`);
+                    //       } else {
+                    //         request.log.warn(`Skipping empty field: ${part.fieldname}`);
+                    //       }
+                    //     }
                 }
                 else {
-                    // ✅ FIXED: Safely handle undefined/null values
+                    // ✅ FIXED: Check if part has value property first
+                    if (!part || typeof part !== 'object' || !('value' in part)) {
+                        request.log.warn(`Skipping invalid field part: ${JSON.stringify(part)}`);
+                        continue;
+                    }
                     const value = part.value;
                     // Only add field if it has a valid value
                     if (value !== undefined && value !== null && value !== '') {
