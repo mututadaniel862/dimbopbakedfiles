@@ -3,11 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.blogSchema = exports.blogTypeSchema = exports.blogImageSchema = void 0;
 const zod_1 = require("zod");
 // Schema for blog images
+// export const blogImageSchema = z.object({
+//   // blog_id: z.number().int().positive().optional(),
+//   // image_url: z.string().url(),
+//   image_url: z.string(),  // ✅ Removed .url() - too strict
+//   blog_id: z.number().int().positive().optional(),
+// });
 exports.blogImageSchema = zod_1.z.object({
-    // blog_id: z.number().int().positive().optional(),
-    // image_url: z.string().url(),
-    image_url: zod_1.z.string(), // ✅ Removed .url() - too strict
-    blog_id: zod_1.z.number().int().positive().optional(),
+    image_url: zod_1.z.string().min(1),
 });
 // Schema for blog types
 exports.blogTypeSchema = zod_1.z.object({
@@ -60,6 +63,7 @@ exports.blogSchema = zod_1.z.object({
     meta_site_name: zod_1.z.string().optional().nullable(),
     meta_post_twitter: zod_1.z.string().optional().nullable(),
     status: zod_1.z.enum(["visible", "hidden", "draft"]).default("visible").optional(),
-    blog_images: zod_1.z.array(exports.blogImageSchema).optional(), // For handling multiple images
+    // blog_images: z.array(blogImageSchema).optional(), // For handling multiple images
+    blog_images: zod_1.z.array(exports.blogImageSchema).optional().default([]),
 });
 //# sourceMappingURL=blogs.js.map

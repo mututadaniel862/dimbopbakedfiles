@@ -1,13 +1,19 @@
 import { z } from "zod";
 
 // Schema for blog images
-export const blogImageSchema = z.object({
+// export const blogImageSchema = z.object({
 
-  // blog_id: z.number().int().positive().optional(),
-  // image_url: z.string().url(),
-  image_url: z.string(),  // ✅ Removed .url() - too strict
-  blog_id: z.number().int().positive().optional(),
+//   // blog_id: z.number().int().positive().optional(),
+//   // image_url: z.string().url(),
+//   image_url: z.string(),  // ✅ Removed .url() - too strict
+//   blog_id: z.number().int().positive().optional(),
+// });
+
+
+export const blogImageSchema = z.object({
+  image_url: z.string().min(1),
 });
+
 
 // Schema for blog types
 export const blogTypeSchema = z.object({
@@ -63,7 +69,8 @@ export const blogSchema = z.object({
   meta_site_name: z.string().optional().nullable(),
   meta_post_twitter: z.string().optional().nullable(),
   status: z.enum(["visible", "hidden", "draft"]).default("visible").optional(),
-  blog_images: z.array(blogImageSchema).optional(), // For handling multiple images
+  // blog_images: z.array(blogImageSchema).optional(), // For handling multiple images
+    blog_images: z.array(blogImageSchema).optional().default([]),
 });
 
 // Types

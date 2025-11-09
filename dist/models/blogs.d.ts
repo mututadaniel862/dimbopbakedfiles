@@ -1,13 +1,10 @@
 import { z } from "zod";
 export declare const blogImageSchema: z.ZodObject<{
     image_url: z.ZodString;
-    blog_id: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     image_url: string;
-    blog_id?: number | undefined;
 }, {
     image_url: string;
-    blog_id?: number | undefined;
 }>;
 export declare const blogTypeSchema: z.ZodObject<{
     name: z.ZodString;
@@ -66,20 +63,20 @@ export declare const blogSchema: z.ZodObject<{
     meta_site_name: z.ZodNullable<z.ZodOptional<z.ZodString>>;
     meta_post_twitter: z.ZodNullable<z.ZodOptional<z.ZodString>>;
     status: z.ZodOptional<z.ZodDefault<z.ZodEnum<["visible", "hidden", "draft"]>>>;
-    blog_images: z.ZodOptional<z.ZodArray<z.ZodObject<{
+    blog_images: z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodObject<{
         image_url: z.ZodString;
-        blog_id: z.ZodOptional<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
         image_url: string;
-        blog_id?: number | undefined;
     }, {
         image_url: string;
-        blog_id?: number | undefined;
-    }>, "many">>;
+    }>, "many">>>;
 }, "strip", z.ZodTypeAny, {
     title: string;
     description: string;
     content: string;
+    blog_images: {
+        image_url: string;
+    }[];
     status?: "visible" | "hidden" | "draft" | undefined;
     created_at?: Date | undefined;
     image_url?: string | null | undefined;
@@ -120,10 +117,6 @@ export declare const blogSchema: z.ZodObject<{
     meta_facebook_id?: string | null | undefined;
     meta_site_name?: string | null | undefined;
     meta_post_twitter?: string | null | undefined;
-    blog_images?: {
-        image_url: string;
-        blog_id?: number | undefined;
-    }[] | undefined;
 }, {
     title: string;
     description: string;
@@ -170,7 +163,6 @@ export declare const blogSchema: z.ZodObject<{
     meta_post_twitter?: string | null | undefined;
     blog_images?: {
         image_url: string;
-        blog_id?: number | undefined;
     }[] | undefined;
 }>;
 export type BlogSchemaType = z.infer<typeof blogSchema>;

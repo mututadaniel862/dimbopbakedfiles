@@ -252,6 +252,7 @@ async createBlog(request: FastifyRequest, reply: FastifyReply) {
       point_four_description: getFieldValue('point_four_description'),
       point_five_description: getFieldValue('point_five_description'),
       more_blogs: getFieldValue('more_blogs'),
+      // blog_images: blogImages.length > 0 ? blogImages : [],
       blog_images: blogImages.length > 0 ? blogImages : [],
     };
 
