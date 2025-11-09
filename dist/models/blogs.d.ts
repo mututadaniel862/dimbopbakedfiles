@@ -63,20 +63,10 @@ export declare const blogSchema: z.ZodObject<{
     meta_site_name: z.ZodNullable<z.ZodOptional<z.ZodString>>;
     meta_post_twitter: z.ZodNullable<z.ZodOptional<z.ZodString>>;
     status: z.ZodOptional<z.ZodDefault<z.ZodEnum<["visible", "hidden", "draft"]>>>;
-    blog_images: z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodObject<{
-        image_url: z.ZodString;
-    }, "strip", z.ZodTypeAny, {
-        image_url: string;
-    }, {
-        image_url: string;
-    }>, "many">>>;
 }, "strip", z.ZodTypeAny, {
     title: string;
     description: string;
     content: string;
-    blog_images: {
-        image_url: string;
-    }[];
     status?: "visible" | "hidden" | "draft" | undefined;
     created_at?: Date | undefined;
     image_url?: string | null | undefined;
@@ -161,9 +151,6 @@ export declare const blogSchema: z.ZodObject<{
     meta_facebook_id?: string | null | undefined;
     meta_site_name?: string | null | undefined;
     meta_post_twitter?: string | null | undefined;
-    blog_images?: {
-        image_url: string;
-    }[] | undefined;
 }>;
 export type BlogSchemaType = z.infer<typeof blogSchema>;
 export type BlogImageSchemaType = z.infer<typeof blogImageSchema>;

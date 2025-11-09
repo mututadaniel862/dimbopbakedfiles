@@ -64,6 +64,215 @@ export const BlogController = {
     }
   },
 
+// async createBlog(request: FastifyRequest, reply: FastifyReply) {
+
+//   const timeout = setTimeout(() => {
+//     request.log.error('Request timed out after 60 seconds');
+//     reply.status(408).send({ message: 'Request timed out' });
+//   }, 60000);
+
+//   try {
+//     request.log.info('Starting createBlog processing');
+
+//     const fields: any = {};
+//     const blogImages: { image_url: string }[] = [];
+//     const uploadedUrls: { [key: string]: string } = {};
+
+//     // ✅ FIXED: Increase file limit and add better limits
+//     const parts = await request.parts({ 
+//       limits: { 
+//         fileSize: 10 * 1024 * 1024,  // 10MB per file
+//         files: 20,  // Allow up to 20 files
+//         fields: 50  // ✅ Allow more fields
+//       } 
+//     });
+    
+//     for await (const part of parts) {
+
+//        if (!part || !part.fieldname) {
+//     request.log.warn('Received invalid part without fieldname');
+//     continue;
+//   }
+//       if (part.type === 'file') {
+//         const fieldname = part.fieldname;
+//         const filename = part.filename;
+
+//         if (!filename) {
+//           request.log.warn(`Skipping empty file for field: ${fieldname}`);
+//           continue;
+//         }
+
+//         if (!part.mimetype.startsWith('image/')) {
+//           request.log.error(`${fieldname} is not an image`);
+//           clearTimeout(timeout);
+//           reply.status(400).send({ message: `${fieldname} must be an image` });
+//           return;
+//         }
+
+//         try {
+//           const buffer = await part.toBuffer();
+          
+//           const uploadResult = await new Promise<any>((resolve, reject) => {
+//             const uploadStream = cloudinary.uploader.upload_stream(
+//               {
+//                 folder: 'blogs',
+//                 public_id: `blog_${Date.now()}_${fieldname}`,
+//                 resource_type: 'auto',
+//                 transformation: [
+//                   { width: 1200, height: 800, crop: 'limit' },
+//                   { quality: 'auto' },
+//                   { fetch_format: 'auto' }
+//                 ]
+//               },
+//               (error, result) => {
+//                 if (error) reject(error);
+//                 else resolve(result);
+//               }
+//             );
+//             uploadStream.end(buffer);
+//           });
+
+//           const cloudinaryUrl = uploadResult.secure_url;
+//           request.log.info(`✅ Uploaded ${fieldname} to Cloudinary: ${cloudinaryUrl}`);
+
+//           if (fieldname.startsWith('blog_images')) {
+//             blogImages.push({ image_url: cloudinaryUrl });
+//           } else {
+//             uploadedUrls[fieldname] = cloudinaryUrl;
+//           }
+
+//         } catch (error) {
+//           request.log.error(`❌ Cloudinary upload error for ${fieldname}: ${String(error)}`);
+//           clearTimeout(timeout);
+//           reply.status(500).send({ 
+//             message: `Failed to upload ${fieldname} to Cloudinary`,
+//             error: error instanceof Error ? error.message : 'Unknown error'
+//           });
+//           return;
+//         }
+
+//   //     }
+//   //      else {
+
+//   //       if (!part || typeof part !== 'object' || !('value' in part)) {
+//   //   request.log.warn(`Skipping invalid field part: ${JSON.stringify(part)}`);
+//   //   continue;
+//   // }
+//   //       // ✅ FIXED: Safely handle undefined/null values
+//   //       const value = part.value;
+        
+//   //       // Only add field if it has a valid value
+//   //       if (value !== undefined && value !== null && value !== '') {
+//   //         fields[part.fieldname] = value;
+//   //         request.log.info(`Received field: ${part.fieldname}=${String(value).substring(0, 50)}...`);
+//   //       } else {
+//   //         request.log.warn(`Skipping empty field: ${part.fieldname}`);
+//   //       }
+//   //     }
+//   } else {
+//   // ✅ FIXED: Check if part has value property first
+//   if (!part || typeof part !== 'object' || !('value' in part)) {
+//     request.log.warn(`Skipping invalid field part: ${JSON.stringify(part)}`);
+//     continue;
+//   }
+  
+//   const value = part.value;
+  
+//   // Only add field if it has a valid value
+//   if (value !== undefined && value !== null && value !== '') {
+//     fields[part.fieldname] = value;
+//     request.log.info(`Received field: ${part.fieldname}=${String(value).substring(0, 50)}...`);
+//   } else {
+//     request.log.warn(`Skipping empty field: ${part.fieldname}`);
+//   }
+// }
+//     }
+
+//     console.log('📋 uploadedUrls:', uploadedUrls);
+//     console.log('📋 blogImages:', blogImages);
+//     console.log('📋 fields:', Object.keys(fields)); // Just log field names, not full content
+
+//     // Validate required fields
+//     const requiredFields = ['title', 'description', 'content'];
+//     for (const field of requiredFields) {
+//       if (!fields[field]) {
+//         request.log.error(`Missing required field: ${field}`);
+//         clearTimeout(timeout);
+//         reply.status(400).send({ message: `Missing required field: ${field}` });
+//         return;
+//       }
+//     }
+
+//     // ✅ FIXED: Better null handling for optional fields
+//     const getFieldValue = (fieldName: string): string | null => {
+//       const value = fields[fieldName];
+//       return (value && value.trim() !== '') ? value : null;
+//     };
+
+//     // Prepare blog data with Cloudinary URLs
+//     const blogData: z.infer<typeof blogSchema> = {
+//       title: fields.title,
+//       description: fields.description,
+//       content: fields.content,
+//       status: fields.status || 'visible',
+//       categories: getFieldValue('categories'),
+//       meta_description: getFieldValue('meta_description'),
+//       meta_author: getFieldValue('meta_author'),
+//       keywords: getFieldValue('keywords'),
+//       meta_og_title: getFieldValue('meta_og_title'),
+//       meta_og_url: getFieldValue('meta_og_url'),
+//       meta_og_image: uploadedUrls.meta_og_image || null,
+//       meta_facebook_id: getFieldValue('meta_facebook_id'),
+//       meta_site_name: getFieldValue('meta_site_name'),
+//       meta_post_twitter: getFieldValue('meta_post_twitter'),
+//       image_url: uploadedUrls.image_url || null,
+//       hero_image: uploadedUrls.hero_image || null,
+//       blog_image_one: uploadedUrls.blog_image_one || null,
+//       blog_image_two: uploadedUrls.blog_image_two || null,
+//       blog_image_three: uploadedUrls.blog_image_three || null,
+//       author_avatar: uploadedUrls.author_avatar || null,
+//       epigraph: getFieldValue('epigraph'),
+//       first_paragraph: getFieldValue('first_paragraph'),
+//       second_paragraph: getFieldValue('second_paragraph'),
+//       third_paragraph: getFieldValue('third_paragraph'),
+//       fourth_paragraph: getFieldValue('fourth_paragraph'),
+//       fifth_paragraph: getFieldValue('fifth_paragraph'),
+//       annotation_image_one: uploadedUrls.annotation_image_one || null,
+//       annotation_image_two: uploadedUrls.annotation_image_two || null,
+//       annotation_image_three: uploadedUrls.annotation_image_three || null,
+//       annotation_image_four: uploadedUrls.annotation_image_four || null,
+//       annotation_image_five: uploadedUrls.annotation_image_five || null,
+//       point_one_title: getFieldValue('point_one_title'),
+//       point_two_title: getFieldValue('point_two_title'),
+//       point_three_title: getFieldValue('point_three_title'),
+//       point_four_title: getFieldValue('point_four_title'),
+//       point_five_title: getFieldValue('point_five_title'),
+//       point_one_description: getFieldValue('point_one_description'),
+//       point_two_description: getFieldValue('point_two_description'),
+//       point_three_description: getFieldValue('point_three_description'),
+//       point_four_description: getFieldValue('point_four_description'),
+//       point_five_description: getFieldValue('point_five_description'),
+//       more_blogs: getFieldValue('more_blogs'),
+//       // blog_images: blogImages.length > 0 ? blogImages : [],
+//       blog_images: blogImages.length > 0 ? blogImages : [],
+//     };
+
+//     const blog = await BlogService.createBlog(blogData);
+//     request.log.info('✅ Blog created successfully');
+//     clearTimeout(timeout);
+//     reply.status(201).send(blog);
+//   } catch (error) {
+//     request.log.error(`❌ Unexpected error in createBlog: ${String(error)}`);
+//     clearTimeout(timeout);
+//     reply.status(400).send({
+//       message: 'Invalid blog data',
+//       error: error instanceof Error ? error.message : 'Unknown error',
+//     });
+//   }
+// },
+
+
+
 async createBlog(request: FastifyRequest, reply: FastifyReply) {
   const timeout = setTimeout(() => {
     request.log.error('Request timed out after 60 seconds');
@@ -74,24 +283,23 @@ async createBlog(request: FastifyRequest, reply: FastifyReply) {
     request.log.info('Starting createBlog processing');
 
     const fields: any = {};
-    const blogImages: { image_url: string }[] = [];
+    // ❌ REMOVE THIS: const blogImages: { image_url: string }[] = [];
     const uploadedUrls: { [key: string]: string } = {};
 
-    // ✅ FIXED: Increase file limit and add better limits
     const parts = await request.parts({ 
       limits: { 
-        fileSize: 10 * 1024 * 1024,  // 10MB per file
-        files: 20,  // Allow up to 20 files
-        fields: 50  // ✅ Allow more fields
+        fileSize: 10 * 1024 * 1024,
+        files: 20,
+        fields: 50
       } 
     });
     
     for await (const part of parts) {
-
-       if (!part || !part.fieldname) {
-    request.log.warn('Received invalid part without fieldname');
-    continue;
-  }
+      if (!part || !part.fieldname) {
+        request.log.warn('Received invalid part without fieldname');
+        continue;
+      }
+      
       if (part.type === 'file') {
         const fieldname = part.fieldname;
         const filename = part.filename;
@@ -134,11 +342,15 @@ async createBlog(request: FastifyRequest, reply: FastifyReply) {
           const cloudinaryUrl = uploadResult.secure_url;
           request.log.info(`✅ Uploaded ${fieldname} to Cloudinary: ${cloudinaryUrl}`);
 
-          if (fieldname.startsWith('blog_images')) {
-            blogImages.push({ image_url: cloudinaryUrl });
-          } else {
-            uploadedUrls[fieldname] = cloudinaryUrl;
-          }
+          // ❌ REMOVE THIS ENTIRE BLOCK:
+          // if (fieldname.startsWith('blog_images')) {
+          //   blogImages.push({ image_url: cloudinaryUrl });
+          // } else {
+          //   uploadedUrls[fieldname] = cloudinaryUrl;
+          // }
+          
+          // ✅ REPLACE WITH:
+          uploadedUrls[fieldname] = cloudinaryUrl;
 
         } catch (error) {
           request.log.error(`❌ Cloudinary upload error for ${fieldname}: ${String(error)}`);
@@ -149,47 +361,26 @@ async createBlog(request: FastifyRequest, reply: FastifyReply) {
           });
           return;
         }
-
-  //     }
-  //      else {
-
-  //       if (!part || typeof part !== 'object' || !('value' in part)) {
-  //   request.log.warn(`Skipping invalid field part: ${JSON.stringify(part)}`);
-  //   continue;
-  // }
-  //       // ✅ FIXED: Safely handle undefined/null values
-  //       const value = part.value;
+      } else {
+        if (!part || typeof part !== 'object' || !('value' in part)) {
+          request.log.warn(`Skipping invalid field part: ${JSON.stringify(part)}`);
+          continue;
+        }
         
-  //       // Only add field if it has a valid value
-  //       if (value !== undefined && value !== null && value !== '') {
-  //         fields[part.fieldname] = value;
-  //         request.log.info(`Received field: ${part.fieldname}=${String(value).substring(0, 50)}...`);
-  //       } else {
-  //         request.log.warn(`Skipping empty field: ${part.fieldname}`);
-  //       }
-  //     }
-  } else {
-  // ✅ FIXED: Check if part has value property first
-  if (!part || typeof part !== 'object' || !('value' in part)) {
-    request.log.warn(`Skipping invalid field part: ${JSON.stringify(part)}`);
-    continue;
-  }
-  
-  const value = part.value;
-  
-  // Only add field if it has a valid value
-  if (value !== undefined && value !== null && value !== '') {
-    fields[part.fieldname] = value;
-    request.log.info(`Received field: ${part.fieldname}=${String(value).substring(0, 50)}...`);
-  } else {
-    request.log.warn(`Skipping empty field: ${part.fieldname}`);
-  }
-}
+        const value = part.value;
+        
+        if (value !== undefined && value !== null && value !== '') {
+          fields[part.fieldname] = value;
+          request.log.info(`Received field: ${part.fieldname}=${String(value).substring(0, 50)}...`);
+        } else {
+          request.log.warn(`Skipping empty field: ${part.fieldname}`);
+        }
+      }
     }
 
     console.log('📋 uploadedUrls:', uploadedUrls);
-    console.log('📋 blogImages:', blogImages);
-    console.log('📋 fields:', Object.keys(fields)); // Just log field names, not full content
+    // ❌ REMOVE: console.log('📋 blogImages:', blogImages);
+    console.log('📋 fields:', Object.keys(fields));
 
     // Validate required fields
     const requiredFields = ['title', 'description', 'content'];
@@ -202,7 +393,6 @@ async createBlog(request: FastifyRequest, reply: FastifyReply) {
       }
     }
 
-    // ✅ FIXED: Better null handling for optional fields
     const getFieldValue = (fieldName: string): string | null => {
       const value = fields[fieldName];
       return (value && value.trim() !== '') ? value : null;
@@ -252,8 +442,8 @@ async createBlog(request: FastifyRequest, reply: FastifyReply) {
       point_four_description: getFieldValue('point_four_description'),
       point_five_description: getFieldValue('point_five_description'),
       more_blogs: getFieldValue('more_blogs'),
-      // blog_images: blogImages.length > 0 ? blogImages : [],
-      blog_images: blogImages.length > 0 ? blogImages : [],
+      // ❌ REMOVE THIS LINE:
+      // blog_images: blogImages.length > 0 ? blogImages : undefined,
     };
 
     const blog = await BlogService.createBlog(blogData);
@@ -269,6 +459,8 @@ async createBlog(request: FastifyRequest, reply: FastifyReply) {
     });
   }
 },
+
+
 
   // async createBlog(request: FastifyRequest, reply: FastifyReply) {
   //   const timeout = setTimeout(() => {

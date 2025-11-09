@@ -81,16 +81,16 @@ export const BlogService = {
           const createdBlog = await tx.blogs.create({ data: blogData });
           console.log(`✅ Created blog with ID: ${createdBlog.id}`);
 
-          if (validated.blog_images?.length) {
-            console.log('Creating blog images');
-            await tx.blog_images.createMany({
-              data: validated.blog_images.map((img) => ({
-                blog_id: createdBlog.id,
-                image_url: img.image_url,
-              })),
-            });
-            console.log('✅ Blog images created');
-          }
+          // if (validated.blog_images?.length) {
+          //   console.log('Creating blog images');
+          //   await tx.blog_images.createMany({
+          //     data: validated.blog_images.map((img) => ({
+          //       blog_id: createdBlog.id,
+          //       image_url: img.image_url,
+          //     })),
+          //   });
+          //   console.log('✅ Blog images created');
+          // }
 
           console.log('Fetching created blog');
           const result = await tx.blogs.findUnique({
@@ -254,38 +254,38 @@ export const BlogService = {
             }
           }
 
-          if (validated.blog_images) {
-            console.log('Updating blog images');
+          // if (validated.blog_images) {
+          //   console.log('Updating blog images');
             
-            // Get old blog_images to delete from Cloudinary
-            const oldBlogImages = await tx.blog_images.findMany({ 
-              where: { blog_id: id } 
-            });
+          //   // Get old blog_images to delete from Cloudinary
+          //   const oldBlogImages = await tx.blog_images.findMany({ 
+          //     where: { blog_id: id } 
+          //   });
             
-            // Delete old images from Cloudinary
-            for (const oldImage of oldBlogImages) {
-              const publicId = extractPublicIdFromUrl(oldImage.image_url);
-              if (publicId) {
-                try {
-                  await cloudinary.uploader.destroy(publicId);
-                  console.log(`✅ Deleted old blog_image from Cloudinary`);
-                } catch (error) {
-                  console.error(`⚠️ Failed to delete old blog_image:`, error);
-                }
-              }
-            }
+          //   // Delete old images from Cloudinary
+          //   for (const oldImage of oldBlogImages) {
+          //     const publicId = extractPublicIdFromUrl(oldImage.image_url);
+          //     if (publicId) {
+          //       try {
+          //         await cloudinary.uploader.destroy(publicId);
+          //         console.log(`✅ Deleted old blog_image from Cloudinary`);
+          //       } catch (error) {
+          //         console.error(`⚠️ Failed to delete old blog_image:`, error);
+          //       }
+          //     }
+          //   }
             
-            await tx.blog_images.deleteMany({ where: { blog_id: id } });
+          //   await tx.blog_images.deleteMany({ where: { blog_id: id } });
             
-            if (validated.blog_images.length > 0) {
-              await tx.blog_images.createMany({
-                data: validated.blog_images.map((img) => ({
-                  blog_id: id,
-                  image_url: img.image_url,
-                })),
-              });
-            }
-          }
+          //   if (validated.blog_images.length > 0) {
+          //     await tx.blog_images.createMany({
+          //       data: validated.blog_images.map((img) => ({
+          //         blog_id: id,
+          //         image_url: img.image_url,
+          //       })),
+          //     });
+          //   }
+          // }
 
           console.log('Fetching updated blog');
           return await tx.blogs.findUnique({
