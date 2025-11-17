@@ -133,6 +133,10 @@ model order_items {
 model orders {
   id           Int           @id @default(autoincrement())
   user_id      Int?
+   // ⬇️⬇️⬇️ ADD THESE 2 FIELDS ⬇️⬇️⬇️
+  referred_by_agent_id  Int?      // Which agent made this sale
+  agent_code_used       String?   @db.VarChar(50) // Code used: "JOHN2025"
+  // ⬆️⬆️⬆️ END FIELDS ⬆️⬆️⬆️
   total_price  Decimal       @db.Decimal(10, 2)
   status       String?       @default("Pending") @db.VarChar(50)
   created_at   DateTime?     @default(now()) @db.Timestamp(6)
@@ -142,9 +146,75 @@ model orders {
   order_items  order_items[]
   users        users?        @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   payments     payments[]
+    agent_sales  agent_sales?  // Add this relation
 
   @@schema("auth")
 }
+
+
+// Track sales made by agents (when customer uses agent code)
+model agent_sales {
+  id                    Int       @id @default(autoincrement())
+  agent_id              Int       // The agent who made the sale
+  order_id              Int       @unique // The order
+  
+  // Sale details
+  sale_amount           Decimal   @db.Decimal(10, 2) // Order total
+  commission_rate       Decimal   @db.Decimal(5, 2) // % at time of sale (5%)
+  commission_amount     Decimal   @db.Decimal(10, 2) // Actual commission ($25)
+  
+  // Status tracking
+  commission_status     String    @default("pending") @db.VarChar(50) 
+  // Values: pending, approved, paid, cancelled
+  
+  // Dates
+  sale_date             DateTime  @default(now()) @db.Timestamp(6)
+  commission_paid_at    DateTime? @db.Timestamp(6)
+  
+  // Relations
+  agent                 users     @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+  order                 orders    @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  
+  @@index([agent_id])
+  @@index([commission_status])
+  @@index([sale_date])
+  @@schema("auth")
+}
+
+
+
+// Track commission payments to agents
+model agent_payouts {
+  id                    Int       @id @default(autoincrement())
+  agent_id              Int
+  
+  // Payment details
+  amount                Decimal   @db.Decimal(10, 2) // How much paid
+  payment_method        String    @db.VarChar(50) // ecocash, bank, paynow
+  payment_reference     String?   @db.VarChar(255) // Transaction ID
+  payout_account        String?   @db.VarChar(100) // Phone/account number
+  
+  // What's included
+  sales_count           Int       // How many sales in this payout
+  from_date             DateTime  @db.Timestamp(6) // Sales from
+  to_date               DateTime  @db.Timestamp(6) // Sales to
+  
+  // Status
+  status                String    @default("pending") @db.VarChar(50)
+  // Values: pending, processing, completed, failed
+  
+  is_automatic          Boolean   @default(false) // Auto-payout or manual?
+  paid_at               DateTime? @db.Timestamp(6)
+  failed_reason         String?   @db.Text
+  created_at            DateTime  @default(now()) @db.Timestamp(6)
+  
+  agent                 users     @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+  
+  @@index([agent_id])
+  @@index([status])
+  @@schema("auth")
+}
+
 
 model password_resets {
   id          Int       @id @default(autoincrement())
@@ -165,6 +235,20 @@ model payments {
   customerMsisdn   String? 
   status         String?   @default("Pending") @db.VarChar(50)
   created_at     DateTime? @default(now()) @db.Timestamp(6)
+
+ // ⬇️⬇️⬇️ ADD THESE NEW FIELDS ⬇️⬇️⬇️
+  processor           String?   @db.VarChar(50) // "stripe", "paypal", "paynow", "ecocash"
+  processor_fee       Decimal?  @db.Decimal(10, 2) // Fee charged by processor
+  net_amount          Decimal?  @db.Decimal(10, 2) // Amount after processor fee
+  merchant_id         Int?      // Which merchant gets paid
+  is_held             Boolean?  @default(false) // Is payment on hold?
+  // ⬆️⬆️⬆️ END NEW FIELDS ⬆️⬆️⬆️
+
+   payment_hold        payment_holds?
+  // ⬇️⬇️⬇️ ADD THIS RELATION ⬇️⬇️⬇️
+  merchant            users?    @relation("MerchantPaymentsReceived", fields: [merchant_id], references: [id])
+  // ⬆️⬆️⬆️ END NEW RELATION ⬆️⬆️⬆️
+
   orders         orders?   @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users          users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
@@ -183,14 +267,64 @@ model products {
   updated_at          DateTime?     @default(now()) @db.Timestamp(6)
   discount_percentage Int?          @default(0)
   views               Int?          @default(0)
+  // ⬇️⬇️⬇️ ADD THESE NEW FIELDS FOR APPROVAL ⬇️⬇️⬇️
+  uploaded_by         Int?          // Which client_admin uploaded this
+  approval_status     String        @default("pending") @db.VarChar(50) // pending, approved, rejected
+  approved_by         Int?          // Which super_admin approved it
+  approved_at         DateTime?     @db.Timestamp(6)
+  rejection_reason    String?       @db.Text
+  approval_deadline   DateTime?     @db.Timestamp(6) // Must approve within 7 days
+  is_visible          Boolean       @default(false) // Only visible after approval
+  // ⬆️⬆️⬆️ END NEW FIELDS ⬆️⬆️⬆️
   cart                cart[]
   order_items         order_items[]
   categories          categories?   @relation(fields: [category_id], references: [id], onUpdate: NoAction)
   reviews             reviews[]
    product_views product_views[]
 
+   // ⬇️⬇️⬇️ ADD THESE NEW RELATIONS ⬇️⬇️⬇️
+  uploaded_by_user    users?        @relation("ProductsUploaded", fields: [uploaded_by], references: [id])
+  approved_by_user    users?        @relation("ProductsApproved", fields: [approved_by], references: [id])
+  business_documents  business_documents[]
+  // ⬆️⬆️⬆️ END NEW RELATIONS ⬆️⬆️⬆️
+
+  @@index([uploaded_by])
+  @@index([approval_status])
   @@schema("auth")
 }
+
+
+model business_documents {
+  id                  Int       @id @default(autoincrement())
+  merchant_id         Int       // Which client_admin uploaded
+  product_id          Int?      // Optional: specific product
+  
+  // Document info
+  document_type       String    @db.VarChar(100) // business_license, tax_cert, registration
+  document_url        String    @db.VarChar(500)
+  document_name       String?   @db.VarChar(255)
+  file_size           Int?
+  
+  // Approval
+  approval_status     String    @default("pending") @db.VarChar(50)
+  approved_by         Int?
+  approved_at         DateTime? @db.Timestamp(6)
+  rejection_reason    String?   @db.Text
+  
+  uploaded_at         DateTime  @default(now()) @db.Timestamp(6)
+  expires_at          DateTime? @db.Timestamp(6)
+  
+  // Relations
+  merchant            users     @relation("MerchantDocuments", fields: [merchant_id], references: [id], onDelete: Cascade)
+  approved_by_user    users?    @relation("DocumentsApproved", fields: [approved_by], references: [id])
+  product             products? @relation(fields: [product_id], references: [id])
+  
+  @@index([merchant_id])
+  @@index([approval_status])
+  @@schema("auth")
+}
+
+
 
 model reports {
   id             Int       @id @default(autoincrement())
@@ -414,6 +548,51 @@ model multimedia_data {
 
 
 
+
+
+// 🆕 Hold merchant payments using REAL payment processor features
+model payment_holds {
+  id                    Int       @id @default(autoincrement())
+  payment_id            Int       @unique
+  order_id              Int
+  amount                Decimal   @db.Decimal(10, 2)
+  merchant_id           Int       // The client_admin who will receive payment
+  
+  // Real Payment Processor Integration
+  processor             String    @db.VarChar(50) // "stripe", "paypal", "paynow", "ecocash", etc.
+  processor_payment_id  String?   @db.VarChar(255) // Payment ID from processor
+  processor_transfer_id String?   @db.VarChar(255) // Transfer/payout ID (when released)
+  
+  // Merchant Payout Details
+  merchant_account_id   String?   @db.VarChar(255) // Their Stripe account, PayPal email, etc.
+  
+  // Hold Management
+  hold_until            DateTime  @db.Timestamp(6) // Auto-release after 7-14 days
+  status                String    @default("holding") @db.VarChar(50) // holding, released, disputed, refunded
+  released_at           DateTime? @db.Timestamp(6)
+  dispute_reason        String?   @db.Text
+  
+  // For disputes/chargebacks
+  can_dispute_until     DateTime? @db.Timestamp(6) // Customer can dispute within X days
+  
+  created_at            DateTime  @default(now()) @db.Timestamp(6)
+  updated_at            DateTime  @updatedAt @db.Timestamp(6)
+  
+  payment               payments  @relation(fields: [payment_id], references: [id], onDelete: Cascade)
+  merchant              users     @relation("MerchantPayments", fields: [merchant_id], references: [id], onDelete: Cascade)
+  
+  @@index([hold_until])
+  @@index([status])
+  @@index([merchant_id])
+  @@index([processor])
+  @@index([processor_payment_id])
+  @@schema("auth")
+}
+
+
+
+
+
 model users {
   id                       Int                @id @default(autoincrement())
   username                 String?            @unique @db.VarChar(100) // Made optional for social logins
@@ -431,6 +610,52 @@ model users {
   physical_address         String?            @db.Text
   geo_latitude             Float?             // Latitude coordinate
   geo_longitude            Float?             // Longitude coordinate
+
+
+  can_upload_products      Boolean?           @default(true)
+
+    // ⬇️⬇️⬇️ ADD MERCHANT PAYMENT ACCOUNT INFO ⬇️⬇️⬇️
+  // For client_admins (merchants) to receive payments
+  stripe_account_id        String?            @unique @db.VarChar(255) // Stripe Connect account
+  paypal_email             String?            @db.VarChar(255)
+  ecocash_number           String?            @db.VarChar(20)
+  paynow_merchant_id       String?            @db.VarChar(255)
+  bank_account_number      String?            @db.VarChar(50)
+  bank_name                String?            @db.VarChar(100)
+  payment_method_verified  Boolean?           @default(false) // Has admin verified their payout method?
+  // ⬆️⬆️⬆️ END MERCHANT PAYMENT INFO ⬆️⬆️⬆️
+
+
+    // ⬇️⬇️⬇️ ADD ONLY THESE AGENT FIELDS ⬇️⬇️⬇️
+  // FOR AGENTS ONLY (salespeople who promote products)
+  agent_code               String?            @unique @db.VarChar(50) // e.g., "JOHN2025"
+  commission_rate          Decimal?           @default(5.0) @db.Decimal(5, 2) // Default 5%
+  total_sales_value        Decimal?           @default(0) @db.Decimal(15, 2) // Total $ sold
+  total_commission_earned  Decimal?           @default(0) @db.Decimal(15, 2) // Total commission
+  pending_commission       Decimal?           @default(0) @db.Decimal(10, 2) // Not paid yet
+  paid_commission          Decimal?           @default(0) @db.Decimal(10, 2) // Already paid
+  total_orders_referred    Int?               @default(0) // How many sales made
+  agent_status             String?            @default("active") @db.VarChar(50) // active, suspended
+  
+  // Agent payout info (for auto-payments)
+  agent_payout_method      String?            @db.VarChar(50) // "ecocash", "bank", "paynow"
+  agent_payout_number      String?            @db.VarChar(100) // Phone or account number
+  agent_payout_name        String?            @db.VarChar(200) // Account holder name
+  auto_payout_enabled      Boolean?           @default(false) // Enable auto-payments?
+  min_payout_amount        Decimal?           @default(10.0) @db.Decimal(10, 2) // Min $10 to payout
+  // ⬆️⬆️⬆️ END AGENT FIELDS ⬆️⬆️⬆️
+
+
+   // ⬇️⬇️⬇️ ADD ONLY THESE AGENT FIELDS ⬇️⬇️⬇️
+   products_uploaded        products[]              @relation("ProductsUploaded")
+  products_approved        products[]              @relation("ProductsApproved")
+  business_documents       business_documents[]    @relation("MerchantDocuments")
+  documents_approved       business_documents[]    @relation("DocumentsApproved")
+   // ⬆️⬆️⬆️ END AGENT FIELDS ⬆️⬆️⬆️
+
+   // In RELATIONS section, add these:
+  merchant_payment_holds   payment_holds[]    @relation("MerchantPayments")
+  payments_received        payments[]         @relation("MerchantPaymentsReceived")
   
   // Social authentication providers
   auth_provider            String             @default("email") @db.VarChar(50) // email, google, apple, facebook
@@ -455,6 +680,8 @@ model users {
   refresh_token_expires    DateTime?          @db.Timestamp(6)
   
   // Relations
+  agent_sales              agent_sales[]
+  agent_payouts            agent_payouts[]
   blogs                    blogs[]
   cart                     cart[]
   orders                   orders[]

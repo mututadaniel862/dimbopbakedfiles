@@ -12,6 +12,11 @@ export declare const OrderService: {
             payment_method: string | null;
             transaction_id: string;
             customerMsisdn: string | null;
+            merchant_id: number | null;
+            processor: string | null;
+            processor_fee: Prisma.Decimal | null;
+            net_amount: Prisma.Decimal | null;
+            is_held: boolean | null;
         }[];
         order_items: {
             id: number;
@@ -38,6 +43,8 @@ export declare const OrderService: {
         user_id: number | null;
         total_price: Prisma.Decimal;
         browser_used: string | null;
+        referred_by_agent_id: number | null;
+        agent_code_used: string | null;
     })[]>;
     getOrderById(id: number): Promise<({
         payments: {
@@ -49,6 +56,11 @@ export declare const OrderService: {
             payment_method: string | null;
             transaction_id: string;
             customerMsisdn: string | null;
+            merchant_id: number | null;
+            processor: string | null;
+            processor_fee: Prisma.Decimal | null;
+            net_amount: Prisma.Decimal | null;
+            is_held: boolean | null;
         }[];
         order_items: {
             id: number;
@@ -75,6 +87,8 @@ export declare const OrderService: {
         user_id: number | null;
         total_price: Prisma.Decimal;
         browser_used: string | null;
+        referred_by_agent_id: number | null;
+        agent_code_used: string | null;
     }) | null>;
     createOrder(data: z.infer<typeof orderSchema>): Promise<{
         payments: {
@@ -86,6 +100,11 @@ export declare const OrderService: {
             payment_method: string | null;
             transaction_id: string;
             customerMsisdn: string | null;
+            merchant_id: number | null;
+            processor: string | null;
+            processor_fee: Prisma.Decimal | null;
+            net_amount: Prisma.Decimal | null;
+            is_held: boolean | null;
         }[];
         order_items: {
             id: number;
@@ -112,6 +131,8 @@ export declare const OrderService: {
         user_id: number | null;
         total_price: Prisma.Decimal;
         browser_used: string | null;
+        referred_by_agent_id: number | null;
+        agent_code_used: string | null;
     }>;
     updateOrder(id: number, data: Partial<z.infer<typeof orderSchema>>): Promise<{
         status: string | null;
@@ -121,6 +142,8 @@ export declare const OrderService: {
         user_id: number | null;
         total_price: Prisma.Decimal;
         browser_used: string | null;
+        referred_by_agent_id: number | null;
+        agent_code_used: string | null;
     }>;
     deleteOrder(id: number): Promise<{
         status: string | null;
@@ -130,6 +153,8 @@ export declare const OrderService: {
         user_id: number | null;
         total_price: Prisma.Decimal;
         browser_used: string | null;
+        referred_by_agent_id: number | null;
+        agent_code_used: string | null;
     }>;
     addOrderItem(orderId: number, itemData: {
         product_id: number | null;
@@ -173,6 +198,8 @@ export declare const OrderService: {
         user_id: number | null;
         total_price: Prisma.Decimal;
         browser_used: string | null;
+        referred_by_agent_id: number | null;
+        agent_code_used: string | null;
     }>;
     getOrdersByUserId(userId: number, page: number, limit: number, status?: string): Promise<({
         payments: {
@@ -184,6 +211,11 @@ export declare const OrderService: {
             payment_method: string | null;
             transaction_id: string;
             customerMsisdn: string | null;
+            merchant_id: number | null;
+            processor: string | null;
+            processor_fee: Prisma.Decimal | null;
+            net_amount: Prisma.Decimal | null;
+            is_held: boolean | null;
         }[];
         order_items: {
             id: number;
@@ -210,5 +242,7 @@ export declare const OrderService: {
         user_id: number | null;
         total_price: Prisma.Decimal;
         browser_used: string | null;
+        referred_by_agent_id: number | null;
+        agent_code_used: string | null;
     })[]>;
 };

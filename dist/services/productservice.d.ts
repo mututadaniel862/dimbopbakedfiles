@@ -45,6 +45,13 @@ export declare const getAllProducts: () => Promise<({
     image_url: string | null;
     discount_percentage: number | null;
     views: number | null;
+    uploaded_by: number | null;
+    approval_status: string;
+    approved_by: number | null;
+    approved_at: Date | null;
+    rejection_reason: string | null;
+    approval_deadline: Date | null;
+    is_visible: boolean;
 })[]>;
 export declare const getProductById: (id: number) => Promise<({
     cart: {
@@ -90,6 +97,13 @@ export declare const getProductById: (id: number) => Promise<({
     image_url: string | null;
     discount_percentage: number | null;
     views: number | null;
+    uploaded_by: number | null;
+    approval_status: string;
+    approved_by: number | null;
+    approved_at: Date | null;
+    rejection_reason: string | null;
+    approval_deadline: Date | null;
+    is_visible: boolean;
 }) | null>;
 export declare const createProduct: (data: z.infer<typeof productSchema>, file?: {
     buffer: Buffer;
@@ -139,6 +153,13 @@ export declare const createProduct: (data: z.infer<typeof productSchema>, file?:
     image_url: string | null;
     discount_percentage: number | null;
     views: number | null;
+    uploaded_by: number | null;
+    approval_status: string;
+    approved_by: number | null;
+    approved_at: Date | null;
+    rejection_reason: string | null;
+    approval_deadline: Date | null;
+    is_visible: boolean;
 }>;
 export declare const addProductToCart: (userId: number, productId: number, quantity: number) => Promise<{
     products: {
@@ -153,6 +174,13 @@ export declare const addProductToCart: (userId: number, productId: number, quant
         image_url: string | null;
         discount_percentage: number | null;
         views: number | null;
+        uploaded_by: number | null;
+        approval_status: string;
+        approved_by: number | null;
+        approved_at: Date | null;
+        rejection_reason: string | null;
+        approval_deadline: Date | null;
+        is_visible: boolean;
     } | null;
 } & {
     id: number;
@@ -210,6 +238,13 @@ export declare const getUserCart: (userId: number) => Promise<{
             image_url: string | null;
             discount_percentage: number | null;
             views: number | null;
+            uploaded_by: number | null;
+            approval_status: string;
+            approved_by: number | null;
+            approved_at: Date | null;
+            rejection_reason: string | null;
+            approval_deadline: Date | null;
+            is_visible: boolean;
         }) | null;
     } & {
         id: number;
@@ -274,6 +309,13 @@ export declare const updateProduct: (id: number, data: Partial<z.infer<typeof pr
     image_url: string | null;
     discount_percentage: number | null;
     views: number | null;
+    uploaded_by: number | null;
+    approval_status: string;
+    approved_by: number | null;
+    approved_at: Date | null;
+    rejection_reason: string | null;
+    approval_deadline: Date | null;
+    is_visible: boolean;
 }>;
 export declare const deleteProduct: (id: number) => Promise<{
     name: string;
@@ -287,6 +329,13 @@ export declare const deleteProduct: (id: number) => Promise<{
     image_url: string | null;
     discount_percentage: number | null;
     views: number | null;
+    uploaded_by: number | null;
+    approval_status: string;
+    approved_by: number | null;
+    approved_at: Date | null;
+    rejection_reason: string | null;
+    approval_deadline: Date | null;
+    is_visible: boolean;
 }>;
 export declare const getAllProductImages: () => Promise<(string | null)[]>;
 export declare class ReviewService {
@@ -451,6 +500,13 @@ export declare class ProductViewService {
         image_url: string | null;
         discount_percentage: number | null;
         views: number | null;
+        uploaded_by: number | null;
+        approval_status: string;
+        approved_by: number | null;
+        approved_at: Date | null;
+        rejection_reason: string | null;
+        approval_deadline: Date | null;
+        is_visible: boolean;
     }) | null>;
     static getMostViewedProducts(limit?: number): Promise<({
         _count: {
@@ -469,5 +525,12 @@ export declare class ProductViewService {
         image_url: string | null;
         discount_percentage: number | null;
         views: number | null;
+        uploaded_by: number | null;
+        approval_status: string;
+        approved_by: number | null;
+        approved_at: Date | null;
+        rejection_reason: string | null;
+        approval_deadline: Date | null;
+        is_visible: boolean;
     })[]>;
 }

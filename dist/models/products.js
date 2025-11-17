@@ -17,6 +17,15 @@ exports.productSchema = zod_1.z.object({
     updated_at: zod_1.z.coerce.date().optional(),
     discount_percentage: zod_1.z.number().optional().default(0),
     views: zod_1.z.number().optional().default(0),
+    // ⬇️⬇️⬇️ NEW APPROVAL FIELDS ⬇️⬇️⬇️
+    uploaded_by: zod_1.z.number().optional(),
+    approval_status: zod_1.z.enum(['pending', 'approved', 'rejected']).default('pending'),
+    approved_by: zod_1.z.number().optional(),
+    approved_at: zod_1.z.coerce.date().optional(),
+    rejection_reason: zod_1.z.string().optional(),
+    approval_deadline: zod_1.z.coerce.date().optional(),
+    is_visible: zod_1.z.boolean().default(false),
+    // ⬆️⬆️⬆️ END NEW FIELDS ⬆️⬆️⬆️
     cart: zod_1.z.array(cart_1.cartSchema).optional(),
     order_items: zod_1.z.array(orderitem_1.orderItemSchema).optional(),
     category_name: zod_1.z.string().optional(),

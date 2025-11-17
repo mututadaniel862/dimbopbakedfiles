@@ -9,6 +9,13 @@ export declare const productSchema: z.ZodObject<{
     updated_at: z.ZodOptional<z.ZodDate>;
     discount_percentage: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
     views: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
+    uploaded_by: z.ZodOptional<z.ZodNumber>;
+    approval_status: z.ZodDefault<z.ZodEnum<["pending", "approved", "rejected"]>>;
+    approved_by: z.ZodOptional<z.ZodNumber>;
+    approved_at: z.ZodOptional<z.ZodDate>;
+    rejection_reason: z.ZodOptional<z.ZodString>;
+    approval_deadline: z.ZodOptional<z.ZodDate>;
+    is_visible: z.ZodDefault<z.ZodBoolean>;
     cart: z.ZodOptional<z.ZodArray<z.ZodObject<{
         user_id: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
         product_id: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
@@ -109,6 +116,8 @@ export declare const productSchema: z.ZodObject<{
     stock_quantity: number;
     discount_percentage: number;
     views: number;
+    approval_status: "pending" | "approved" | "rejected";
+    is_visible: boolean;
     description?: string | undefined;
     created_at?: Date | undefined;
     updated_at?: Date | undefined;
@@ -142,6 +151,11 @@ export declare const productSchema: z.ZodObject<{
         user_agent?: string | undefined;
     }[] | undefined;
     image_url?: string | undefined;
+    uploaded_by?: number | undefined;
+    approved_by?: number | undefined;
+    approved_at?: Date | undefined;
+    rejection_reason?: string | undefined;
+    approval_deadline?: Date | undefined;
     order_items?: {
         price: number;
         quantity: number;
@@ -188,6 +202,13 @@ export declare const productSchema: z.ZodObject<{
     image_url?: string | undefined;
     discount_percentage?: number | undefined;
     views?: number | undefined;
+    uploaded_by?: number | undefined;
+    approval_status?: "pending" | "approved" | "rejected" | undefined;
+    approved_by?: number | undefined;
+    approved_at?: Date | undefined;
+    rejection_reason?: string | undefined;
+    approval_deadline?: Date | undefined;
+    is_visible?: boolean | undefined;
     order_items?: {
         price: number;
         quantity: number;

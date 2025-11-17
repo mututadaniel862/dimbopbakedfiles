@@ -17,6 +17,17 @@ export const productSchema = z.object({
   updated_at: z.coerce.date().optional(),
   discount_percentage: z.number().optional().default(0),
   views: z.number().optional().default(0),
+
+  // ⬇️⬇️⬇️ NEW APPROVAL FIELDS ⬇️⬇️⬇️
+  uploaded_by: z.number().optional(),
+  approval_status: z.enum(['pending', 'approved', 'rejected']).default('pending'),
+  approved_by: z.number().optional(),
+  approved_at: z.coerce.date().optional(),
+  rejection_reason: z.string().optional(),
+  approval_deadline: z.coerce.date().optional(),
+  is_visible: z.boolean().default(false),
+  // ⬆️⬆️⬆️ END NEW FIELDS ⬆️⬆️⬆️
+
   cart: z.array(cartSchema).optional(),
   order_items: z.array(orderItemSchema).optional(), 
   category_name: z.string().optional(), 
