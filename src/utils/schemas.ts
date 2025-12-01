@@ -46,6 +46,39 @@ export const AuthProvider = z.enum(['email', 'google', 'apple', 'facebook']);
 export type AuthProvider = z.infer<typeof AuthProvider>;
 
 // ============================================
+// NEW AGENT REGISTRATION - DIRECT SIGN UP
+// ============================================
+export const registerNewAgentSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters' }).max(100),
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  phone: z.string()
+    .min(9, { message: 'Phone number too short' })
+    .max(15, { message: 'Phone number too long' })
+    .regex(flexiblePhoneRegex, {
+      message: 'Please enter a valid phone number'
+    }),
+  password: z.string()
+    .min(6, { message: 'Password must be at least 6 characters' })
+    .regex(simplePasswordRegex, {
+      message: 'Password must contain at least 1 number'
+    }),
+  confirmPassword: z.string(),
+  commissionRate: z.number()
+    .min(0.1)
+    .max(50)
+    .optional()
+    .default(5.0),
+  payoutMethod: z.enum(['ecocash', 'bank', 'paynow', 'onemoney', 'telecash']).optional(),
+  payoutNumber: z.string().min(9).optional(),
+  payoutName: z.string().optional(),
+  minPayoutAmount: z.number().min(1).optional().default(10.0),
+  role: z.literal('agent').optional()
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword']
+});
+
+// ============================================
 // AGENT REGISTRATION & MANAGEMENT SCHEMAS
 // ============================================
 export const agentRegisterSchema = z.object({
@@ -345,6 +378,7 @@ export const schemas = {
   
   // ✅ Agent schemas
   agentRegisterSchema,
+  registerNewAgentSchema,
   recordAgentSaleSchema,
   createPayoutSchema,
   approveCommissionSchema,

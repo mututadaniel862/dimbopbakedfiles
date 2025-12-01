@@ -5,22 +5,22 @@ export declare const SearchQuerySchema: z.ZodObject<{
     limit: z.ZodDefault<z.ZodOptional<z.ZodString>>;
     type: z.ZodOptional<z.ZodEnum<["product", "blog"]>>;
 }, "strip", z.ZodTypeAny, {
-    limit: string;
     q: string;
     page: string;
+    limit: string;
     type?: "product" | "blog" | undefined;
 }, {
     q: string;
     type?: "product" | "blog" | undefined;
-    limit?: string | undefined;
     page?: string | undefined;
+    limit?: string | undefined;
 }>;
 export declare const SuggestionsQuerySchema: z.ZodObject<{
     q: z.ZodString;
     limit: z.ZodDefault<z.ZodOptional<z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
-    limit: string;
     q: string;
+    limit: string;
 }, {
     q: string;
     limit?: string | undefined;
@@ -119,14 +119,14 @@ export declare const GlobalSearchResponseSchema: z.ZodObject<{
         hasNext: z.ZodBoolean;
         hasPrev: z.ZodBoolean;
     }, "strip", z.ZodTypeAny, {
-        limit: number;
         page: number;
+        limit: number;
         totalPages: number;
         hasNext: boolean;
         hasPrev: boolean;
     }, {
-        limit: number;
         page: number;
+        limit: number;
         totalPages: number;
         hasNext: boolean;
         hasPrev: boolean;
@@ -152,8 +152,8 @@ export declare const GlobalSearchResponseSchema: z.ZodObject<{
     }[];
     total: number;
     pagination?: {
-        limit: number;
         page: number;
+        limit: number;
         totalPages: number;
         hasNext: boolean;
         hasPrev: boolean;
@@ -179,8 +179,8 @@ export declare const GlobalSearchResponseSchema: z.ZodObject<{
     }[];
     total: number;
     pagination?: {
-        limit: number;
         page: number;
+        limit: number;
         totalPages: number;
         hasNext: boolean;
         hasPrev: boolean;

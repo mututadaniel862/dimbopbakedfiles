@@ -7,7 +7,33 @@ export default async (app: FastifyInstance) => {
   // ============================================
   // AGENT REGISTRATION & STATS
   // ============================================
-  
+
+  // NEW AGENT REGISTRATION (No auth required)
+// ============================================
+// NEW AGENT DIRECT REGISTRATION (NO AUTH)
+// ============================================
+app.post('/register-new', {
+  handler: agentController.registerNewAgent,
+  schema: {
+    body: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        email: { type: 'string', format: 'email' },
+        phone: { type: 'string' },
+        password: { type: 'string', minLength: 6 },
+        confirmPassword: { type: 'string' },
+        commissionRate: { type: 'number', minimum: 0.1, maximum: 50 },
+        payoutMethod: { type: 'string', enum: ['ecocash', 'bank', 'paynow', 'onemoney', 'telecash'] },
+        payoutNumber: { type: 'string' },
+        payoutName: { type: 'string' },
+        minPayoutAmount: { type: 'number', minimum: 1 }
+      },
+      required: ['name', 'email', 'phone', 'password', 'confirmPassword']
+    }
+  }
+});
+     
   // Register as agent
   app.post('/register', {
     preHandler: [authenticate],

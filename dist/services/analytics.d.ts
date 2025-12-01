@@ -9,28 +9,28 @@ type DeviceStats = {
 export declare const AnalyticsService: {
     createAnalytics(data: UserAnalytics): Promise<{
         id: number;
-        created_at: Date | null;
         user_id: number | null;
         browser: string | null;
         device: string | null;
+        created_at: Date | null;
     }>;
     getAllAnalytics(page?: number, limit?: number, deviceType?: string): Promise<{
         id: number;
-        created_at: Date | null;
         user_id: number | null;
         browser: string | null;
         device: string | null;
+        created_at: Date | null;
     }[]>;
     getAnalyticsById(id: number): Promise<({
         users: {
+            id: number;
+            username: string | null;
+            name: string | null;
+            merchant_name: string | null;
             email: string;
             phone: string | null;
-            role: string | null;
-            name: string | null;
-            username: string | null;
-            id: number;
-            merchant_name: string | null;
             password_hash: string | null;
+            role: string | null;
             is_active: boolean | null;
             physical_address: string | null;
             geo_latitude: number | null;
@@ -75,10 +75,10 @@ export declare const AnalyticsService: {
         } | null;
     } & {
         id: number;
-        created_at: Date | null;
         user_id: number | null;
         browser: string | null;
         device: string | null;
+        created_at: Date | null;
     }) | null>;
     getDeviceTypeStats(): Promise<DeviceStats>;
     getDeviceType(device: string | null): keyof DeviceStats;

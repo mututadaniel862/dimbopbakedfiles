@@ -1,9 +1,89 @@
 // src/services/agentService.ts
 import { PrismaClient, Prisma } from '@prisma/client';
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 export class AgentService {
+
+
+
+
+
+static async registerNewAgent(agentData: {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  commissionRate?: number;
+  payoutMethod?: string;
+  payoutNumber?: string;
+  payoutName?: string;
+  minPayoutAmount?: number;
+}) {
+  // Check if email already exists
+  const existingUser = await prisma.users.findUnique({
+    where: { email: agentData.email }
+  });
+
+  if (existingUser) {
+    throw new Error('Email already registered');
+  }
+
+  // Generate unique agent code
+  const baseCode = agentData.name.toUpperCase().slice(0, 6);
+  const year = new Date().getFullYear();
+  let agentCode = `${baseCode}${year}`;
+  let counter = 1;
+
+  while (await prisma.users.findUnique({ where: { agent_code: agentCode } })) {
+    agentCode = `${baseCode}${year}${counter}`;
+    counter++;
+  }
+
+  // ✅ HASH PASSWORD HERE
+  const hashedPassword = await bcrypt.hash(agentData.password, 10);
+
+  // Create new agent user
+  return await prisma.users.create({
+    data: {
+      name: agentData.name,
+      username: agentData.name.toLowerCase().replace(/\s+/g, '_'),
+      email: agentData.email,
+      phone: agentData.phone,
+      
+      // ✅ Correct field name
+      password_hash: hashedPassword,
+
+      role: 'agent',
+      auth_provider: 'email',
+      is_active: true,
+      email_verified: false,
+
+      // Agent-specific fields
+      agent_code: agentCode,
+      commission_rate: agentData.commissionRate ?? 5.0,
+      agent_payout_method: agentData.payoutMethod ?? null,
+      agent_payout_number: agentData.payoutNumber ?? null,
+      agent_payout_name: agentData.payoutName ?? agentData.name,
+      min_payout_amount: agentData.minPayoutAmount ?? 10.0,
+      agent_status: 'active',
+      total_sales_value: 0,
+      total_commission_earned: 0,
+      pending_commission: 0,
+      paid_commission: 0,
+      total_orders_referred: 0,
+    }
+  });
+}
+
+
+
+
+
+
+
+  
   // Generate unique agent code
   static async generateAgentCode(username: string): Promise<string> {
     const baseCode = username.toUpperCase().slice(0, 6);

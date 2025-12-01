@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.schemas = exports.generateRandomPassword = exports.generateOTP = exports.zodToJsonSchema = exports.updateUserSchema = exports.forgotPasswordSchema = exports.resetPasswordSchema = exports.changePasswordSchema = exports.loginSchema = exports.digitalMarketerAdminLoginSchema = exports.superAdminLoginSchema = exports.verifyOTPSchema = exports.requestOTPSchema = exports.clientRegisterSchema = exports.clientAdminLoginSchema = exports.clientAdminRegisterSchema = exports.AuthProvider = exports.UserRole = exports.PREDEFINED_USERS = void 0;
+exports.schemas = exports.generateRandomPassword = exports.generateOTP = exports.zodToJsonSchema = exports.updateUserSchema = exports.forgotPasswordSchema = exports.resetPasswordSchema = exports.changePasswordSchema = exports.loginSchema = exports.digitalMarketerAdminLoginSchema = exports.superAdminLoginSchema = exports.verifyOTPSchema = exports.requestOTPSchema = exports.clientRegisterSchema = exports.clientAdminLoginSchema = exports.clientAdminRegisterSchema = exports.completePayoutSchema = exports.approveCommissionSchema = exports.createPayoutSchema = exports.recordAgentSaleSchema = exports.agentRegisterSchema = exports.registerNewAgentSchema = exports.AuthProvider = exports.UserRole = exports.PREDEFINED_USERS = void 0;
 const zod_1 = require("zod");
 const zod_to_json_schema_1 = require("zod-to-json-schema");
 // SIMPLIFIED: Just require 6+ characters with at least 1 number
@@ -34,13 +34,98 @@ exports.PREDEFINED_USERS = {
             role: 'digital_marketer_admin'
         }
     ]
-    // NO predefined client_admin or clients - they ALL register themselves
 };
 // ============================================
 // USER ROLES AND TYPES
 // ============================================
 exports.UserRole = zod_1.z.enum(['super_admin', 'digital_marketer_admin', 'client_admin', 'client']);
 exports.AuthProvider = zod_1.z.enum(['email', 'google', 'apple', 'facebook']);
+// ============================================
+// NEW AGENT REGISTRATION - DIRECT SIGN UP
+// ============================================
+exports.registerNewAgentSchema = zod_1.z.object({
+    name: zod_1.z.string().min(2, { message: 'Name must be at least 2 characters' }).max(100),
+    email: zod_1.z.string().email({ message: 'Please enter a valid email address' }),
+    phone: zod_1.z.string()
+        .min(9, { message: 'Phone number too short' })
+        .max(15, { message: 'Phone number too long' })
+        .regex(flexiblePhoneRegex, {
+        message: 'Please enter a valid phone number'
+    }),
+    password: zod_1.z.string()
+        .min(6, { message: 'Password must be at least 6 characters' })
+        .regex(simplePasswordRegex, {
+        message: 'Password must contain at least 1 number'
+    }),
+    confirmPassword: zod_1.z.string(),
+    commissionRate: zod_1.z.number()
+        .min(0.1)
+        .max(50)
+        .optional()
+        .default(5.0),
+    payoutMethod: zod_1.z.enum(['ecocash', 'bank', 'paynow', 'onemoney', 'telecash']).optional(),
+    payoutNumber: zod_1.z.string().min(9).optional(),
+    payoutName: zod_1.z.string().optional(),
+    minPayoutAmount: zod_1.z.number().min(1).optional().default(10.0),
+    role: zod_1.z.literal('agent').optional()
+}).refine(data => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword']
+});
+// ============================================
+// AGENT REGISTRATION & MANAGEMENT SCHEMAS
+// ============================================
+exports.agentRegisterSchema = zod_1.z.object({
+    commissionRate: zod_1.z.number()
+        .min(0, { message: 'Commission rate must be at least 0%' })
+        .max(100, { message: 'Commission rate cannot exceed 100%' })
+        .optional()
+        .default(5.0),
+    payoutMethod: zod_1.z.enum(['ecocash', 'bank', 'paynow', 'onemoney', 'telecash'])
+        .optional(),
+    payoutNumber: zod_1.z.string()
+        .min(9, { message: 'Payout number too short' })
+        .max(20, { message: 'Payout number too long' })
+        .optional(),
+    payoutName: zod_1.z.string()
+        .min(2, { message: 'Payout name must be at least 2 characters' })
+        .max(100)
+        .optional(),
+    minPayoutAmount: zod_1.z.number()
+        .min(1, { message: 'Minimum payout amount must be at least $1' })
+        .optional()
+        .default(10.0)
+});
+exports.recordAgentSaleSchema = zod_1.z.object({
+    orderId: zod_1.z.number().int().positive({ message: 'Valid order ID is required' }),
+    agentCode: zod_1.z.string()
+        .min(4, { message: 'Agent code must be at least 4 characters' })
+        .max(20, { message: 'Agent code too long' })
+});
+exports.createPayoutSchema = zod_1.z.object({
+    agentId: zod_1.z.number().int().positive({ message: 'Valid agent ID is required' }),
+    amount: zod_1.z.number()
+        .positive({ message: 'Payout amount must be greater than 0' })
+        .min(1, { message: 'Minimum payout is $1' }),
+    paymentMethod: zod_1.z.enum(['ecocash', 'bank', 'paynow', 'onemoney', 'telecash']),
+    paymentReference: zod_1.z.string().optional(),
+    payoutAccount: zod_1.z.string().optional(),
+    fromDate: zod_1.z.string().refine(date => !isNaN(Date.parse(date)), {
+        message: 'Invalid from date'
+    }),
+    toDate: zod_1.z.string().refine(date => !isNaN(Date.parse(date)), {
+        message: 'Invalid to date'
+    })
+}).refine(data => new Date(data.fromDate) <= new Date(data.toDate), {
+    message: 'From date must be before or equal to to date',
+    path: ['toDate']
+});
+exports.approveCommissionSchema = zod_1.z.object({
+    saleId: zod_1.z.number().int().positive({ message: 'Valid sale ID is required' })
+});
+exports.completePayoutSchema = zod_1.z.object({
+    payoutId: zod_1.z.number().int().positive({ message: 'Valid payout ID is required' })
+});
 // ============================================
 // CLIENT ADMIN (MERCHANT) REGISTRATION - GOOGLE SIGN-UP
 // ============================================
@@ -58,9 +143,9 @@ exports.clientAdminRegisterSchema = zod_1.z.object({
         latitude: zod_1.z.number().min(-90).max(90),
         longitude: zod_1.z.number().min(-180).max(180)
     }),
-    authProvider: zod_1.z.literal('google'), // Client admins MUST use Google
-    googleId: zod_1.z.string().optional(), // Google user ID
-    password: zod_1.z.string().optional(), // Not needed for Google auth
+    authProvider: zod_1.z.literal('google'),
+    googleId: zod_1.z.string().optional(),
+    password: zod_1.z.string().optional(),
     role: zod_1.z.literal('client_admin')
 });
 // ============================================
@@ -84,7 +169,7 @@ exports.clientRegisterSchema = zod_1.z.object({
         .regex(flexiblePhoneRegex, {
         message: 'Please enter a valid phone number'
     }),
-    authProvider: exports.AuthProvider, // google, apple, facebook, or email
+    authProvider: exports.AuthProvider,
     googleId: zod_1.z.string().optional(),
     appleId: zod_1.z.string().optional(),
     facebookId: zod_1.z.string().optional(),
@@ -93,7 +178,7 @@ exports.clientRegisterSchema = zod_1.z.object({
         .regex(simplePasswordRegex, {
         message: 'Password must contain at least 1 number'
     })
-        .optional(), // Only required if authProvider is 'email'
+        .optional(),
     confirmPassword: zod_1.z.string().optional(),
     role: zod_1.z.literal('client')
 }).refine(data => {
@@ -125,7 +210,7 @@ exports.verifyOTPSchema = zod_1.z.object({
     otp: zod_1.z.string().length(6, { message: 'OTP must be 6 digits' })
 });
 // ============================================
-// SUPER ADMIN LOGIN (Must provide phone on first login)
+// SUPER ADMIN LOGIN
 // ============================================
 exports.superAdminLoginSchema = zod_1.z.object({
     username: zod_1.z.literal('super_admin'),
@@ -140,7 +225,7 @@ exports.superAdminLoginSchema = zod_1.z.object({
     role: zod_1.z.literal('super_admin')
 });
 // ============================================
-// DIGITAL MARKETER ADMIN LOGIN (Pre-defined with phones)
+// DIGITAL MARKETER ADMIN LOGIN
 // ============================================
 exports.digitalMarketerAdminLoginSchema = zod_1.z.object({
     username: zod_1.z.enum(['dmark_alpha', 'dmark_beta']),
@@ -148,11 +233,11 @@ exports.digitalMarketerAdminLoginSchema = zod_1.z.object({
     role: zod_1.z.literal('digital_marketer_admin')
 });
 // ============================================
-// UNIVERSAL LOGIN SCHEMA (All user types)
+// UNIVERSAL LOGIN SCHEMA
 // ============================================
 exports.loginSchema = zod_1.z.object({
-    username: zod_1.z.string().optional(), // For admins
-    email: zod_1.z.string().email().optional(), // For clients/client_admins
+    username: zod_1.z.string().optional(),
+    email: zod_1.z.string().email().optional(),
     password: zod_1.z.string().min(1, { message: 'Password is required' }).optional(),
     phone: zod_1.z.string().regex(flexiblePhoneRegex).optional(),
     authProvider: exports.AuthProvider.optional(),
@@ -220,12 +305,10 @@ const zodToJsonSchema = (schema) => {
     return jsonSchema.definitions ? jsonSchema.definitions[schema.description || ''] || jsonSchema : jsonSchema;
 };
 exports.zodToJsonSchema = zodToJsonSchema;
-// Generate 6-digit OTP
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
 exports.generateOTP = generateOTP;
-// Helper to generate random passwords
 const generateRandomPassword = (length = 12) => {
     const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let password = '';
@@ -240,8 +323,11 @@ const generateRandomPassword = (length = 12) => {
     return password;
 };
 exports.generateRandomPassword = generateRandomPassword;
-// Export all schemas
+// ============================================
+// EXPORT ALL SCHEMAS
+// ============================================
 exports.schemas = {
+    // Auth schemas
     superAdminLoginSchema: exports.superAdminLoginSchema,
     digitalMarketerAdminLoginSchema: exports.digitalMarketerAdminLoginSchema,
     clientAdminRegisterSchema: exports.clientAdminRegisterSchema,
@@ -253,6 +339,13 @@ exports.schemas = {
     changePasswordSchema: exports.changePasswordSchema,
     resetPasswordSchema: exports.resetPasswordSchema,
     forgotPasswordSchema: exports.forgotPasswordSchema,
-    updateUserSchema: exports.updateUserSchema
+    updateUserSchema: exports.updateUserSchema,
+    // ✅ Agent schemas
+    agentRegisterSchema: exports.agentRegisterSchema,
+    registerNewAgentSchema: exports.registerNewAgentSchema,
+    recordAgentSaleSchema: exports.recordAgentSaleSchema,
+    createPayoutSchema: exports.createPayoutSchema,
+    approveCommissionSchema: exports.approveCommissionSchema,
+    completePayoutSchema: exports.completePayoutSchema
 };
 //# sourceMappingURL=schemas.js.map

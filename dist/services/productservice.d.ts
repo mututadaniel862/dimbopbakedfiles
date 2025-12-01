@@ -4,45 +4,45 @@ import { z } from "zod";
 export declare const getAllProducts: () => Promise<({
     cart: {
         id: number;
-        created_at: Date | null;
-        updated_at: Date | null;
         user_id: number | null;
-        price: Prisma.Decimal;
         product_id: number | null;
         quantity: number;
+        price: Prisma.Decimal;
+        created_at: Date | null;
+        updated_at: Date | null;
     }[];
     reviews: {
-        username: string;
         id: number;
-        created_at: Date | null;
         user_id: number | null;
         product_id: number | null;
         rating: number | null;
         comment: string | null;
+        username: string;
+        created_at: Date | null;
     }[];
     order_items: {
         id: number;
-        created_at: Date | null;
-        updated_at: Date | null;
-        price: Prisma.Decimal;
+        order_id: number | null;
         product_id: number | null;
         quantity: number;
-        order_id: number | null;
+        price: Prisma.Decimal;
+        created_at: Date | null;
+        updated_at: Date | null;
     }[];
     categories: {
-        name: string;
         id: number;
+        name: string;
     } | null;
 } & {
+    id: number;
     name: string;
     description: string | null;
-    id: number;
-    created_at: Date | null;
-    updated_at: Date | null;
     price: Prisma.Decimal;
     stock_quantity: number | null;
     category_id: number | null;
     image_url: string | null;
+    created_at: Date | null;
+    updated_at: Date | null;
     discount_percentage: number | null;
     views: number | null;
     uploaded_by: number | null;
@@ -56,45 +56,45 @@ export declare const getAllProducts: () => Promise<({
 export declare const getProductById: (id: number) => Promise<({
     cart: {
         id: number;
-        created_at: Date | null;
-        updated_at: Date | null;
         user_id: number | null;
-        price: Prisma.Decimal;
         product_id: number | null;
         quantity: number;
+        price: Prisma.Decimal;
+        created_at: Date | null;
+        updated_at: Date | null;
     }[];
     reviews: {
-        username: string;
         id: number;
-        created_at: Date | null;
         user_id: number | null;
         product_id: number | null;
         rating: number | null;
         comment: string | null;
+        username: string;
+        created_at: Date | null;
     }[];
     order_items: {
         id: number;
-        created_at: Date | null;
-        updated_at: Date | null;
-        price: Prisma.Decimal;
+        order_id: number | null;
         product_id: number | null;
         quantity: number;
-        order_id: number | null;
+        price: Prisma.Decimal;
+        created_at: Date | null;
+        updated_at: Date | null;
     }[];
     categories: {
-        name: string;
         id: number;
+        name: string;
     } | null;
 } & {
+    id: number;
     name: string;
     description: string | null;
-    id: number;
-    created_at: Date | null;
-    updated_at: Date | null;
     price: Prisma.Decimal;
     stock_quantity: number | null;
     category_id: number | null;
     image_url: string | null;
+    created_at: Date | null;
+    updated_at: Date | null;
     discount_percentage: number | null;
     views: number | null;
     uploaded_by: number | null;
@@ -112,45 +112,45 @@ export declare const createProduct: (data: z.infer<typeof productSchema>, file?:
 }) => Promise<{
     cart: {
         id: number;
-        created_at: Date | null;
-        updated_at: Date | null;
         user_id: number | null;
-        price: Prisma.Decimal;
         product_id: number | null;
         quantity: number;
+        price: Prisma.Decimal;
+        created_at: Date | null;
+        updated_at: Date | null;
     }[];
     reviews: {
-        username: string;
         id: number;
-        created_at: Date | null;
         user_id: number | null;
         product_id: number | null;
         rating: number | null;
         comment: string | null;
+        username: string;
+        created_at: Date | null;
     }[];
     order_items: {
         id: number;
-        created_at: Date | null;
-        updated_at: Date | null;
-        price: Prisma.Decimal;
+        order_id: number | null;
         product_id: number | null;
         quantity: number;
-        order_id: number | null;
+        price: Prisma.Decimal;
+        created_at: Date | null;
+        updated_at: Date | null;
     }[];
     categories: {
-        name: string;
         id: number;
+        name: string;
     } | null;
 } & {
+    id: number;
     name: string;
     description: string | null;
-    id: number;
-    created_at: Date | null;
-    updated_at: Date | null;
     price: Prisma.Decimal;
     stock_quantity: number | null;
     category_id: number | null;
     image_url: string | null;
+    created_at: Date | null;
+    updated_at: Date | null;
     discount_percentage: number | null;
     views: number | null;
     uploaded_by: number | null;
@@ -163,15 +163,15 @@ export declare const createProduct: (data: z.infer<typeof productSchema>, file?:
 }>;
 export declare const addProductToCart: (userId: number, productId: number, quantity: number) => Promise<{
     products: {
+        id: number;
         name: string;
         description: string | null;
-        id: number;
-        created_at: Date | null;
-        updated_at: Date | null;
         price: Prisma.Decimal;
         stock_quantity: number | null;
         category_id: number | null;
         image_url: string | null;
+        created_at: Date | null;
+        updated_at: Date | null;
         discount_percentage: number | null;
         views: number | null;
         uploaded_by: number | null;
@@ -184,12 +184,12 @@ export declare const addProductToCart: (userId: number, productId: number, quant
     } | null;
 } & {
     id: number;
-    created_at: Date | null;
-    updated_at: Date | null;
     user_id: number | null;
-    price: Prisma.Decimal;
     product_id: number | null;
     quantity: number;
+    price: Prisma.Decimal;
+    created_at: Date | null;
+    updated_at: Date | null;
 }>;
 export declare const updateCartItemQuantity: (cartItemId: number, userId: number, newQuantity: number) => Promise<{
     products: {
@@ -198,12 +198,12 @@ export declare const updateCartItemQuantity: (cartItemId: number, userId: number
     } | null;
 } & {
     id: number;
-    created_at: Date | null;
-    updated_at: Date | null;
     user_id: number | null;
-    price: Prisma.Decimal;
     product_id: number | null;
     quantity: number;
+    price: Prisma.Decimal;
+    created_at: Date | null;
+    updated_at: Date | null;
 }>;
 export declare const deleteCartItem: (cartItemId: number, userId: number, restoreStock?: boolean) => Promise<{
     products: {
@@ -212,30 +212,30 @@ export declare const deleteCartItem: (cartItemId: number, userId: number, restor
     } | null;
 } & {
     id: number;
-    created_at: Date | null;
-    updated_at: Date | null;
     user_id: number | null;
-    price: Prisma.Decimal;
     product_id: number | null;
     quantity: number;
+    price: Prisma.Decimal;
+    created_at: Date | null;
+    updated_at: Date | null;
 }>;
 export declare const getUserCart: (userId: number) => Promise<{
     items: ({
         products: ({
             categories: {
-                name: string;
                 id: number;
+                name: string;
             } | null;
         } & {
+            id: number;
             name: string;
             description: string | null;
-            id: number;
-            created_at: Date | null;
-            updated_at: Date | null;
             price: Prisma.Decimal;
             stock_quantity: number | null;
             category_id: number | null;
             image_url: string | null;
+            created_at: Date | null;
+            updated_at: Date | null;
             discount_percentage: number | null;
             views: number | null;
             uploaded_by: number | null;
@@ -248,12 +248,12 @@ export declare const getUserCart: (userId: number) => Promise<{
         }) | null;
     } & {
         id: number;
-        created_at: Date | null;
-        updated_at: Date | null;
         user_id: number | null;
-        price: Prisma.Decimal;
         product_id: number | null;
         quantity: number;
+        price: Prisma.Decimal;
+        created_at: Date | null;
+        updated_at: Date | null;
     })[];
     subtotal: number;
     totalItems: number;
@@ -268,45 +268,45 @@ export declare const updateProduct: (id: number, data: Partial<z.infer<typeof pr
 }) => Promise<{
     cart: {
         id: number;
-        created_at: Date | null;
-        updated_at: Date | null;
         user_id: number | null;
-        price: Prisma.Decimal;
         product_id: number | null;
         quantity: number;
+        price: Prisma.Decimal;
+        created_at: Date | null;
+        updated_at: Date | null;
     }[];
     reviews: {
-        username: string;
         id: number;
-        created_at: Date | null;
         user_id: number | null;
         product_id: number | null;
         rating: number | null;
         comment: string | null;
+        username: string;
+        created_at: Date | null;
     }[];
     order_items: {
         id: number;
-        created_at: Date | null;
-        updated_at: Date | null;
-        price: Prisma.Decimal;
+        order_id: number | null;
         product_id: number | null;
         quantity: number;
-        order_id: number | null;
+        price: Prisma.Decimal;
+        created_at: Date | null;
+        updated_at: Date | null;
     }[];
     categories: {
-        name: string;
         id: number;
+        name: string;
     } | null;
 } & {
+    id: number;
     name: string;
     description: string | null;
-    id: number;
-    created_at: Date | null;
-    updated_at: Date | null;
     price: Prisma.Decimal;
     stock_quantity: number | null;
     category_id: number | null;
     image_url: string | null;
+    created_at: Date | null;
+    updated_at: Date | null;
     discount_percentage: number | null;
     views: number | null;
     uploaded_by: number | null;
@@ -318,15 +318,15 @@ export declare const updateProduct: (id: number, data: Partial<z.infer<typeof pr
     is_visible: boolean;
 }>;
 export declare const deleteProduct: (id: number) => Promise<{
+    id: number;
     name: string;
     description: string | null;
-    id: number;
-    created_at: Date | null;
-    updated_at: Date | null;
     price: Prisma.Decimal;
     stock_quantity: number | null;
     category_id: number | null;
     image_url: string | null;
+    created_at: Date | null;
+    updated_at: Date | null;
     discount_percentage: number | null;
     views: number | null;
     uploaded_by: number | null;
@@ -345,13 +345,13 @@ export declare class ReviewService {
         comment: string;
         username?: string;
     }): Promise<{
-        username: string;
         id: number;
-        created_at: Date | null;
         user_id: number | null;
         product_id: number | null;
         rating: number | null;
         comment: string | null;
+        username: string;
+        created_at: Date | null;
     }>;
     static getProductReviews(productId: number): Promise<{
         username: string;
@@ -370,10 +370,10 @@ export declare class ReviewService {
             } | null;
         } & {
             id: number;
-            created_at: Date;
+            review_id: number;
             user_id: number | null;
             is_like: boolean;
-            review_id: number;
+            created_at: Date;
         })[];
         review_comments: ({
             users: {
@@ -381,37 +381,37 @@ export declare class ReviewService {
                 id: number;
             } | null;
         } & {
-            username: string;
             id: number;
-            created_at: Date;
+            review_id: number;
             user_id: number | null;
             comment: string;
-            review_id: number;
+            username: string;
+            created_at: Date;
         })[];
         id: number;
-        created_at: Date | null;
         user_id: number | null;
         product_id: number | null;
         rating: number | null;
         comment: string | null;
+        created_at: Date | null;
     }[]>;
     static deleteReview(reviewId: number, userId?: number): Promise<{
-        username: string;
         id: number;
-        created_at: Date | null;
         user_id: number | null;
         product_id: number | null;
         rating: number | null;
         comment: string | null;
+        username: string;
+        created_at: Date | null;
     }>;
 }
 export declare class ReviewLikeService {
     static toggleReviewLike(reviewId: number, userId: number, isLike: boolean): Promise<{
         id: number;
-        created_at: Date;
+        review_id: number;
         user_id: number | null;
         is_like: boolean;
-        review_id: number;
+        created_at: Date;
     }>;
     static getReviewLikeStatus(reviewId: number, userId: number): Promise<boolean | null>;
 }
@@ -426,12 +426,12 @@ export declare class ReviewCommentService {
             id: number;
         } | null;
     } & {
-        username: string;
         id: number;
-        created_at: Date;
+        review_id: number;
         user_id: number | null;
         comment: string;
-        review_id: number;
+        username: string;
+        created_at: Date;
     }>;
     static getReviewComments(reviewId: number): Promise<{
         username: string;
@@ -440,18 +440,18 @@ export declare class ReviewCommentService {
             id: number;
         } | null;
         id: number;
-        created_at: Date;
+        review_id: number;
         user_id: number | null;
         comment: string;
-        review_id: number;
+        created_at: Date;
     }[]>;
     static deleteReviewComment(commentId: number, userId?: number): Promise<{
-        username: string;
         id: number;
-        created_at: Date;
+        review_id: number;
         user_id: number | null;
         comment: string;
-        review_id: number;
+        username: string;
+        created_at: Date;
     }>;
 }
 export declare class ProductViewService {
@@ -461,12 +461,12 @@ export declare class ProductViewService {
         user_agent?: string;
         username?: string;
     }): Promise<{
-        username: string;
         id: number;
-        user_id: number | null;
         product_id: number;
+        user_id: number | null;
         ip_address: string | null;
         user_agent: string | null;
+        username: string;
         viewed_at: Date;
     } | null>;
     static getProductViewCount(productId: number): Promise<{
@@ -489,15 +489,15 @@ export declare class ProductViewService {
             product_views: number;
         };
     } & {
+        id: number;
         name: string;
         description: string | null;
-        id: number;
-        created_at: Date | null;
-        updated_at: Date | null;
         price: Prisma.Decimal;
         stock_quantity: number | null;
         category_id: number | null;
         image_url: string | null;
+        created_at: Date | null;
+        updated_at: Date | null;
         discount_percentage: number | null;
         views: number | null;
         uploaded_by: number | null;
@@ -514,15 +514,15 @@ export declare class ProductViewService {
             product_views: number;
         };
     } & {
+        id: number;
         name: string;
         description: string | null;
-        id: number;
-        created_at: Date | null;
-        updated_at: Date | null;
         price: Prisma.Decimal;
         stock_quantity: number | null;
         category_id: number | null;
         image_url: string | null;
+        created_at: Date | null;
+        updated_at: Date | null;
         discount_percentage: number | null;
         views: number | null;
         uploaded_by: number | null;

@@ -5,14 +5,14 @@ export declare const multimediaQuerySchema: z.ZodObject<{
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
-    limit: number;
     page: number;
+    limit: number;
     user_id?: number | undefined;
     file_type?: "image" | "video" | "pdf" | "audio" | "document" | undefined;
 }, {
     user_id?: number | undefined;
-    limit?: number | undefined;
     page?: number | undefined;
+    limit?: number | undefined;
     file_type?: "image" | "video" | "pdf" | "audio" | "document" | undefined;
 }>;
 export type MultimediaQuery = z.infer<typeof multimediaQuerySchema>;

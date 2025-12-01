@@ -294,6 +294,101 @@ export const getPendingPayouts = async (request: FastifyRequest, reply: FastifyR
 
 
 
+// ============================================
+// REGISTER NEW AGENT (NO AUTH REQUIRED)
+// ============================================
+export const registerNewAgent = async (request: FastifyRequest, reply: FastifyReply) => {
+  try {
+    const { registerNewAgentSchema } = await import('../../utils/schemas.js');
+    const validatedData = registerNewAgentSchema.parse(request.body);
+
+    const { PrismaClient } = await import('@prisma/client');
+    const prisma = new PrismaClient();
+    const bcrypt = await import('bcryptjs');
+
+    // Check if email already exists
+    const existingUser = await prisma.users.findUnique({
+      where: { email: validatedData.email }
+    });
+
+    if (existingUser) {
+      return reply.code(400).send({
+        success: false,
+        error: 'Email already registered'
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+
+    // Generate agent code
+    const baseCode = validatedData.name.toUpperCase().slice(0, 6);
+    const year = new Date().getFullYear();
+    let agentCode = `${baseCode}${year}`;
+    let counter = 1;
+
+    while (await prisma.users.findUnique({ where: { agent_code: agentCode } })) {
+      agentCode = `${baseCode}${year}${counter}`;
+      counter++;
+    }
+
+    // Create new agent user
+    const newAgent = await prisma.users.create({
+      data: {
+        name: validatedData.name,
+        username: validatedData.name.toLowerCase().replace(/\s+/g, '_'),
+        email: validatedData.email,
+        phone: validatedData.phone,
+      password_hash: hashedPassword, 
+        role: 'agent',
+        auth_provider: 'email',
+        is_active: true,
+        email_verified: false,
+        
+        // Agent-specific fields
+        agent_code: agentCode,
+        commission_rate: validatedData.commissionRate || 5.0,
+        agent_payout_method: validatedData.payoutMethod || null,
+        agent_payout_number: validatedData.payoutNumber || null,
+        agent_payout_name: validatedData.payoutName || validatedData.name,
+        min_payout_amount: validatedData.minPayoutAmount || 10.0,
+        agent_status: 'active',
+        total_sales_value: 0,
+        total_commission_earned: 0,
+        pending_commission: 0,
+        paid_commission: 0,
+        total_orders_referred: 0,
+      }
+    });
+
+    // Generate token
+    const token = generateToken(newAgent);
+
+    reply.code(201).send({
+      success: true,
+      message: 'Agent account created successfully',
+      user: {
+        id: newAgent.id,
+        name: newAgent.name,
+        email: newAgent.email,
+        phone: newAgent.phone,
+        role: newAgent.role,
+        agentCode: newAgent.agent_code,
+        commissionRate: newAgent.commission_rate,
+      },
+      token
+    });
+  } catch (error: any) {
+    console.error('New agent registration error:', error);
+    reply.code(400).send({
+      success: false,
+      error: error.message || 'Failed to register agent'
+    });
+  }
+};
+
+
+
 
 
 

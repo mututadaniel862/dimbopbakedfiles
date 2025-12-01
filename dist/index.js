@@ -50,6 +50,8 @@ const aiRouts_1 = __importDefault(require("./routes/aiRouts"));
 const analytics_1 = __importDefault(require("./routes/analytics"));
 const multipart_1 = __importDefault(require("@fastify/multipart"));
 const oauth_1 = __importDefault(require("./routes/oauth"));
+const businessDocuments_1 = __importDefault(require("./routes/businessDocuments"));
+const agents_1 = __importDefault(require("./routes/agents"));
 dotenv.config();
 const app = (0, fastify_1.default)({
     logger: true,
@@ -98,6 +100,8 @@ app.register(analytics_1.default, { prefix: '/api/analytics' });
 // app.register(oderRoutes, { prefix: '/api/order' });
 app.register(aiRouts_1.default, { prefix: '/api/assitence' });
 app.register(serachroute_1.default, { prefix: '/api/search' });
+app.register(businessDocuments_1.default, { prefix: '/api/business-documents' });
+app.register(agents_1.default, { prefix: '/api/agents' });
 // app.register(userpayments, { prefix: '/api/userpayments' });
 // Health check endpoints
 app.get('/', async (request, reply) => {
