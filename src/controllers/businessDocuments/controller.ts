@@ -3,6 +3,9 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { BusinessDocumentService } from '../../services/businessDocumentService';
 import { users } from '@prisma/client';
 
+
+
+
 // Upload document (client_admin merchants)
 export const uploadDocument = async (
   request: FastifyRequest,

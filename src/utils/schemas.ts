@@ -1,4 +1,3 @@
-
 import { z } from 'zod';
 import { zodToJsonSchema as zodToSchemaConverter } from 'zod-to-json-schema';
 
@@ -35,7 +34,6 @@ export const PREDEFINED_USERS = {
       role: 'digital_marketer_admin' as const
     }
   ]
-  // NO predefined client_admin or clients - they ALL register themselves
 };
 
 // ============================================
@@ -46,6 +44,68 @@ export type UserRole = z.infer<typeof UserRole>;
 
 export const AuthProvider = z.enum(['email', 'google', 'apple', 'facebook']);
 export type AuthProvider = z.infer<typeof AuthProvider>;
+
+// ============================================
+// AGENT REGISTRATION & MANAGEMENT SCHEMAS
+// ============================================
+export const agentRegisterSchema = z.object({
+  commissionRate: z.number()
+    .min(0, { message: 'Commission rate must be at least 0%' })
+    .max(100, { message: 'Commission rate cannot exceed 100%' })
+    .optional()
+    .default(5.0),
+  payoutMethod: z.enum(['ecocash', 'bank', 'paynow', 'onemoney', 'telecash'])
+    .optional(),
+  payoutNumber: z.string()
+    .min(9, { message: 'Payout number too short' })
+    .max(20, { message: 'Payout number too long' })
+    .optional(),
+  payoutName: z.string()
+    .min(2, { message: 'Payout name must be at least 2 characters' })
+    .max(100)
+    .optional(),
+  minPayoutAmount: z.number()
+    .min(1, { message: 'Minimum payout amount must be at least $1' })
+    .optional()
+    .default(10.0)
+});
+
+export const recordAgentSaleSchema = z.object({
+  orderId: z.number().int().positive({ message: 'Valid order ID is required' }),
+  agentCode: z.string()
+    .min(4, { message: 'Agent code must be at least 4 characters' })
+    .max(20, { message: 'Agent code too long' })
+});
+
+export const createPayoutSchema = z.object({
+  agentId: z.number().int().positive({ message: 'Valid agent ID is required' }),
+  amount: z.number()
+    .positive({ message: 'Payout amount must be greater than 0' })
+    .min(1, { message: 'Minimum payout is $1' }),
+  paymentMethod: z.enum(['ecocash', 'bank', 'paynow', 'onemoney', 'telecash']),
+  paymentReference: z.string().optional(),
+  payoutAccount: z.string().optional(),
+  fromDate: z.string().refine(date => !isNaN(Date.parse(date)), {
+    message: 'Invalid from date'
+  }),
+  toDate: z.string().refine(date => !isNaN(Date.parse(date)), {
+    message: 'Invalid to date'
+  })
+}).refine(
+  data => new Date(data.fromDate) <= new Date(data.toDate),
+  {
+    message: 'From date must be before or equal to to date',
+    path: ['toDate']
+  }
+);
+
+export const approveCommissionSchema = z.object({
+  saleId: z.number().int().positive({ message: 'Valid sale ID is required' })
+});
+
+export const completePayoutSchema = z.object({
+  payoutId: z.number().int().positive({ message: 'Valid payout ID is required' })
+});
 
 // ============================================
 // CLIENT ADMIN (MERCHANT) REGISTRATION - GOOGLE SIGN-UP
@@ -64,9 +124,9 @@ export const clientAdminRegisterSchema = z.object({
     latitude: z.number().min(-90).max(90),
     longitude: z.number().min(-180).max(180)
   }),
-  authProvider: z.literal('google'), // Client admins MUST use Google
-  googleId: z.string().optional(), // Google user ID
-  password: z.string().optional(), // Not needed for Google auth
+  authProvider: z.literal('google'),
+  googleId: z.string().optional(),
+  password: z.string().optional(),
   role: z.literal('client_admin')
 });
 
@@ -92,7 +152,7 @@ export const clientRegisterSchema = z.object({
     .regex(flexiblePhoneRegex, {
       message: 'Please enter a valid phone number'
     }),
-  authProvider: AuthProvider, // google, apple, facebook, or email
+  authProvider: AuthProvider,
   googleId: z.string().optional(),
   appleId: z.string().optional(),
   facebookId: z.string().optional(),
@@ -101,7 +161,7 @@ export const clientRegisterSchema = z.object({
     .regex(simplePasswordRegex, {
       message: 'Password must contain at least 1 number'
     })
-    .optional(), // Only required if authProvider is 'email'
+    .optional(),
   confirmPassword: z.string().optional(),
   role: z.literal('client')
 }).refine(
@@ -142,7 +202,7 @@ export const verifyOTPSchema = z.object({
 });
 
 // ============================================
-// SUPER ADMIN LOGIN (Must provide phone on first login)
+// SUPER ADMIN LOGIN
 // ============================================
 export const superAdminLoginSchema = z.object({
   username: z.literal('super_admin'),
@@ -158,7 +218,7 @@ export const superAdminLoginSchema = z.object({
 });
 
 // ============================================
-// DIGITAL MARKETER ADMIN LOGIN (Pre-defined with phones)
+// DIGITAL MARKETER ADMIN LOGIN
 // ============================================
 export const digitalMarketerAdminLoginSchema = z.object({
   username: z.enum(['dmark_alpha', 'dmark_beta']),
@@ -167,11 +227,11 @@ export const digitalMarketerAdminLoginSchema = z.object({
 });
 
 // ============================================
-// UNIVERSAL LOGIN SCHEMA (All user types)
+// UNIVERSAL LOGIN SCHEMA
 // ============================================
 export const loginSchema = z.object({
-  username: z.string().optional(), // For admins
-  email: z.string().email().optional(), // For clients/client_admins
+  username: z.string().optional(),
+  email: z.string().email().optional(),
   password: z.string().min(1, { message: 'Password is required' }).optional(),
   phone: z.string().regex(flexiblePhoneRegex).optional(),
   authProvider: AuthProvider.optional(),
@@ -247,12 +307,10 @@ export const zodToJsonSchema = (schema: z.ZodTypeAny) => {
   return jsonSchema.definitions ? jsonSchema.definitions[schema.description || ''] || jsonSchema : jsonSchema;
 };
 
-// Generate 6-digit OTP
 export const generateOTP = (): string => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Helper to generate random passwords
 export const generateRandomPassword = (length: number = 12): string => {
   const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
   let password = '';
@@ -267,8 +325,11 @@ export const generateRandomPassword = (length: number = 12): string => {
   return password;
 };
 
-// Export all schemas
+// ============================================
+// EXPORT ALL SCHEMAS
+// ============================================
 export const schemas = {
+  // Auth schemas
   superAdminLoginSchema,
   digitalMarketerAdminLoginSchema,
   clientAdminRegisterSchema,
@@ -280,5 +341,12 @@ export const schemas = {
   changePasswordSchema,
   resetPasswordSchema,
   forgotPasswordSchema,
-  updateUserSchema
+  updateUserSchema,
+  
+  // ✅ Agent schemas
+  agentRegisterSchema,
+  recordAgentSaleSchema,
+  createPayoutSchema,
+  approveCommissionSchema,
+  completePayoutSchema
 };

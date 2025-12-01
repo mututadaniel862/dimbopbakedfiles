@@ -14,6 +14,8 @@ import analytics from './routes/analytics';
 import { JwtUser } from './utils/jwt';
 import multipart from '@fastify/multipart';
 import oauthRoutes from './routes/oauth';
+import businessDocumentRoutes from './routes/businessDocuments';
+import agentRoutes from './routes/agents';
 
 dotenv.config();
 
@@ -66,6 +68,7 @@ declare module '@fastify/jwt' {
   }
 }
 
+
 // Register routes
 app.register(authRoutes, { prefix: '/api/auth' });
 app.register(oauthRoutes, { prefix: '/api/oauth' });
@@ -75,6 +78,8 @@ app.register(analytics, { prefix: '/api/analytics' });
 // app.register(oderRoutes, { prefix: '/api/order' });
 app.register(aiRoutes, { prefix: '/api/assitence' });
 app.register(serachroute, { prefix: '/api/search' });
+app.register(businessDocumentRoutes, { prefix: '/api/business-documents' });
+app.register(agentRoutes, { prefix: '/api/agents' });
 // app.register(userpayments, { prefix: '/api/userpayments' });
 
 // Health check endpoints
