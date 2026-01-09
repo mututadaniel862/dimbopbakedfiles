@@ -28,7 +28,8 @@ app.register(cors, {
   origin: [
     'http://localhost:3000',
     'http://localhost:5173',
-'https://mmshop.co.zw'
+'https://mmshop.co.zw',
+'https://www.mmshop.co.zw'
     ,
     'https://dimbop-digital-dasboard.netlify.app',
     'https://dimbop-users-site.vercel.app',
