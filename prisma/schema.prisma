@@ -275,6 +275,62 @@ model payments {
   @@schema("auth")
 }
 
+
+
+
+
+
+// Add this new model to your schema.prisma
+model product_agents {
+  id                   Int       @id @default(autoincrement())
+  product_id           Int
+  user_id              Int
+  
+  // Identity Info
+  full_name            String    @db.VarChar(100)
+  national_id          String    @db.VarChar(50)
+  id_document_url      String?   @db.Text
+  
+  // Payment Info
+  payout_method        String    @db.VarChar(50) // ecocash, bank, paynow, etc.
+  payout_number        String?   @db.VarChar(50)
+  bank_name            String?   @db.VarChar(100)
+  bank_account_number  String?   @db.VarChar(50)
+  bank_account_name    String?   @db.VarChar(100)
+  
+  // Application Info
+  reason               String?   @db.Text
+  status               String    @default("pending") @db.VarChar(50) // pending, approved, rejected
+  applied_at           DateTime  @default(now()) @db.Timestamp(6)
+  approved_at          DateTime? @db.Timestamp(6)
+  approved_by          Int?
+  reviewed_at          DateTime? @db.Timestamp(6)
+  reviewed_by          Int?
+  rejection_reason     String?   @db.Text
+  
+  // Agent Info (after approval)
+  agent_code           String?   @unique @db.VarChar(100)
+  commission_rate      Decimal?  @default(5.0) @db.Decimal(5, 2)
+  total_sales          Int?      @default(0)
+  total_commission     Decimal?  @default(0) @db.Decimal(10, 2)
+  
+  // Relations
+  products             products  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  users                users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  approved_by_user     users?    @relation("AgentApprovedBy", fields: [approved_by], references: [id])
+  
+  @@unique([product_id, user_id]) // One user can only apply once per product
+  @@index([product_id])
+  @@index([user_id])
+  @@index([status])
+  @@schema("auth")
+}
+
+
+
+
+
+
 model products {
   id                  Int           @id @default(autoincrement())
   name                String        @db.VarChar(255)
@@ -301,6 +357,7 @@ model products {
   categories          categories?   @relation(fields: [category_id], references: [id], onUpdate: NoAction)
   reviews             reviews[]
    product_views product_views[]
+     product_agents      product_agents[]
 
    // ⬇️⬇️⬇️ ADD THESE NEW RELATIONS ⬇️⬇️⬇️
   uploaded_by_user    users?        @relation("ProductsUploaded", fields: [uploaded_by], references: [id])
@@ -676,6 +733,11 @@ model users {
    // In RELATIONS section, add these:
   merchant_payment_holds   payment_holds[]    @relation("MerchantPayments")
   payments_received        payments[]         @relation("MerchantPaymentsReceived")
+
+
+  product_agents       product_agents[]
+  agents_approved      product_agents[] @relation("AgentApprovedBy")
+
   
   // Social authentication providers
   auth_provider            String             @default("email") @db.VarChar(50) // email, google, apple, facebook

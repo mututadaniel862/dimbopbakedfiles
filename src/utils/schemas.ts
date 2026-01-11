@@ -358,6 +358,62 @@ export const generateRandomPassword = (length: number = 12): string => {
   return password;
 };
 
+
+
+
+
+
+
+
+export const registerAsProductAgentSchema = z.object({
+  productId: z.number().int().positive({ message: 'Valid product ID is required' }),
+  
+  // Identity Verification
+  fullName: z.string().min(2, { message: 'Full name is required' }).max(100),
+  nationalId: z.string().min(5, { message: 'National ID is required' }),
+  
+  // Payment Details (Choose ONE)
+  payoutMethod: z.enum(['ecocash', 'bank', 'paynow', 'onemoney', 'telecash']),
+  payoutNumber: z.string().min(9).optional(), // For mobile money
+  bankName: z.string().optional(),
+  bankAccountNumber: z.string().optional(),
+  bankAccountName: z.string().optional(),
+  
+  // Agreement
+  acceptedTerms: z.boolean().refine(val => val === true, {
+    message: 'You must accept the terms and conditions'
+  }),
+  
+  // Optional
+  reason: z.string().max(500).optional()
+}).refine(
+  data => {
+    if (data.payoutMethod === 'bank') {
+      return data.bankName && data.bankAccountNumber && data.bankAccountName;
+    }
+    return data.payoutNumber;
+  },
+  {
+    message: 'Payment details are required based on selected payout method',
+    path: ['payoutNumber']
+  }
+);
+
+// Admin approves/rejects agent application
+export const processAgentApplicationSchema = z.object({
+  applicationId: z.number().int().positive(),
+  action: z.enum(['approve', 'reject']),
+  rejectionReason: z.string().min(10).optional(),
+  commissionRate: z.number().min(0.1).max(50).optional()
+});
+
+// Generate referral link
+export const generateReferralLinkSchema = z.object({
+  productId: z.number().int().positive(),
+});
+
+
+
 // ============================================
 // EXPORT ALL SCHEMAS
 // ============================================
@@ -382,5 +438,8 @@ export const schemas = {
   recordAgentSaleSchema,
   createPayoutSchema,
   approveCommissionSchema,
-  completePayoutSchema
+  completePayoutSchema,
+   registerAsProductAgentSchema,
+  processAgentApplicationSchema,
+  generateReferralLinkSchema
 };

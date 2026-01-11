@@ -5,6 +5,7 @@ import { ProductApprovalController } from '../services/productApprovalService';
 import { authenticate } from '../middlewares/auth';
 import { productSchema } from '../models/products';
 import { zodToJsonSchema } from '../utils/schemas';
+import * as agentController from '../controllers/productAgents/controller';
 import { ReviewController, ReviewLikeController, ReviewCommentController, ProductViewController } from '../controllers/products/controller';
 
 export default async (fastify: FastifyInstance) => {
@@ -162,6 +163,11 @@ export default async (fastify: FastifyInstance) => {
   fastify.get('/:id/views', ProductViewController.getViewStats);
   fastify.get('/:id/with-views', ProductViewController.getProductWithViews);
   fastify.get('/most-viewed', ProductViewController.getMostViewed);
+
+
+   fastify.get('/:id/agents', {
+    handler: agentController.getProductAgentsHandler
+  });
 
   // ============================================
   // API DOCUMENTATION & EXAMPLES

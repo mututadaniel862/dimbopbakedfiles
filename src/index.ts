@@ -10,6 +10,7 @@ import productRoutes from './routes/productroute';
 import blogRoutes from './routes/blog';
 import aiRoutes from './routes/aiRouts';
 import analytics from './routes/analytics';
+import productAgentRoutes from './routes/productAgents';
 // import oderRoutes from './routes/order';
 import { JwtUser } from './utils/jwt';
 import multipart from '@fastify/multipart';
@@ -83,6 +84,10 @@ app.register(aiRoutes, { prefix: '/api/assitence' });
 app.register(serachroute, { prefix: '/api/search' });
 app.register(businessDocumentRoutes, { prefix: '/api/business-documents' });
 app.register(agentRoutes, { prefix: '/api/agents' });
+
+
+// Register routes
+app.register(productAgentRoutes, { prefix: '/api/agentproduct' });
 // app.register(userpayments, { prefix: '/api/userpayments' });
 
 // Health check endpoints
