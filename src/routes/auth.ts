@@ -85,6 +85,7 @@ export default async (app: FastifyInstance) => {
     "role": "client_admin"
   }
   
+  
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   
   👤 REGISTER CLIENT (CUSTOMER) - Google

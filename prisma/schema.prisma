@@ -667,7 +667,50 @@ model payment_holds {
 }
 
 
+model subscriptions {
+  id                 Int       @id @default(autoincrement())
+  user_id            Int
+  plan_type          String    // '3_months', '6_months', '1_year'
+  start_date         DateTime  @default(now())
+  end_date           DateTime
+  is_active          Boolean   @default(true)
+  is_trial           Boolean   @default(false)
+  auto_renew         Boolean   @default(false)
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+  
+  users              users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@index([user_id])
+  @@index([end_date])
+   @@schema("auth")
+}
 
+// Payment proofs for activation & subscriptions
+model payment_proofs {
+  id                    Int       @id @default(autoincrement())
+  user_id               Int
+  payment_type          String    // 'activation' or 'subscription'
+  plan_type             String?   // '3_months', '6_months', '1_year'
+  payment_method        String    // 'ecocash' or 'paynow'
+  phone_number          String
+  transaction_reference String
+  amount                Decimal   @db.Decimal(10, 2)
+  payment_proof_url     String?   // Image/file URL
+  status                String    @default("pending") // 'pending', 'approved', 'rejected'
+  rejection_reason      String?
+  approved_by           Int?
+  approved_at           DateTime?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  
+  users                 users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  approver              users?    @relation("PaymentApprover", fields: [approved_by], references: [id])
+  
+  @@index([user_id])
+  @@index([status])
+   @@schema("auth")
+}
 
 
 model users {
@@ -687,6 +730,14 @@ model users {
   physical_address         String?            @db.Text
   geo_latitude             Float?             // Latitude coordinate
   geo_longitude            Float?             // Longitude coordinate
+
+
+   subscription_status   String?   @default("inactive") // 'inactive', 'trial', 'active', 'suspended'
+  trial_ends_at         DateTime?
+  
+  subscriptions         subscriptions[]
+  payment_proofs        payment_proofs[]
+  approved_payments     payment_proofs[] @relation("PaymentApprover")
 
 
   can_upload_products      Boolean?           @default(true)

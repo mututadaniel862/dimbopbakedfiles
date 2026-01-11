@@ -414,6 +414,61 @@ export const generateReferralLinkSchema = z.object({
 
 
 
+
+
+// ============================================
+// SUBSCRIPTION PLANS & PAYMENT
+// ============================================
+
+// Payment proof upload for activation ($1)
+export const uploadActivationPaymentSchema = z.object({
+  paymentMethod: z.enum(['ecocash', 'paynow']),
+  phoneNumber: z.string()
+    .min(9, { message: 'Phone number too short' })
+    .regex(flexiblePhoneRegex, { message: 'Invalid phone number' }),
+  transactionReference: z.string().min(5, { message: 'Transaction reference required' }),
+  amount: z.number().min(1, { message: 'Amount must be at least $1' }),
+  paymentProof: z.string().optional(), // Base64 image or file URL
+  merchantId: z.number().int().positive()
+});
+
+// Choose subscription plan
+export const chooseSubscriptionPlanSchema = z.object({
+  planType: z.enum(['3_months', '6_months', '1_year']),
+  paymentMethod: z.enum(['ecocash', 'paynow']),
+  phoneNumber: z.string().regex(flexiblePhoneRegex),
+  transactionReference: z.string().min(5),
+  paymentProof: z.string().optional(), // Base64 image or file URL
+  merchantId: z.number().int().positive()
+});
+
+// Admin approve/reject payment
+export const approvePaymentSchema = z.object({
+  paymentId: z.number().int().positive(),
+  action: z.enum(['approve', 'reject']),
+  rejectionReason: z.string().min(10).optional()
+});
+
+// Subscription plan pricing
+export const SUBSCRIPTION_PLANS = {
+  '3_months': {
+    duration: 90, // days
+    price: 15, // USD
+    name: '3 Months Plan'
+  },
+  '6_months': {
+    duration: 180, // days
+    price: 25, // USD
+    name: '6 Months Plan'
+  },
+  '1_year': {
+    duration: 365, // days
+    price: 40, // USD
+    name: '1 Year Plan'
+  }
+};
+
+
 // ============================================
 // EXPORT ALL SCHEMAS
 // ============================================
@@ -441,5 +496,11 @@ export const schemas = {
   completePayoutSchema,
    registerAsProductAgentSchema,
   processAgentApplicationSchema,
-  generateReferralLinkSchema
+  generateReferralLinkSchema,
+
+   // ✅ Subscription schemas - ADD THESE
+  uploadActivationPaymentSchema,
+  chooseSubscriptionPlanSchema,
+  approvePaymentSchema,
+  SUBSCRIPTION_PLANS
 };

@@ -17,6 +17,10 @@ import multipart from '@fastify/multipart';
 import oauthRoutes from './routes/oauth';
 import businessDocumentRoutes from './routes/businessDocuments';
 import agentRoutes from './routes/agents';
+import { startSubscriptionCron } from './jobs/subscriptionCron';
+import subscriptionRoutes from './routes/subscription';
+
+
 
 dotenv.config();
 
@@ -72,6 +76,7 @@ declare module '@fastify/jwt' {
   }
 }
 
+startSubscriptionCron();
 
 // Register routes
 app.register(authRoutes, { prefix: '/api/auth' });
@@ -84,6 +89,7 @@ app.register(aiRoutes, { prefix: '/api/assitence' });
 app.register(serachroute, { prefix: '/api/search' });
 app.register(businessDocumentRoutes, { prefix: '/api/business-documents' });
 app.register(agentRoutes, { prefix: '/api/agents' });
+app.register(subscriptionRoutes, { prefix: '/api/v1' });
 
 
 // Register routes
