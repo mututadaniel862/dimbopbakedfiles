@@ -110,6 +110,7 @@ exports.default = async (app) => {
       "role": "client_admin"
     }
     
+    
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     
     👤 REGISTER CLIENT (CUSTOMER) - Google

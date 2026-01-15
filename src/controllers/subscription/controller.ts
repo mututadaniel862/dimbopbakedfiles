@@ -507,3 +507,171 @@ export const processPayment = async (req: AuthRequest, reply: FastifyReply) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// backend/controllers/subscription/controller.ts
+
+// ... (keep all your existing code above) ...
+
+// ============================================
+// ADMIN: Get All Approvals (Blogs & Products)
+// ============================================
+export const getAllApprovals = async (req: AuthRequest, reply: FastifyReply) => {
+  try {
+    const userRole = req.user.role;
+    
+    // Check if user is admin
+    if (!['admin', 'super_admin', 'digital_marketer_admin'].includes(userRole)) {
+      return reply.status(403).send({
+        success: false,
+        error: 'Access denied - Admin only'
+      });
+    }
+    
+    const approvals = await subscriptionService.getAllApprovals();
+    
+    return reply.send({
+      success: true,
+      data: approvals
+    });
+    
+  } catch (error: any) {
+    console.error('Get all approvals error:', error);
+    return reply.status(500).send({
+      success: false,
+      error: error.message || 'Failed to fetch approvals'
+    });
+  }
+};
+
+// ============================================
+// ADMIN: Get Pending Approvals Only
+// ============================================
+export const getPendingApprovals = async (req: AuthRequest, reply: FastifyReply) => {
+  try {
+    const userRole = req.user.role;
+    
+    // Check if user is admin
+    if (!['admin', 'super_admin', 'digital_marketer_admin'].includes(userRole)) {
+      return reply.status(403).send({
+        success: false,
+        error: 'Access denied - Admin only'
+      });
+    }
+    
+    const approvals = await subscriptionService.getPendingApprovals();
+    
+    return reply.send({
+      success: true,
+      data: approvals
+    });
+    
+  } catch (error: any) {
+    console.error('Get pending approvals error:', error);
+    return reply.status(500).send({
+      success: false,
+      error: error.message || 'Failed to fetch pending approvals'
+    });
+  }
+};
+
+// ============================================
+// ADMIN: Process Approval (Approve/Reject)
+// ============================================
+export const processApproval = async (req: AuthRequest, reply: FastifyReply) => {
+  try {
+    const adminId = req.user.id;
+    const userRole = req.user.role;
+    
+    // Check if user is admin
+    if (!['admin', 'super_admin', 'digital_marketer_admin'].includes(userRole)) {
+      return reply.status(403).send({
+        success: false,
+        error: 'Access denied - Admin only'
+      });
+    }
+    
+    const body = req.body as {
+      approvalId: number;
+      action: 'approve' | 'reject';
+      reason?: string;
+    };
+    
+    if (!body.approvalId || !body.action) {
+      return reply.status(400).send({
+        success: false,
+        error: 'Approval ID and action are required'
+      });
+    }
+    
+    const result = await subscriptionService.processApproval(
+      body.approvalId,
+      body.action,
+      adminId,
+      body.reason
+    );
+    
+    return reply.send({
+      success: true,
+      message: result.message
+    });
+    
+  } catch (error: any) {
+    console.error('Process approval error:', error);
+    return reply.status(400).send({
+      success: false,
+      error: error.message || 'Failed to process approval'
+    });
+  }
+};
+
+// ============================================
+// ADMIN: Get Approval Statistics
+// ============================================
+export const getApprovalStats = async (req: AuthRequest, reply: FastifyReply) => {
+  try {
+    const userRole = req.user.role;
+    
+    // Check if user is admin
+    if (!['admin', 'super_admin', 'digital_marketer_admin'].includes(userRole)) {
+      return reply.status(403).send({
+        success: false,
+        error: 'Access denied - Admin only'
+      });
+    }
+    
+    const stats = await subscriptionService.getApprovalStats();
+    
+    return reply.send({
+      success: true,
+      data: stats
+    });
+    
+  } catch (error: any) {
+    console.error('Get approval stats error:', error);
+    return reply.status(500).send({
+      success: false,
+      error: error.message || 'Failed to fetch approval statistics'
+    });
+  }
+};

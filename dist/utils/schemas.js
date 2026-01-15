@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.schemas = exports.generateRandomPassword = exports.generateOTP = exports.zodToJsonSchema = exports.updateUserSchema = exports.forgotPasswordSchema = exports.resetPasswordSchema = exports.changePasswordSchema = exports.loginSchema = exports.digitalMarketerAdminLoginSchema = exports.superAdminLoginSchema = exports.verifyOTPSchema = exports.requestOTPSchema = exports.clientRegisterSchema = exports.clientAdminLoginSchema = exports.clientAdminRegisterSchema = exports.completePayoutSchema = exports.approveCommissionSchema = exports.createPayoutSchema = exports.recordAgentSaleSchema = exports.agentRegisterSchema = exports.registerNewAgentSchema = exports.AuthProvider = exports.UserRole = exports.PREDEFINED_USERS = void 0;
+exports.schemas = exports.SUBSCRIPTION_PLANS = exports.approvePaymentSchema = exports.chooseSubscriptionPlanSchema = exports.uploadActivationPaymentSchema = exports.generateReferralLinkSchema = exports.processAgentApplicationSchema = exports.registerAsProductAgentSchema = exports.generateRandomPassword = exports.generateOTP = exports.zodToJsonSchema = exports.updateUserSchema = exports.forgotPasswordSchema = exports.resetPasswordSchema = exports.changePasswordSchema = exports.loginSchema = exports.digitalMarketerAdminLoginSchema = exports.superAdminLoginSchema = exports.verifyOTPSchema = exports.requestOTPSchema = exports.clientRegisterSchema = exports.clientAdminLoginSchema = exports.clientAdminRegisterSchema = exports.completePayoutSchema = exports.approveCommissionSchema = exports.createPayoutSchema = exports.recordAgentSaleSchema = exports.agentRegisterSchema = exports.registerNewAgentSchema = exports.AuthProvider = exports.UserRole = exports.PREDEFINED_USERS = void 0;
 const zod_1 = require("zod");
 const zod_to_json_schema_1 = require("zod-to-json-schema");
 // SIMPLIFIED: Just require 6+ characters with at least 1 number
@@ -323,6 +323,90 @@ const generateRandomPassword = (length = 12) => {
     return password;
 };
 exports.generateRandomPassword = generateRandomPassword;
+exports.registerAsProductAgentSchema = zod_1.z.object({
+    productId: zod_1.z.number().int().positive({ message: 'Valid product ID is required' }),
+    // Identity Verification
+    fullName: zod_1.z.string().min(2, { message: 'Full name is required' }).max(100),
+    nationalId: zod_1.z.string().min(5, { message: 'National ID is required' }),
+    // Payment Details (Choose ONE)
+    payoutMethod: zod_1.z.enum(['ecocash', 'bank', 'paynow', 'onemoney', 'telecash']),
+    payoutNumber: zod_1.z.string().min(9).optional(), // For mobile money
+    bankName: zod_1.z.string().optional(),
+    bankAccountNumber: zod_1.z.string().optional(),
+    bankAccountName: zod_1.z.string().optional(),
+    // Agreement
+    acceptedTerms: zod_1.z.boolean().refine(val => val === true, {
+        message: 'You must accept the terms and conditions'
+    }),
+    // Optional
+    reason: zod_1.z.string().max(500).optional()
+}).refine(data => {
+    if (data.payoutMethod === 'bank') {
+        return data.bankName && data.bankAccountNumber && data.bankAccountName;
+    }
+    return data.payoutNumber;
+}, {
+    message: 'Payment details are required based on selected payout method',
+    path: ['payoutNumber']
+});
+// Admin approves/rejects agent application
+exports.processAgentApplicationSchema = zod_1.z.object({
+    applicationId: zod_1.z.number().int().positive(),
+    action: zod_1.z.enum(['approve', 'reject']),
+    rejectionReason: zod_1.z.string().min(10).optional(),
+    commissionRate: zod_1.z.number().min(0.1).max(50).optional()
+});
+// Generate referral link
+exports.generateReferralLinkSchema = zod_1.z.object({
+    productId: zod_1.z.number().int().positive(),
+});
+// ============================================
+// SUBSCRIPTION PLANS & PAYMENT
+// ============================================
+// Payment proof upload for activation ($1)
+exports.uploadActivationPaymentSchema = zod_1.z.object({
+    paymentMethod: zod_1.z.enum(['ecocash', 'paynow']),
+    phoneNumber: zod_1.z.string()
+        .min(9, { message: 'Phone number too short' })
+        .regex(flexiblePhoneRegex, { message: 'Invalid phone number' }),
+    transactionReference: zod_1.z.string().min(5, { message: 'Transaction reference required' }),
+    amount: zod_1.z.number().min(1, { message: 'Amount must be at least $1' }),
+    paymentProof: zod_1.z.string().optional(), // Base64 image or file URL
+    merchantId: zod_1.z.number().int().positive()
+});
+// Choose subscription plan
+exports.chooseSubscriptionPlanSchema = zod_1.z.object({
+    planType: zod_1.z.enum(['3_months', '6_months', '1_year']),
+    paymentMethod: zod_1.z.enum(['ecocash', 'paynow']),
+    phoneNumber: zod_1.z.string().regex(flexiblePhoneRegex),
+    transactionReference: zod_1.z.string().min(5),
+    paymentProof: zod_1.z.string().optional(), // Base64 image or file URL
+    merchantId: zod_1.z.number().int().positive()
+});
+// Admin approve/reject payment
+exports.approvePaymentSchema = zod_1.z.object({
+    paymentId: zod_1.z.number().int().positive(),
+    action: zod_1.z.enum(['approve', 'reject']),
+    rejectionReason: zod_1.z.string().min(10).optional()
+});
+// Subscription plan pricing
+exports.SUBSCRIPTION_PLANS = {
+    '3_months': {
+        duration: 90, // days
+        price: 15, // USD
+        name: '3 Months Plan'
+    },
+    '6_months': {
+        duration: 180, // days
+        price: 25, // USD
+        name: '6 Months Plan'
+    },
+    '1_year': {
+        duration: 365, // days
+        price: 40, // USD
+        name: '1 Year Plan'
+    }
+};
 // ============================================
 // EXPORT ALL SCHEMAS
 // ============================================
@@ -346,6 +430,14 @@ exports.schemas = {
     recordAgentSaleSchema: exports.recordAgentSaleSchema,
     createPayoutSchema: exports.createPayoutSchema,
     approveCommissionSchema: exports.approveCommissionSchema,
-    completePayoutSchema: exports.completePayoutSchema
+    completePayoutSchema: exports.completePayoutSchema,
+    registerAsProductAgentSchema: exports.registerAsProductAgentSchema,
+    processAgentApplicationSchema: exports.processAgentApplicationSchema,
+    generateReferralLinkSchema: exports.generateReferralLinkSchema,
+    // ✅ Subscription schemas - ADD THESE
+    uploadActivationPaymentSchema: exports.uploadActivationPaymentSchema,
+    chooseSubscriptionPlanSchema: exports.chooseSubscriptionPlanSchema,
+    approvePaymentSchema: exports.approvePaymentSchema,
+    SUBSCRIPTION_PLANS: exports.SUBSCRIPTION_PLANS
 };
 //# sourceMappingURL=schemas.js.map

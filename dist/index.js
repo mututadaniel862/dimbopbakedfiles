@@ -48,10 +48,13 @@ const productroute_1 = __importDefault(require("./routes/productroute"));
 const blog_1 = __importDefault(require("./routes/blog"));
 const aiRouts_1 = __importDefault(require("./routes/aiRouts"));
 const analytics_1 = __importDefault(require("./routes/analytics"));
+const productAgents_1 = __importDefault(require("./routes/productAgents"));
 const multipart_1 = __importDefault(require("@fastify/multipart"));
 const oauth_1 = __importDefault(require("./routes/oauth"));
 const businessDocuments_1 = __importDefault(require("./routes/businessDocuments"));
 const agents_1 = __importDefault(require("./routes/agents"));
+const subscriptionCron_1 = require("./jobs/subscriptionCron");
+const subscription_1 = __importDefault(require("./routes/subscription"));
 dotenv.config();
 const app = (0, fastify_1.default)({
     logger: true,
@@ -61,6 +64,8 @@ app.register(cors_1.default, {
     origin: [
         'http://localhost:3000',
         'http://localhost:5173',
+        'https://mmshop.co.zw',
+        'https://www.mmshop.co.zw',
         'https://dimbop-digital-dasboard.netlify.app',
         'https://dimbop-users-site.vercel.app',
         'https://dimbop-digital-marketing-dashboard.vercel.app',
@@ -91,6 +96,7 @@ app.register(jwt_1.default, {
         expiresIn: '1d',
     },
 });
+(0, subscriptionCron_1.startSubscriptionCron)();
 // Register routes
 app.register(auth_1.default, { prefix: '/api/auth' });
 app.register(oauth_1.default, { prefix: '/api/oauth' });
@@ -102,6 +108,9 @@ app.register(aiRouts_1.default, { prefix: '/api/assitence' });
 app.register(serachroute_1.default, { prefix: '/api/search' });
 app.register(businessDocuments_1.default, { prefix: '/api/business-documents' });
 app.register(agents_1.default, { prefix: '/api/agents' });
+app.register(subscription_1.default, { prefix: '/api/v1' });
+// Register routes
+app.register(productAgents_1.default, { prefix: '/api/agentproduct' });
 // app.register(userpayments, { prefix: '/api/userpayments' });
 // Health check endpoints
 app.get('/', async (request, reply) => {

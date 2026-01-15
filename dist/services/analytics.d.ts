@@ -35,6 +35,8 @@ export declare const AnalyticsService: {
             physical_address: string | null;
             geo_latitude: number | null;
             geo_longitude: number | null;
+            subscription_status: string | null;
+            trial_ends_at: Date | null;
             can_upload_products: boolean | null;
             stripe_account_id: string | null;
             paypal_email: string | null;

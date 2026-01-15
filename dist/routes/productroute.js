@@ -38,6 +38,7 @@ const productApprovalService_1 = require("../services/productApprovalService");
 const auth_1 = require("../middlewares/auth");
 const products_1 = require("../models/products");
 const schemas_1 = require("../utils/schemas");
+const agentController = __importStar(require("../controllers/productAgents/controller"));
 const controller_1 = require("../controllers/products/controller");
 exports.default = async (fastify) => {
     // ============================================
@@ -168,6 +169,9 @@ exports.default = async (fastify) => {
     fastify.get('/:id/views', controller_1.ProductViewController.getViewStats);
     fastify.get('/:id/with-views', controller_1.ProductViewController.getProductWithViews);
     fastify.get('/most-viewed', controller_1.ProductViewController.getMostViewed);
+    fastify.get('/:id/agents', {
+        handler: agentController.getProductAgentsHandler
+    });
     // ============================================
     // API DOCUMENTATION & EXAMPLES
     // ============================================

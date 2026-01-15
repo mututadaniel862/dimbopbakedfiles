@@ -17,4 +17,43 @@ export default async (app: FastifyInstance) => {
   
   // Admin: Approve/reject payment
   app.post('/payments/process', { preHandler: [authenticate] }, subscriptionController.processPayment);
+
+
+
+  // ============================================
+  
+  // Get all approvals (blogs & products)
+  app.get(
+    '/approvals/all', 
+    { preHandler: [authenticate] }, 
+    subscriptionController.getAllApprovals
+  );
+  
+  // Get pending approvals only
+  app.get(
+    '/approvals/pending', 
+    { preHandler: [authenticate] }, 
+    subscriptionController.getPendingApprovals
+  );
+  
+  // Process approval (approve/reject blog or product)
+  app.post(
+    '/approvals/process', 
+    { preHandler: [authenticate] }, 
+    subscriptionController.processApproval
+  );
+  
+  // Get approval statistics
+  app.get(
+    '/approvals/stats', 
+    { preHandler: [authenticate] }, 
+    subscriptionController.getApprovalStats
+  );
 };
+
+
+
+
+
+
+

@@ -561,6 +561,159 @@ export declare const zodToJsonSchema: (schema: z.ZodTypeAny) => ({
 });
 export declare const generateOTP: () => string;
 export declare const generateRandomPassword: (length?: number) => string;
+export declare const registerAsProductAgentSchema: z.ZodEffects<z.ZodObject<{
+    productId: z.ZodNumber;
+    fullName: z.ZodString;
+    nationalId: z.ZodString;
+    payoutMethod: z.ZodEnum<["ecocash", "bank", "paynow", "onemoney", "telecash"]>;
+    payoutNumber: z.ZodOptional<z.ZodString>;
+    bankName: z.ZodOptional<z.ZodString>;
+    bankAccountNumber: z.ZodOptional<z.ZodString>;
+    bankAccountName: z.ZodOptional<z.ZodString>;
+    acceptedTerms: z.ZodEffects<z.ZodBoolean, boolean, boolean>;
+    reason: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    payoutMethod: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash";
+    productId: number;
+    fullName: string;
+    nationalId: string;
+    acceptedTerms: boolean;
+    payoutNumber?: string | undefined;
+    bankName?: string | undefined;
+    bankAccountNumber?: string | undefined;
+    bankAccountName?: string | undefined;
+    reason?: string | undefined;
+}, {
+    payoutMethod: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash";
+    productId: number;
+    fullName: string;
+    nationalId: string;
+    acceptedTerms: boolean;
+    payoutNumber?: string | undefined;
+    bankName?: string | undefined;
+    bankAccountNumber?: string | undefined;
+    bankAccountName?: string | undefined;
+    reason?: string | undefined;
+}>, {
+    payoutMethod: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash";
+    productId: number;
+    fullName: string;
+    nationalId: string;
+    acceptedTerms: boolean;
+    payoutNumber?: string | undefined;
+    bankName?: string | undefined;
+    bankAccountNumber?: string | undefined;
+    bankAccountName?: string | undefined;
+    reason?: string | undefined;
+}, {
+    payoutMethod: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash";
+    productId: number;
+    fullName: string;
+    nationalId: string;
+    acceptedTerms: boolean;
+    payoutNumber?: string | undefined;
+    bankName?: string | undefined;
+    bankAccountNumber?: string | undefined;
+    bankAccountName?: string | undefined;
+    reason?: string | undefined;
+}>;
+export declare const processAgentApplicationSchema: z.ZodObject<{
+    applicationId: z.ZodNumber;
+    action: z.ZodEnum<["approve", "reject"]>;
+    rejectionReason: z.ZodOptional<z.ZodString>;
+    commissionRate: z.ZodOptional<z.ZodNumber>;
+}, "strip", z.ZodTypeAny, {
+    applicationId: number;
+    action: "approve" | "reject";
+    commissionRate?: number | undefined;
+    rejectionReason?: string | undefined;
+}, {
+    applicationId: number;
+    action: "approve" | "reject";
+    commissionRate?: number | undefined;
+    rejectionReason?: string | undefined;
+}>;
+export declare const generateReferralLinkSchema: z.ZodObject<{
+    productId: z.ZodNumber;
+}, "strip", z.ZodTypeAny, {
+    productId: number;
+}, {
+    productId: number;
+}>;
+export declare const uploadActivationPaymentSchema: z.ZodObject<{
+    paymentMethod: z.ZodEnum<["ecocash", "paynow"]>;
+    phoneNumber: z.ZodString;
+    transactionReference: z.ZodString;
+    amount: z.ZodNumber;
+    paymentProof: z.ZodOptional<z.ZodString>;
+    merchantId: z.ZodNumber;
+}, "strip", z.ZodTypeAny, {
+    amount: number;
+    paymentMethod: "ecocash" | "paynow";
+    phoneNumber: string;
+    transactionReference: string;
+    merchantId: number;
+    paymentProof?: string | undefined;
+}, {
+    amount: number;
+    paymentMethod: "ecocash" | "paynow";
+    phoneNumber: string;
+    transactionReference: string;
+    merchantId: number;
+    paymentProof?: string | undefined;
+}>;
+export declare const chooseSubscriptionPlanSchema: z.ZodObject<{
+    planType: z.ZodEnum<["3_months", "6_months", "1_year"]>;
+    paymentMethod: z.ZodEnum<["ecocash", "paynow"]>;
+    phoneNumber: z.ZodString;
+    transactionReference: z.ZodString;
+    paymentProof: z.ZodOptional<z.ZodString>;
+    merchantId: z.ZodNumber;
+}, "strip", z.ZodTypeAny, {
+    paymentMethod: "ecocash" | "paynow";
+    phoneNumber: string;
+    transactionReference: string;
+    merchantId: number;
+    planType: "3_months" | "6_months" | "1_year";
+    paymentProof?: string | undefined;
+}, {
+    paymentMethod: "ecocash" | "paynow";
+    phoneNumber: string;
+    transactionReference: string;
+    merchantId: number;
+    planType: "3_months" | "6_months" | "1_year";
+    paymentProof?: string | undefined;
+}>;
+export declare const approvePaymentSchema: z.ZodObject<{
+    paymentId: z.ZodNumber;
+    action: z.ZodEnum<["approve", "reject"]>;
+    rejectionReason: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    action: "approve" | "reject";
+    paymentId: number;
+    rejectionReason?: string | undefined;
+}, {
+    action: "approve" | "reject";
+    paymentId: number;
+    rejectionReason?: string | undefined;
+}>;
+export declare const SUBSCRIPTION_PLANS: {
+    '3_months': {
+        duration: number;
+        price: number;
+        name: string;
+    };
+    '6_months': {
+        duration: number;
+        price: number;
+        name: string;
+    };
+    '1_year': {
+        duration: number;
+        price: number;
+        name: string;
+    };
+};
 export declare const schemas: {
     superAdminLoginSchema: z.ZodObject<{
         username: z.ZodLiteral<"super_admin">;
@@ -1044,4 +1197,157 @@ export declare const schemas: {
     }, {
         payoutId: number;
     }>;
+    registerAsProductAgentSchema: z.ZodEffects<z.ZodObject<{
+        productId: z.ZodNumber;
+        fullName: z.ZodString;
+        nationalId: z.ZodString;
+        payoutMethod: z.ZodEnum<["ecocash", "bank", "paynow", "onemoney", "telecash"]>;
+        payoutNumber: z.ZodOptional<z.ZodString>;
+        bankName: z.ZodOptional<z.ZodString>;
+        bankAccountNumber: z.ZodOptional<z.ZodString>;
+        bankAccountName: z.ZodOptional<z.ZodString>;
+        acceptedTerms: z.ZodEffects<z.ZodBoolean, boolean, boolean>;
+        reason: z.ZodOptional<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        payoutMethod: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash";
+        productId: number;
+        fullName: string;
+        nationalId: string;
+        acceptedTerms: boolean;
+        payoutNumber?: string | undefined;
+        bankName?: string | undefined;
+        bankAccountNumber?: string | undefined;
+        bankAccountName?: string | undefined;
+        reason?: string | undefined;
+    }, {
+        payoutMethod: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash";
+        productId: number;
+        fullName: string;
+        nationalId: string;
+        acceptedTerms: boolean;
+        payoutNumber?: string | undefined;
+        bankName?: string | undefined;
+        bankAccountNumber?: string | undefined;
+        bankAccountName?: string | undefined;
+        reason?: string | undefined;
+    }>, {
+        payoutMethod: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash";
+        productId: number;
+        fullName: string;
+        nationalId: string;
+        acceptedTerms: boolean;
+        payoutNumber?: string | undefined;
+        bankName?: string | undefined;
+        bankAccountNumber?: string | undefined;
+        bankAccountName?: string | undefined;
+        reason?: string | undefined;
+    }, {
+        payoutMethod: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash";
+        productId: number;
+        fullName: string;
+        nationalId: string;
+        acceptedTerms: boolean;
+        payoutNumber?: string | undefined;
+        bankName?: string | undefined;
+        bankAccountNumber?: string | undefined;
+        bankAccountName?: string | undefined;
+        reason?: string | undefined;
+    }>;
+    processAgentApplicationSchema: z.ZodObject<{
+        applicationId: z.ZodNumber;
+        action: z.ZodEnum<["approve", "reject"]>;
+        rejectionReason: z.ZodOptional<z.ZodString>;
+        commissionRate: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        applicationId: number;
+        action: "approve" | "reject";
+        commissionRate?: number | undefined;
+        rejectionReason?: string | undefined;
+    }, {
+        applicationId: number;
+        action: "approve" | "reject";
+        commissionRate?: number | undefined;
+        rejectionReason?: string | undefined;
+    }>;
+    generateReferralLinkSchema: z.ZodObject<{
+        productId: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        productId: number;
+    }, {
+        productId: number;
+    }>;
+    uploadActivationPaymentSchema: z.ZodObject<{
+        paymentMethod: z.ZodEnum<["ecocash", "paynow"]>;
+        phoneNumber: z.ZodString;
+        transactionReference: z.ZodString;
+        amount: z.ZodNumber;
+        paymentProof: z.ZodOptional<z.ZodString>;
+        merchantId: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        amount: number;
+        paymentMethod: "ecocash" | "paynow";
+        phoneNumber: string;
+        transactionReference: string;
+        merchantId: number;
+        paymentProof?: string | undefined;
+    }, {
+        amount: number;
+        paymentMethod: "ecocash" | "paynow";
+        phoneNumber: string;
+        transactionReference: string;
+        merchantId: number;
+        paymentProof?: string | undefined;
+    }>;
+    chooseSubscriptionPlanSchema: z.ZodObject<{
+        planType: z.ZodEnum<["3_months", "6_months", "1_year"]>;
+        paymentMethod: z.ZodEnum<["ecocash", "paynow"]>;
+        phoneNumber: z.ZodString;
+        transactionReference: z.ZodString;
+        paymentProof: z.ZodOptional<z.ZodString>;
+        merchantId: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        paymentMethod: "ecocash" | "paynow";
+        phoneNumber: string;
+        transactionReference: string;
+        merchantId: number;
+        planType: "3_months" | "6_months" | "1_year";
+        paymentProof?: string | undefined;
+    }, {
+        paymentMethod: "ecocash" | "paynow";
+        phoneNumber: string;
+        transactionReference: string;
+        merchantId: number;
+        planType: "3_months" | "6_months" | "1_year";
+        paymentProof?: string | undefined;
+    }>;
+    approvePaymentSchema: z.ZodObject<{
+        paymentId: z.ZodNumber;
+        action: z.ZodEnum<["approve", "reject"]>;
+        rejectionReason: z.ZodOptional<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        action: "approve" | "reject";
+        paymentId: number;
+        rejectionReason?: string | undefined;
+    }, {
+        action: "approve" | "reject";
+        paymentId: number;
+        rejectionReason?: string | undefined;
+    }>;
+    SUBSCRIPTION_PLANS: {
+        '3_months': {
+            duration: number;
+            price: number;
+            name: string;
+        };
+        '6_months': {
+            duration: number;
+            price: number;
+            name: string;
+        };
+        '1_year': {
+            duration: number;
+            price: number;
+            name: string;
+        };
+    };
 };
