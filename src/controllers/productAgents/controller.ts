@@ -511,13 +511,68 @@ export const rejectAgentHandler = async (
   }
 };
 
+
+
+
+
+
+
+
+
+// export const getAllAgentApplicationsHandler = async (
+//   request: FastifyRequest<{ 
+//     Querystring: { 
+//       status?: string; 
+//       productId?: string;
+//       limit?: string;
+//       offset?: string;
+//     } 
+//   }>,
+//   reply: FastifyReply
+// ) => {
+//   try {
+//     const userRole = (request.user as any)?.role;
+    
+//     // Check if user is admin
+//     if (userRole !== 'super_admin') {
+//       return reply.status(403).send({
+//         success: false,
+//         message: 'Access denied. Admin privileges required.'
+//       });
+//     }
+    
+//     const { status, productId, limit, offset } = request.query;
+    
+//     // This would need to be implemented in the service
+//     // For now, just return pending applications
+//     const applications = await ProductAgentService.getPendingApplications();
+    
+//     reply.send({
+//       success: true,
+//       data: applications,
+//       count: applications.length
+//     });
+//   } catch (error: any) {
+//     console.error('Error fetching all applications:', error);
+//     reply.status(500).send({ 
+//       success: false, 
+//       message: 'Error fetching applications' 
+//     });
+//   }
+// };
+
+
+
+
+
+
+// In your controller.ts file - UPDATE THIS FUNCTION:
+
 export const getAllAgentApplicationsHandler = async (
   request: FastifyRequest<{ 
     Querystring: { 
       status?: string; 
       productId?: string;
-      limit?: string;
-      offset?: string;
     } 
   }>,
   reply: FastifyReply
@@ -525,7 +580,6 @@ export const getAllAgentApplicationsHandler = async (
   try {
     const userRole = (request.user as any)?.role;
     
-    // Check if user is admin
     if (userRole !== 'super_admin') {
       return reply.status(403).send({
         success: false,
@@ -533,11 +587,13 @@ export const getAllAgentApplicationsHandler = async (
       });
     }
     
-    const { status, productId, limit, offset } = request.query;
+    const { status, productId } = request.query;
     
-    // This would need to be implemented in the service
-    // For now, just return pending applications
-    const applications = await ProductAgentService.getPendingApplications();
+    // ✅ FIX: Call getAllApplications instead of getPendingApplications
+    const applications = await ProductAgentService.getAllApplications({
+      ...(status && { status: status as 'pending' | 'approved' | 'rejected' }),
+      ...(productId && { productId: parseInt(productId) })
+    });
     
     reply.send({
       success: true,
