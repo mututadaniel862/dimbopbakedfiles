@@ -1,0 +1,864 @@
+// generator client {
+//   provider        = "prisma-client-js"
+//   previewFeatures = ["multiSchema"]
+// }
+
+// datasource db {
+//   provider = "postgresql"
+//   schemas  = ["auth", "public"]
+// }
+
+
+
+
+
+
+
+
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  schemas   = ["auth", "public"]
+}
+
+
+
+model blog_images {
+  id        Int    @id @default(autoincrement())
+  blog_id   Int?
+  image_url String
+  blogs     blogs? @relation(fields: [blog_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("auth")
+}
+
+model blog_types {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique @db.VarChar(100)
+  image_url   String?
+  description String?
+  blogs       blogs[]
+
+  @@schema("auth")
+}
+
+model blogs {
+  id                      Int           @id @default(autoincrement())
+  title                   String        @db.VarChar(255)
+  description             String
+  content                 String
+  image_url               String?
+  author_id               Int?
+  blog_type_id            Int?
+  created_at              DateTime?     @default(now()) @db.Timestamp(6)
+  hero_image              String?
+  blog_image_one          String?
+  blog_image_two          String?
+  blog_image_three        String?
+  author_avatar           String?
+  epigraph                String?
+  first_paragraph         String?
+  second_paragraph        String?
+  third_paragraph         String?
+  fourth_paragraph        String?
+  fifth_paragraph         String?
+  annotation_image_one    String?
+  annotation_image_two    String?
+  annotation_image_three  String?
+  annotation_image_four   String?
+  annotation_image_five   String?
+  point_one_title         String?       @db.VarChar(255)
+  point_one_description   String?
+  point_two_title         String?       @db.VarChar(255)
+  point_two_description   String?
+  point_three_title       String?       @db.VarChar(255)
+  point_three_description String?
+  point_four_title        String?       @db.VarChar(255)
+  point_four_description  String?
+  point_five_title        String?       @db.VarChar(255)
+  point_five_description  String?
+  categories              String?       @db.VarChar(255)
+  more_blogs              String?
+  meta_description        String?
+  keywords                String?
+  meta_author             String?       @db.VarChar(255)
+  meta_og_title           String?       @db.VarChar(255)
+  meta_og_url             String?
+  meta_og_image           String?
+  meta_facebook_id        String?
+  meta_site_name          String?
+  meta_post_twitter       String?
+  status                  String?       @default("visible") @db.VarChar(20)
+  blog_images             blog_images[]
+  users                   users?        @relation(fields: [author_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  blog_types              blog_types?   @relation(fields: [blog_type_id], references: [id], onUpdate: NoAction)
+
+  @@schema("auth")
+}
+
+model cart {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  product_id Int?
+  quantity   Int       @default(1)
+  price      Decimal   @db.Decimal(10, 2)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @updatedAt
+  products   products? @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("auth")
+}
+
+model categories {
+  id       Int        @id @default(autoincrement())
+  name     String     @unique @db.VarChar(100)
+  products products[]
+
+  @@schema("auth")
+}
+
+model financials {
+  id          Int       @id @default(autoincrement())
+  order_id    Int?
+  type        String?   @db.VarChar(50)
+  amount      Decimal   @db.Decimal(10, 2)
+  description String?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  orders      orders?   @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("auth")
+}
+
+model order_items {
+  id         Int       @id @default(autoincrement())
+  order_id   Int?
+  product_id Int?
+  quantity   Int       @default(1)
+  price      Decimal   @db.Decimal(10, 2)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @updatedAt
+  orders     orders?   @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  products   products? @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("auth")
+}
+
+model orders {
+  id           Int           @id @default(autoincrement())
+  user_id      Int?
+   // ⬇️⬇️⬇️ ADD THESE 2 FIELDS ⬇️⬇️⬇️
+  referred_by_agent_id  Int?      // Which agent made this sale
+  agent_code_used       String?   @db.VarChar(50) // Code used: "JOHN2025"
+  // ⬆️⬆️⬆️ END FIELDS ⬆️⬆️⬆️
+  total_price  Decimal       @db.Decimal(10, 2)
+  status       String?       @default("Pending") @db.VarChar(50)
+  created_at   DateTime?     @default(now()) @db.Timestamp(6)
+  browser_used String?       @db.VarChar(50)
+  updated_at   DateTime?     @updatedAt
+  financials   financials[]
+  order_items  order_items[]
+  users        users?        @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  payments     payments[]
+    agent_sales  agent_sales?  // Add this relation
+
+  @@schema("auth")
+}
+
+
+// Track sales made by agents (when customer uses agent code)
+model agent_sales {
+  id                    Int       @id @default(autoincrement())
+  agent_id              Int       // The agent who made the sale
+  order_id              Int       @unique // The order
+  
+  // Sale details
+  sale_amount           Decimal   @db.Decimal(10, 2) // Order total
+  commission_rate       Decimal   @db.Decimal(5, 2) // % at time of sale (5%)
+  commission_amount     Decimal   @db.Decimal(10, 2) // Actual commission ($25)
+  
+  // Status tracking
+  commission_status     String    @default("pending") @db.VarChar(50) 
+  // Values: pending, approved, paid, cancelled
+  
+  // Dates
+  sale_date             DateTime  @default(now()) @db.Timestamp(6)
+  commission_paid_at    DateTime? @db.Timestamp(6)
+  
+  // Relations
+  agent                 users     @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+  order                 orders    @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  
+  @@index([agent_id])
+  @@index([commission_status])
+  @@index([sale_date])
+  @@schema("auth")
+}
+
+
+
+// Track commission payments to agents
+model agent_payouts {
+  id                    Int       @id @default(autoincrement())
+  agent_id              Int
+  
+  // Payment details
+  amount                Decimal   @db.Decimal(10, 2) // How much paid
+  payment_method        String    @db.VarChar(50) // ecocash, bank, paynow
+  payment_reference     String?   @db.VarChar(255) // Transaction ID
+  payout_account        String?   @db.VarChar(100) // Phone/account number
+  
+  // What's included
+  sales_count           Int       // How many sales in this payout
+  from_date             DateTime  @db.Timestamp(6) // Sales from
+  to_date               DateTime  @db.Timestamp(6) // Sales to
+  
+  // Status
+  status                String    @default("pending") @db.VarChar(50)
+  // Values: pending, processing, completed, failed
+  
+  is_automatic          Boolean   @default(false) // Auto-payout or manual?
+  paid_at               DateTime? @db.Timestamp(6)
+  failed_reason         String?   @db.Text
+  created_at            DateTime  @default(now()) @db.Timestamp(6)
+  
+  agent                 users     @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+  
+  @@index([agent_id])
+  @@index([status])
+  @@schema("auth")
+}
+
+
+model password_resets {
+  id          Int       @id @default(autoincrement())
+  user_id     Int?
+  reset_token String    @db.VarChar(255)
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  users       users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("auth")
+}
+
+model payments {
+  id             Int       @id @default(autoincrement())
+  order_id       Int?
+  user_id        Int?
+  payment_method String?   @db.VarChar(50)
+  transaction_id String    @unique @db.VarChar(255)
+  customerMsisdn   String? 
+  status         String?   @default("Pending") @db.VarChar(50)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+
+ // ⬇️⬇️⬇️ ADD THESE NEW FIELDS ⬇️⬇️⬇️
+  processor           String?   @db.VarChar(50) // "stripe", "paypal", "paynow", "ecocash"
+  processor_fee       Decimal?  @db.Decimal(10, 2) // Fee charged by processor
+  net_amount          Decimal?  @db.Decimal(10, 2) // Amount after processor fee
+  merchant_id         Int?      // Which merchant gets paid
+  is_held             Boolean?  @default(false) // Is payment on hold?
+  // ⬆️⬆️⬆️ END NEW FIELDS ⬆️⬆️⬆️
+
+   payment_hold        payment_holds?
+  // ⬇️⬇️⬇️ ADD THIS RELATION ⬇️⬇️⬇️
+  merchant            users?    @relation("MerchantPaymentsReceived", fields: [merchant_id], references: [id])
+  // ⬆️⬆️⬆️ END NEW RELATION ⬆️⬆️⬆️
+
+  orders         orders?   @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users          users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("auth")
+}
+
+
+
+
+
+
+// Add this new model to your schema.prisma
+model product_agents {
+  id                   Int       @id @default(autoincrement())
+  product_id           Int
+  user_id              Int
+  
+  // Identity Info
+  full_name            String    @db.VarChar(100)
+  national_id          String    @db.VarChar(50)
+  id_document_url      String?   @db.Text
+  
+  // Payment Info
+  payout_method        String    @db.VarChar(50) // ecocash, bank, paynow, etc.
+  payout_number        String?   @db.VarChar(50)
+  bank_name            String?   @db.VarChar(100)
+  bank_account_number  String?   @db.VarChar(50)
+  bank_account_name    String?   @db.VarChar(100)
+  
+  // Application Info
+  reason               String?   @db.Text
+  status               String    @default("pending") @db.VarChar(50) // pending, approved, rejected
+  applied_at           DateTime  @default(now()) @db.Timestamp(6)
+  approved_at          DateTime? @db.Timestamp(6)
+  approved_by          Int?
+  reviewed_at          DateTime? @db.Timestamp(6)
+  reviewed_by          Int?
+  rejection_reason     String?   @db.Text
+  
+  // Agent Info (after approval)
+  agent_code           String?   @unique @db.VarChar(100)
+  commission_rate      Decimal?  @default(5.0) @db.Decimal(5, 2)
+  total_sales          Int?      @default(0)
+  total_commission     Decimal?  @default(0) @db.Decimal(10, 2)
+  
+  // Relations
+  products             products  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  users                users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  approved_by_user     users?    @relation("AgentApprovedBy", fields: [approved_by], references: [id])
+  
+  @@unique([product_id, user_id]) // One user can only apply once per product
+  @@index([product_id])
+  @@index([user_id])
+  @@index([status])
+  @@schema("auth")
+}
+
+
+
+
+
+
+model products {
+  id                  Int           @id @default(autoincrement())
+  name                String        @db.VarChar(255)
+  description         String?
+  price               Decimal       @db.Decimal(10, 2)
+  stock_quantity      Int?          @default(0)
+  category_id         Int?
+  image_url           String?
+  created_at          DateTime?     @default(now()) @db.Timestamp(6)
+  updated_at          DateTime?     @default(now()) @db.Timestamp(6)
+  discount_percentage Int?          @default(0)
+  views               Int?          @default(0)
+  whatsapp_number     String?       @db.VarChar(20)
+  // ⬇️⬇️⬇️ ADD THESE NEW FIELDS FOR APPROVAL ⬇️⬇️⬇️
+  uploaded_by         Int?          // Which client_admin uploaded this
+  approval_status     String        @default("pending") @db.VarChar(50) // pending, approved, rejected
+  approved_by         Int?          // Which super_admin approved it
+  approved_at         DateTime?     @db.Timestamp(6)
+  rejection_reason    String?       @db.Text
+  approval_deadline   DateTime?     @db.Timestamp(6) // Must approve within 7 days
+  is_visible          Boolean       @default(false) // Only visible after approval
+  // ⬆️⬆️⬆️ END NEW FIELDS ⬆️⬆️⬆️
+  cart                cart[]
+  order_items         order_items[]
+  categories          categories?   @relation(fields: [category_id], references: [id], onUpdate: NoAction)
+  reviews             reviews[]
+   product_views product_views[]
+     product_agents      product_agents[]
+
+   // ⬇️⬇️⬇️ ADD THESE NEW RELATIONS ⬇️⬇️⬇️
+  uploaded_by_user    users?        @relation("ProductsUploaded", fields: [uploaded_by], references: [id])
+  approved_by_user    users?        @relation("ProductsApproved", fields: [approved_by], references: [id])
+  business_documents  business_documents[]
+  // ⬆️⬆️⬆️ END NEW RELATIONS ⬆️⬆️⬆️
+
+  @@index([uploaded_by])
+  @@index([approval_status])
+  @@schema("auth")
+}
+
+
+model business_documents {
+  id                  Int       @id @default(autoincrement())
+  merchant_id         Int       // Which client_admin uploaded
+  product_id          Int?      // Optional: specific product
+  
+  // Document info
+  document_type       String    @db.VarChar(100) // business_license, tax_cert, registration
+  document_url        String    @db.VarChar(500)
+  document_name       String?   @db.VarChar(255)
+  file_size           Int?
+  
+  // Approval
+  approval_status     String    @default("pending") @db.VarChar(50)
+  approved_by         Int?
+  approved_at         DateTime? @db.Timestamp(6)
+  rejection_reason    String?   @db.Text
+  
+  uploaded_at         DateTime  @default(now()) @db.Timestamp(6)
+  expires_at          DateTime? @db.Timestamp(6)
+  
+  // Relations
+  merchant            users     @relation("MerchantDocuments", fields: [merchant_id], references: [id], onDelete: Cascade)
+  approved_by_user    users?    @relation("DocumentsApproved", fields: [approved_by], references: [id])
+  product             products? @relation(fields: [product_id], references: [id])
+  
+  @@index([merchant_id])
+  @@index([approval_status])
+  @@schema("auth")
+}
+
+
+
+model reports {
+  id             Int       @id @default(autoincrement())
+  report_type    String?   @db.VarChar(50)
+  report_date    DateTime? @default(now()) @db.Timestamp(6)
+  report_month   DateTime?
+  report_content Json?
+
+  @@schema("auth")
+}
+
+model revenue {
+  id            Int      @id @default(autoincrement())
+  total_income  Decimal? @default(0) @db.Decimal(15, 2)
+  total_expense Decimal? @default(0) @db.Decimal(15, 2)
+  report_month  DateTime @unique @db.Date
+
+  @@schema("auth")
+}
+
+// model reviews {
+//   id         Int       @id @default(autoincrement())
+//   user_id    Int?
+//   product_id Int?
+//   rating     Int?
+//   comment    String?
+//   created_at DateTime? @default(now()) @db.Timestamp(6)
+//   products   products? @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+//   users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+//   @@schema("auth")
+// }
+
+
+model reviews {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  product_id Int?
+  rating     Int?
+  comment    String?
+ username String @default("Anonymous")
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  
+  products   products? @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  
+  // New relations for likes and comments
+  review_likes    review_likes[]
+  review_comments review_comments[]
+  
+  @@schema("auth")
+}
+
+
+
+
+model review_likes {
+  id        Int      @id @default(autoincrement())
+  review_id Int
+  user_id   Int?
+  is_like   Boolean  // true for like, false for dislike
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  
+  reviews   reviews  @relation(fields: [review_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  
+  @@unique([review_id, user_id]) // One like/dislike per user per review
+  @@schema("auth")
+}
+
+
+model review_comments {
+  id        Int      @id @default(autoincrement())
+  review_id Int
+  user_id   Int?
+  comment   String
+username String @default("Anonymous")          
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  
+  reviews   reviews  @relation(fields: [review_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users     users?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  
+  @@schema("auth")
+}
+
+
+model product_views {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  user_id    Int?     // Optional for anonymous users
+  ip_address String?  // Track anonymous users by IP
+  user_agent String?  // Track browser/device info
+   username String @default("Anonymous")
+  viewed_at  DateTime @default(now()) @db.Timestamp(6)
+  
+  products   products @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  // users      users?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users         users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  
+  // Prevent duplicate views from same user/IP within short time
+  @@unique([product_id, user_id, ip_address])
+  @@index([product_id])
+  @@index([viewed_at])
+  @@schema("auth")
+}
+
+
+
+
+model roles {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique @db.VarChar(50)
+  description String?
+  user_roles  user_roles[]
+
+  @@schema("auth")
+}
+
+model sessions {
+  id            Int       @id @default(autoincrement())
+  user_id       Int?
+  session_token String    @db.VarChar(255)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  users         users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("auth")
+}
+
+model shipping_details {
+  id          Int       @id @default(autoincrement())
+  user_id     Int?
+  full_name   String    @db.VarChar(255)
+  country     String    @db.VarChar(100)
+  city        String    @db.VarChar(100)
+  street      String    @db.VarChar(255)
+  apartment   String?   @db.VarChar(255)
+  postal_code String    @db.VarChar(20)
+  phone       String    @db.VarChar(20)
+  email       String    @db.VarChar(255)
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  users       users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("auth")
+}
+
+model user_analytics {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  browser    String?   @db.VarChar(50)
+  device     String?   @db.VarChar(50)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("auth")
+}
+
+model user_roles {
+  user_id Int
+  role_id Int
+  roles   roles @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users   users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_id, role_id])
+  @@schema("auth")
+}
+
+
+model multimedia_data {
+  id             Int       @id @default(autoincrement())
+  user_id        Int?
+  file_type      String    @db.VarChar(50) // e.g., pdf, image, audio, video
+  file_url       String    @db.VarChar(255)
+  extracted_text String?
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  users          users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  @@schema("auth")
+}
+
+
+// model users {
+//   id                       Int                @id @default(autoincrement())
+//   username                 String             @unique @db.VarChar(100)
+//   email                    String             @unique @db.VarChar(100)
+//     phone                    String?            @db.VarChar(20) 
+//   password_hash            String             @db.VarChar(255)
+//   created_at               DateTime?          @default(now()) @db.Timestamp(6)
+//   updated_at               DateTime?          @default(now()) @db.Timestamp(6)
+//   role                     String?            @default("user") @db.VarChar(50)
+//   email_verification_token String?            @db.VarChar(255)
+//   email_verified           Boolean?           @default(false)
+//   login_token              String?            @db.VarChar(255)
+//   login_token_expires      DateTime?
+//   password_changed_at      DateTime?
+//   password_reset_expires   DateTime?
+//   password_reset_token     String?            @db.VarChar(255)
+//   refresh_token            String?            @db.VarChar(255)
+//   refresh_token_expires    DateTime?
+//   blogs                    blogs[]
+//   cart                     cart[]
+//   orders                   orders[]
+//   password_resets          password_resets[]
+//   payments                 payments[]
+//   reviews                  reviews[]
+//   review_likes    review_likes[]
+//   review_comments review_comments[]
+//   product_views   product_views[]
+//   sessions                 sessions[]
+//   shipping_details         shipping_details[]
+//   user_analytics           user_analytics[]
+//   user_roles               user_roles[]
+//   multimedia_data  multimedia_data[] 
+
+//   @@index([password_reset_token, password_reset_expires], map: "idx_password_reset_composite")
+//   @@index([email_verification_token], map: "idx_email_verification_token")
+//   @@index([refresh_token], map: "idx_refresh_token")
+//   @@index([login_token], map: "idx_login_token")
+//   @@index([phone], map: "idx_phone")
+//   @@schema("auth")
+// }
+
+
+
+
+
+
+// 🆕 Hold merchant payments using REAL payment processor features
+model payment_holds {
+  id                    Int       @id @default(autoincrement())
+  payment_id            Int       @unique
+  order_id              Int
+  amount                Decimal   @db.Decimal(10, 2)
+  merchant_id           Int       // The client_admin who will receive payment
+  
+  // Real Payment Processor Integration
+  processor             String    @db.VarChar(50) // "stripe", "paypal", "paynow", "ecocash", etc.
+  processor_payment_id  String?   @db.VarChar(255) // Payment ID from processor
+  processor_transfer_id String?   @db.VarChar(255) // Transfer/payout ID (when released)
+  
+  // Merchant Payout Details
+  merchant_account_id   String?   @db.VarChar(255) // Their Stripe account, PayPal email, etc.
+  
+  // Hold Management
+  hold_until            DateTime  @db.Timestamp(6) // Auto-release after 7-14 days
+  status                String    @default("holding") @db.VarChar(50) // holding, released, disputed, refunded
+  released_at           DateTime? @db.Timestamp(6)
+  dispute_reason        String?   @db.Text
+  
+  // For disputes/chargebacks
+  can_dispute_until     DateTime? @db.Timestamp(6) // Customer can dispute within X days
+  
+  created_at            DateTime  @default(now()) @db.Timestamp(6)
+  updated_at            DateTime  @updatedAt @db.Timestamp(6)
+  
+  payment               payments  @relation(fields: [payment_id], references: [id], onDelete: Cascade)
+  merchant              users     @relation("MerchantPayments", fields: [merchant_id], references: [id], onDelete: Cascade)
+  
+  @@index([hold_until])
+  @@index([status])
+  @@index([merchant_id])
+  @@index([processor])
+  @@index([processor_payment_id])
+  @@schema("auth")
+}
+
+
+model subscriptions {
+  id                 Int       @id @default(autoincrement())
+  user_id            Int
+  plan_type          String    // '3_months', '6_months', '1_year'
+  start_date         DateTime  @default(now())
+  end_date           DateTime
+  is_active          Boolean   @default(true)
+  is_trial           Boolean   @default(false)
+  auto_renew         Boolean   @default(false)
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+  
+  users              users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@index([user_id])
+  @@index([end_date])
+   @@schema("auth")
+}
+
+// Payment proofs for activation & subscriptions
+model payment_proofs {
+  id                    Int       @id @default(autoincrement())
+  user_id               Int
+  payment_type          String    // 'activation' or 'subscription'
+  plan_type             String?   // '3_months', '6_months', '1_year'
+  payment_method        String    // 'ecocash' or 'paynow'
+  phone_number          String
+  transaction_reference String
+  amount                Decimal   @db.Decimal(10, 2)
+  payment_proof_url     String?   // Image/file URL
+  status                String    @default("pending") // 'pending', 'approved', 'rejected'
+  rejection_reason      String?
+  approved_by           Int?
+  approved_at           DateTime?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  
+  users                 users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  approver              users?    @relation("PaymentApprover", fields: [approved_by], references: [id])
+  
+  @@index([user_id])
+  @@index([status])
+   @@schema("auth")
+}
+
+
+model users {
+  id                       Int                @id @default(autoincrement())
+  username                 String?            @unique @db.VarChar(100) // Made optional for social logins
+  name                     String?            @db.VarChar(100) // For clients (customers)
+  merchant_name            String?            @db.VarChar(200) // For client_admins (merchants)
+  email                    String             @unique @db.VarChar(100)
+  phone                    String?            @unique @db.VarChar(20) // Made unique
+  password_hash            String?            @db.VarChar(255) // Made optional for social logins
+  
+  // Role and status
+  role                     String?            @default("client") @db.VarChar(50) // super_admin, digital_marketer_admin, client_admin, client
+  is_active                Boolean?           @default(true)
+  
+  // Merchant-specific fields (for client_admin)
+  physical_address         String?            @db.Text
+  geo_latitude             Float?             // Latitude coordinate
+  geo_longitude            Float?             // Longitude coordinate
+
+
+   subscription_status   String?   @default("inactive") // 'inactive', 'trial', 'active', 'suspended'
+  trial_ends_at         DateTime?
+  
+  subscriptions         subscriptions[]
+  payment_proofs        payment_proofs[]
+  approved_payments     payment_proofs[] @relation("PaymentApprover")
+
+
+  can_upload_products      Boolean?           @default(true)
+
+    // ⬇️⬇️⬇️ ADD MERCHANT PAYMENT ACCOUNT INFO ⬇️⬇️⬇️
+  // For client_admins (merchants) to receive payments
+  stripe_account_id        String?            @unique @db.VarChar(255) // Stripe Connect account
+  paypal_email             String?            @db.VarChar(255)
+  ecocash_number           String?            @db.VarChar(20)
+  paynow_merchant_id       String?            @db.VarChar(255)
+  bank_account_number      String?            @db.VarChar(50)
+  bank_name                String?            @db.VarChar(100)
+  payment_method_verified  Boolean?           @default(false) // Has admin verified their payout method?
+  // ⬆️⬆️⬆️ END MERCHANT PAYMENT INFO ⬆️⬆️⬆️
+
+
+    // ⬇️⬇️⬇️ ADD ONLY THESE AGENT FIELDS ⬇️⬇️⬇️
+  // FOR AGENTS ONLY (salespeople who promote products)
+  agent_code               String?            @unique @db.VarChar(50) // e.g., "JOHN2025"
+  commission_rate          Decimal?           @default(5.0) @db.Decimal(5, 2) // Default 5%
+  total_sales_value        Decimal?           @default(0) @db.Decimal(15, 2) // Total $ sold
+  total_commission_earned  Decimal?           @default(0) @db.Decimal(15, 2) // Total commission
+  pending_commission       Decimal?           @default(0) @db.Decimal(10, 2) // Not paid yet
+  paid_commission          Decimal?           @default(0) @db.Decimal(10, 2) // Already paid
+  total_orders_referred    Int?               @default(0) // How many sales made
+  agent_status             String?            @default("active") @db.VarChar(50) // active, suspended
+  
+  // Agent payout info (for auto-payments)
+  agent_payout_method      String?            @db.VarChar(50) // "ecocash", "bank", "paynow"
+  agent_payout_number      String?            @db.VarChar(100) // Phone or account number
+  agent_payout_name        String?            @db.VarChar(200) // Account holder name
+  auto_payout_enabled      Boolean?           @default(false) // Enable auto-payments?
+  min_payout_amount        Decimal?           @default(10.0) @db.Decimal(10, 2) // Min $10 to payout
+  // ⬆️⬆️⬆️ END AGENT FIELDS ⬆️⬆️⬆️
+
+
+   // ⬇️⬇️⬇️ ADD ONLY THESE AGENT FIELDS ⬇️⬇️⬇️
+   products_uploaded        products[]              @relation("ProductsUploaded")
+  products_approved        products[]              @relation("ProductsApproved")
+  business_documents       business_documents[]    @relation("MerchantDocuments")
+  documents_approved       business_documents[]    @relation("DocumentsApproved")
+   // ⬆️⬆️⬆️ END AGENT FIELDS ⬆️⬆️⬆️
+
+   // In RELATIONS section, add these:
+  merchant_payment_holds   payment_holds[]    @relation("MerchantPayments")
+  payments_received        payments[]         @relation("MerchantPaymentsReceived")
+
+
+  product_agents       product_agents[]
+  agents_approved      product_agents[] @relation("AgentApprovedBy")
+
+  
+  // Social authentication providers
+  auth_provider            String             @default("email") @db.VarChar(50) // email, google, apple, facebook
+  google_id                String?            @unique @db.VarChar(255)
+  apple_id                 String?            @unique @db.VarChar(255)
+  facebook_id              String?            @unique @db.VarChar(255)
+  
+  // Session management
+  last_login               DateTime?          @db.Timestamp(6)
+  
+  // Existing fields
+  created_at               DateTime?          @default(now()) @db.Timestamp(6)
+  updated_at               DateTime?          @default(now()) @updatedAt @db.Timestamp(6)
+  email_verification_token String?            @db.VarChar(255)
+  email_verified           Boolean?           @default(false)
+  login_token              String?            @db.VarChar(255)
+  login_token_expires      DateTime?          @db.Timestamp(6)
+  password_changed_at      DateTime?          @db.Timestamp(6)
+  password_reset_expires   DateTime?          @db.Timestamp(6)
+  password_reset_token     String?            @db.VarChar(255)
+  refresh_token            String?            @db.VarChar(255)
+  refresh_token_expires    DateTime?          @db.Timestamp(6)
+  
+  // Relations
+  agent_sales              agent_sales[]
+  agent_payouts            agent_payouts[]
+  blogs                    blogs[]
+  cart                     cart[]
+  orders                   orders[]
+  password_resets          password_resets[]
+  payments                 payments[]
+  reviews                  reviews[]
+  review_likes             review_likes[]
+  review_comments          review_comments[]
+  product_views            product_views[]
+  sessions                 sessions[]
+  shipping_details         shipping_details[]
+  user_analytics           user_analytics[]
+  user_roles               user_roles[]
+  multimedia_data          multimedia_data[]
+  otps                     otps[] // Add this relation
+
+  @@index([password_reset_token, password_reset_expires], map: "idx_password_reset_composite")
+  @@index([email_verification_token], map: "idx_email_verification_token")
+  @@index([refresh_token], map: "idx_refresh_token")
+  @@index([login_token], map: "idx_login_token")
+  @@index([phone], map: "idx_phone")
+  @@index([google_id], map: "idx_google_id")
+  @@index([apple_id], map: "idx_apple_id")
+  @@index([facebook_id], map: "idx_facebook_id")
+  @@index([auth_provider], map: "idx_auth_provider")
+  @@index([geo_latitude, geo_longitude], map: "idx_geo_location")
+  @@schema("auth")
+}
+
+// OTP Table for email verification
+model otps {
+  id            Int       @id @default(autoincrement())
+  user_id       Int?      // Made optional for pre-registration OTPs
+  email         String    @db.VarChar(100)
+  otp_code      String    @db.VarChar(10)
+  purpose       String    @db.VarChar(50) // registration, login, verification
+  is_used       Boolean   @default(false)
+  expires_at    DateTime  @db.Timestamp(6)
+  created_at    DateTime  @default(now()) @db.Timestamp(6)
+  
+  users         users?    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@index([email, otp_code], map: "idx_otp_lookup")
+  @@index([expires_at], map: "idx_otp_expires")
+  @@schema("auth")
+}

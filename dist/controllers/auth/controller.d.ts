@@ -1,0 +1,13 @@
+import { FastifyRequest, FastifyReply } from 'fastify';
+export declare const seedUsers: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+export declare const requestOTP: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+export declare const verifyOTPCode: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+export declare const registerClientAdmin: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+export declare const registerClient: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+export declare const login: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+export declare const changePassword: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+export declare const forgotPassword: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+export declare const resetPassword: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+export declare const getUser: (request: FastifyRequest, reply: FastifyReply) => Promise<undefined>;
+export declare const getAllUsers: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+export declare const deleteUser: (request: FastifyRequest, reply: FastifyReply) => Promise<undefined>;
