@@ -14,7 +14,7 @@ export const PREDEFINED_USERS = {
   super_admin: {
     username: 'super_admin',
     email: 'super.admin@zimnextsmile.com',
-    password: 'SAdm%2025!G7kL',    
+    password: 'SuperAdmin@2025',    
     phone: null,
     role: 'super_admin' as const
   },
