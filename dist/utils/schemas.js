@@ -14,7 +14,7 @@ exports.PREDEFINED_USERS = {
     super_admin: {
         username: 'super_admin',
         email: 'super.admin@zimnextsmile.com',
-        password: 'SAdm%2025!G7kL',
+        password: 'SuperAdmin@2025',
         phone: null,
         role: 'super_admin'
     },
@@ -143,7 +143,8 @@ exports.clientAdminRegisterSchema = zod_1.z.object({
         latitude: zod_1.z.number().min(-90).max(90),
         longitude: zod_1.z.number().min(-180).max(180)
     }),
-    authProvider: zod_1.z.literal('google'),
+    // authProvider: z.literal('google'),
+    authProvider: zod_1.z.enum(['google', 'email']),
     googleId: zod_1.z.string().optional(),
     password: zod_1.z.string().optional(),
     role: zod_1.z.literal('client_admin')

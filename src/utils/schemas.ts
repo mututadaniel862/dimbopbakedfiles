@@ -157,7 +157,8 @@ export const clientAdminRegisterSchema = z.object({
     latitude: z.number().min(-90).max(90),
     longitude: z.number().min(-180).max(180)
   }),
-  authProvider: z.literal('google'),
+  // authProvider: z.literal('google'),
+  authProvider: z.enum(['google', 'email']),
   googleId: z.string().optional(),
   password: z.string().optional(),
   role: z.literal('client_admin')

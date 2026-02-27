@@ -179,7 +179,7 @@ export declare const clientAdminRegisterSchema: z.ZodObject<{
         latitude: number;
         longitude: number;
     }>;
-    authProvider: z.ZodLiteral<"google">;
+    authProvider: z.ZodEnum<["google", "email"]>;
     googleId: z.ZodOptional<z.ZodString>;
     password: z.ZodOptional<z.ZodString>;
     role: z.ZodLiteral<"client_admin">;
@@ -193,7 +193,7 @@ export declare const clientAdminRegisterSchema: z.ZodObject<{
         latitude: number;
         longitude: number;
     };
-    authProvider: "google";
+    authProvider: "email" | "google";
     password?: string | undefined;
     googleId?: string | undefined;
 }, {
@@ -206,7 +206,7 @@ export declare const clientAdminRegisterSchema: z.ZodObject<{
         latitude: number;
         longitude: number;
     };
-    authProvider: "google";
+    authProvider: "email" | "google";
     password?: string | undefined;
     googleId?: string | undefined;
 }>;
@@ -759,7 +759,7 @@ export declare const schemas: {
             latitude: number;
             longitude: number;
         }>;
-        authProvider: z.ZodLiteral<"google">;
+        authProvider: z.ZodEnum<["google", "email"]>;
         googleId: z.ZodOptional<z.ZodString>;
         password: z.ZodOptional<z.ZodString>;
         role: z.ZodLiteral<"client_admin">;
@@ -773,7 +773,7 @@ export declare const schemas: {
             latitude: number;
             longitude: number;
         };
-        authProvider: "google";
+        authProvider: "email" | "google";
         password?: string | undefined;
         googleId?: string | undefined;
     }, {
@@ -786,7 +786,7 @@ export declare const schemas: {
             latitude: number;
             longitude: number;
         };
-        authProvider: "google";
+        authProvider: "email" | "google";
         password?: string | undefined;
         googleId?: string | undefined;
     }>;

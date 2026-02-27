@@ -126,9 +126,24 @@ export const registerClientAdmin = async (data: any): Promise<users> => {
     clientAdminRegisterSchema.parse(data);
 
   // For Google registration, googleId MUST be present
-  if (authProvider === 'google' && !googleId) {
-    throw new Error('Google ID is required for Google registration. Please use the Google Sign-In button.');
-  }
+  // if (authProvider === 'google' && !googleId) {
+  //   throw new Error('Google ID is required for Google registration. Please use the Google Sign-In button.');
+  // }
+
+
+   // ✅ Fix
+if (authProvider === 'google' && !googleId) {
+  throw new Error('Google ID is required for Google registration.');
+}
+
+// Hash password for email registrations
+let hashedPassword = null;
+if (authProvider === 'email') {
+  if (!data.password) throw new Error('Password is required for email registration');
+  hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
+}
+
+
 
   // Check if this Google ID already exists
   if (googleId) {
