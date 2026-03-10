@@ -287,10 +287,18 @@ export const loginUser = async (data: any): Promise<users> => {
   }
 
   // Only allow admin roles to log in via this endpoint
-  const ADMIN_ROLES = ['super_admin', 'digital_marketer_admin', 'client_admin'];
-  if (!ADMIN_ROLES.includes(user.role || '')) {
-    throw new Error('Login is restricted to administrators only');
-  }
+  // const ADMIN_ROLES = ['super_admin', 'digital_marketer_admin', 'client_admin'];
+  // if (!ADMIN_ROLES.includes(user.role || '')) {
+  //   throw new Error('Login is restricted to administrators only');
+  // }
+
+
+// Allow all roles to log in
+const ALLOWED_ROLES = ['super_admin', 'digital_marketer_admin', 'client_admin', 'client'];
+if (!ALLOWED_ROLES.includes(user.role || '')) {
+  throw new Error('Invalid account role');
+}
+
 
   // Password check for email auth
   if (authProvider === 'email' || (!authProvider && password)) {

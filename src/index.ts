@@ -19,6 +19,8 @@ import businessDocumentRoutes from './routes/businessDocuments';
 import agentRoutes from './routes/agents';
 import { startSubscriptionCron } from './jobs/subscriptionCron';
 import subscriptionRoutes from './routes/subscription';
+import paymentRoutes from './routes/payments';
+import deliveryRoutes from './routes/delivery';
 
 
 
@@ -90,6 +92,8 @@ app.register(serachroute, { prefix: '/api/search' });
 app.register(businessDocumentRoutes, { prefix: '/api/business-documents' });
 app.register(agentRoutes, { prefix: '/api/agents' });
 app.register(subscriptionRoutes, { prefix: '/api/v1' });
+app.register(paymentRoutes, { prefix: '/api/payments' });
+app.register(deliveryRoutes, { prefix: '/api/delivery' });
 
 
 // Register routes
