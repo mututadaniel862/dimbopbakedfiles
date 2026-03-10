@@ -14,7 +14,7 @@ pesepay.resultUrl = process.env.PESEPAY_RESULT_URL!;
 pesepay.returnUrl  = process.env.PESEPAY_RETURN_URL!;
 
 export const initiatePayment = async (data: {
-  orderId?: number;           // Optional — no order needed for testing
+  orderId?: number;
   userId: number;
   amount: number;
   reason: string;
@@ -44,13 +44,29 @@ export const initiatePayment = async (data: {
     ? `ORDER-${data.orderId}`
     : `USER-${data.userId}-${Date.now()}`;
 
-  const response = await pesepay.initiateTransaction(transaction);
+  // ── LOG: show exactly what we're sending to Pesepay ──
+  console.log('📤 Sending to Pesepay:', JSON.stringify(transaction, null, 2));
+  console.log('🔑 Integration Key exists:', !!process.env.PESEPAY_INTEGRATION_KEY);
+  console.log('🔑 Encryption Key exists:', !!process.env.PESEPAY_ENCRYPTION_KEY);
+  console.log('🔗 Result URL:', process.env.PESEPAY_RESULT_URL);
+  console.log('🔗 Return URL:', process.env.PESEPAY_RETURN_URL);
 
-  if (!response?.redirectUrl) {
-    throw new Error('Failed to get redirect URL from Pesepay');
+  let response: any;
+  try {
+    response = await pesepay.initiateTransaction(transaction);
+  } catch (err: any) {
+    console.error('❌ Pesepay initiateTransaction error:', err?.message ?? err);
+    throw new Error(`Pesepay error: ${err?.message ?? 'Unknown error'}`);
   }
 
-  // order_id is null if no real order yet — no foreign key error
+  // ── LOG: show exactly what Pesepay returned ──
+  console.log('📥 Pesepay response:', JSON.stringify(response, null, 2));
+
+  if (!response?.redirectUrl) {
+    console.error('❌ No redirectUrl in response:', response);
+    throw new Error(`Pesepay returned no redirectUrl. Status: ${response?.transactionStatus ?? 'unknown'}. Message: ${response?.transactionStatusDescription ?? 'none'}`);
+  }
+
   await prisma.payments.create({
     data: {
       order_id:       data.orderId ?? null,
@@ -91,7 +107,6 @@ export const checkPaymentStatus = async (referenceNumber: string) => {
         where: { id: payment.order_id },
         data: { status: 'Processing', updated_at: new Date() }
       });
-      console.log(`✅ Order ${payment.order_id} marked as Processing`);
     }
   }
 
@@ -119,7 +134,6 @@ export const calculateShippingFee = async (data: {
 
   return { shippingFee, merchantCity, customerCity, freeDelivery: false };
 };
-
 
 
 
