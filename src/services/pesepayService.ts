@@ -5,15 +5,17 @@ import axios from 'axios';
 
 const prisma = new PrismaClient();
 
+// Load keys from environment, remove extra spaces/CR/LF
 const INTEGRATION_KEY = (process.env.PESEPAY_INTEGRATION_KEY || '').replace(/[\r\n\t ]+/g, '').trim();
 const ENCRYPTION_KEY  = (process.env.PESEPAY_ENCRYPTION_KEY  || '').replace(/[\r\n\t ]+/g, '').trim();
 const RESULT_URL      = process.env.PESEPAY_RESULT_URL!;
 const RETURN_URL      = process.env.PESEPAY_RETURN_URL!;
 
-// ✅ Using SANDBOX for testing — switch to production when ready
+// Use Sandbox URLs for testing
 const INITIATE_URL = 'https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/initiate';
 const CHECK_URL    = 'https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/check-payment';
 
+// Encrypt request payload using AES-256-CBC
 function encryptPayload(data: object): string {
   if (ENCRYPTION_KEY.length !== 32) {
     throw new Error(`Encryption key must be 32 characters. Got: ${ENCRYPTION_KEY.length}`);
@@ -29,6 +31,7 @@ function encryptPayload(data: object): string {
   return encrypted.toString('base64');
 }
 
+// Decrypt Pesepay response
 function decryptPayload(encryptedBase64: string): any {
   const key      = Buffer.from(ENCRYPTION_KEY, 'utf8');
   const iv       = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
@@ -57,7 +60,7 @@ export const initiatePayment = async (data: {
     ? `${data.reason} | Delivery: ${data.deliveryLocation}`
     : data.reason;
 
-  // Debug key info
+  // Debug keys & URLs
   console.log('🔑 Integration Key length:', INTEGRATION_KEY.length);
   console.log('🔑 Encryption Key length:', ENCRYPTION_KEY.length);
   console.log('🔗 Result URL:', RESULT_URL);
@@ -85,7 +88,7 @@ export const initiatePayment = async (data: {
 
   const encryptedPayload = encryptPayload(requestBody);
 
-  // ✅ Using axios.post() with object — not string, capital A in Authorization
+  // Make POST request to Pesepay
   let axiosResponse: any;
   try {
     axiosResponse = await axios.post(
@@ -93,7 +96,7 @@ export const initiatePayment = async (data: {
       { payload: encryptedPayload },
       {
         headers: {
-          'Authorization': INTEGRATION_KEY,
+          'Authorization': INTEGRATION_KEY, // Must be exact key
           'Content-Type':  'application/json',
         },
         timeout: 30000,
@@ -126,6 +129,7 @@ export const initiatePayment = async (data: {
     );
   }
 
+  // Save payment in database
   await prisma.payments.create({
     data: {
       order_id:       data.orderId ?? null,
@@ -203,8 +207,6 @@ export const calculateShippingFee = async (data: {
     freeDelivery: false,
   };
 };
-
-
 
 
 
