@@ -1,7 +1,7 @@
 // src/services/pesepayService.ts
 import { PrismaClient } from '@prisma/client';
 import * as crypto from 'crypto';
-import * as https from 'https';
+import axios from 'axios';
 
 const prisma = new PrismaClient();
 
@@ -10,11 +10,18 @@ const ENCRYPTION_KEY  = (process.env.PESEPAY_ENCRYPTION_KEY  || '').replace(/[\r
 const RESULT_URL      = process.env.PESEPAY_RESULT_URL!;
 const RETURN_URL      = process.env.PESEPAY_RETURN_URL!;
 
+// ✅ Using SANDBOX for testing — switch to production when ready
+const INITIATE_URL = 'https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/initiate';
+const CHECK_URL    = 'https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/check-payment';
+
 function encryptPayload(data: object): string {
-  const key     = Buffer.from(ENCRYPTION_KEY, 'utf8');
-  const iv      = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
-  const cipher  = crypto.createCipheriv('aes-256-cbc', key, iv);
-  const json    = JSON.stringify(data);
+  if (ENCRYPTION_KEY.length !== 32) {
+    throw new Error(`Encryption key must be 32 characters. Got: ${ENCRYPTION_KEY.length}`);
+  }
+  const key      = Buffer.from(ENCRYPTION_KEY, 'utf8');
+  const iv       = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
+  const cipher   = crypto.createCipheriv('aes-256-cbc', key, iv);
+  const json     = JSON.stringify(data);
   const encrypted = Buffer.concat([
     cipher.update(Buffer.from(json, 'utf8')),
     cipher.final()
@@ -31,48 +38,6 @@ function decryptPayload(encryptedBase64: string): any {
     decipher.final()
   ]);
   return JSON.parse(decrypted.toString('utf8'));
-}
-
-// ── Pure Node https request — no axios ───────────────────────
-function httpsPost(body: object): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const bodyStr = JSON.stringify(body);
-
-    const options: https.RequestOptions = {
-      hostname: 'api.pesepay.com',
-      path:     '/api/payments-engine/v1/payments/initiate',
-      method:   'POST',
-      headers:  {
-        'Authorization': INTEGRATION_KEY,
-        'Content-Type':   'application/json',
-        'Content-Length': Buffer.byteLength(bodyStr),
-      },
-    };
-
-    console.log('📤 HTTPS options:', JSON.stringify({ ...options, headers: options.headers }));
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => { data += chunk; });
-      res.on('end', () => {
-        console.log('📥 Status:', res.statusCode);
-        console.log('📥 Raw response:', data);
-        try {
-          resolve(JSON.parse(data));
-        } catch {
-          reject(new Error('Failed to parse response: ' + data));
-        }
-      });
-    });
-
-    req.on('error', (err) => {
-      console.error('❌ HTTPS error:', err.message);
-      reject(err);
-    });
-
-    req.write(bodyStr);
-    req.end();
-  });
 }
 
 // ── INITIATE PAYMENT ─────────────────────────────────────────
@@ -92,11 +57,20 @@ export const initiatePayment = async (data: {
     ? `${data.reason} | Delivery: ${data.deliveryLocation}`
     : data.reason;
 
+  // Debug key info
+  console.log('🔑 Integration Key length:', INTEGRATION_KEY.length);
+  console.log('🔑 Encryption Key length:', ENCRYPTION_KEY.length);
+  console.log('🔗 Result URL:', RESULT_URL);
+  console.log('🔗 Return URL:', RETURN_URL);
+
   const requestBody: any = {
-    amountDetails:    { amount: totalAmount, currencyCode: 'USD' },
+    amountDetails: {
+      amount:       totalAmount,
+      currencyCode: 'USD',
+    },
     reasonForPayment: fullReason,
-    resultUrl:        RESULT_URL,
-    returnUrl:        RETURN_URL,
+    resultUrl: RESULT_URL,
+    returnUrl: RETURN_URL,
   };
 
   if (data.customerEmail || data.customerName || data.customerPhone) {
@@ -107,26 +81,43 @@ export const initiatePayment = async (data: {
     };
   }
 
-  console.log('📤 Request body:', JSON.stringify(requestBody));
-  console.log('🔑 Integration key length:', INTEGRATION_KEY.length);
-  console.log('🔑 Encryption key length:', ENCRYPTION_KEY.length);
+  console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
 
   const encryptedPayload = encryptPayload(requestBody);
-  const response = await httpsPost({ payload: encryptedPayload });
 
-  if (!response?.payload) {
-    console.error('❌ No payload in response:', response);
-    throw new Error('Pesepay returned no payload: ' + JSON.stringify(response));
+  // ✅ Using axios.post() with object — not string, capital A in Authorization
+  let axiosResponse: any;
+  try {
+    axiosResponse = await axios.post(
+      INITIATE_URL,
+      { payload: encryptedPayload },
+      {
+        headers: {
+          'Authorization': INTEGRATION_KEY,
+          'Content-Type':  'application/json',
+        },
+        timeout: 30000,
+      }
+    );
+  } catch (err: any) {
+    const status  = err?.response?.status;
+    const errData = err?.response?.data ?? err?.message ?? String(err);
+    console.error('❌ Pesepay error status:', status);
+    console.error('❌ Pesepay error body:', JSON.stringify(errData));
+    throw new Error(`Pesepay API error: ${JSON.stringify(errData)}`);
   }
+
+  console.log('📥 Pesepay response:', JSON.stringify(axiosResponse.data, null, 2));
 
   let decrypted: any;
   try {
-    decrypted = decryptPayload(response.payload);
+    decrypted = decryptPayload(axiosResponse.data.payload);
   } catch (err: any) {
-    throw new Error('Decrypt failed: ' + err.message);
+    console.error('❌ Decrypt failed:', err.message);
+    throw new Error('Failed to decrypt Pesepay response: ' + err.message);
   }
 
-  console.log('🔓 Decrypted:', JSON.stringify(decrypted));
+  console.log('🔓 Decrypted:', JSON.stringify(decrypted, null, 2));
 
   if (!decrypted?.redirectUrl) {
     throw new Error(
@@ -158,52 +149,36 @@ export const initiatePayment = async (data: {
 
 // ── CHECK PAYMENT STATUS ─────────────────────────────────────
 export const checkPaymentStatus = async (referenceNumber: string) => {
-  return new Promise<any>((resolve, reject) => {
-    const options: https.RequestOptions = {
-      hostname: 'api.pesepay.com',
-      path:     `/api/payments-engine/v1/payments/check-payment?referenceNumber=${encodeURIComponent(referenceNumber)}`,
-      method:   'GET',
-      headers:  {
-        'Authorization': INTEGRATION_KEY,
-        'Content-Type':  'application/json',
-      },
-    };
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => { data += chunk; });
-      res.on('end', async () => {
-        try {
-          const parsed    = JSON.parse(data);
-          const decrypted = decryptPayload(parsed.payload);
-          const status    = decrypted.transactionStatus;
-          const paid      = status === 'SUCCESS';
-
-          await prisma.payments.updateMany({
-            where: { transaction_id: referenceNumber },
-            data:  { status: paid ? 'Success' : status },
-          });
-
-          if (paid) {
-            const payment = await prisma.payments.findFirst({ where: { transaction_id: referenceNumber } });
-            if (payment?.order_id) {
-              await prisma.orders.update({
-                where: { id: payment.order_id },
-                data:  { status: 'Processing', updated_at: new Date() },
-              });
-            }
-          }
-
-          resolve({ referenceNumber, status, paid, amountDetails: decrypted.amountDetails });
-        } catch (err: any) {
-          reject(err);
-        }
-      });
-    });
-
-    req.on('error', reject);
-    req.end();
+  const axiosResponse = await axios.get(CHECK_URL, {
+    params:  { referenceNumber },
+    headers: {
+      'Authorization': INTEGRATION_KEY,
+      'Content-Type':  'application/json',
+    },
+    timeout: 30000,
   });
+
+  const decrypted = decryptPayload(axiosResponse.data.payload);
+  const status    = decrypted.transactionStatus;
+  const paid      = status === 'SUCCESS';
+
+  await prisma.payments.updateMany({
+    where: { transaction_id: referenceNumber },
+    data:  { status: paid ? 'Success' : status },
+  });
+
+  if (paid) {
+    const payment = await prisma.payments.findFirst({ where: { transaction_id: referenceNumber } });
+    if (payment?.order_id) {
+      await prisma.orders.update({
+        where: { id: payment.order_id },
+        data:  { status: 'Processing', updated_at: new Date() },
+      });
+      console.log(`✅ Order ${payment.order_id} → Processing`);
+    }
+  }
+
+  return { referenceNumber, status, paid, amountDetails: decrypted.amountDetails };
 };
 
 // ── CALCULATE SHIPPING FEE ───────────────────────────────────
@@ -228,7 +203,6 @@ export const calculateShippingFee = async (data: {
     freeDelivery: false,
   };
 };
-
 
 
 
