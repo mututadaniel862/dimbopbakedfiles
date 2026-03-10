@@ -5,19 +5,20 @@ import axios from 'axios';
 
 const prisma = new PrismaClient();
 
-// Load keys from environment, remove extra spaces/CR/LF
-// const INTEGRATION_KEY = (process.env.PESEPAY_INTEGRATION_KEY || '').replace(/[\r\n\t ]+/g, '').trim();
-// const ENCRYPTION_KEY  = (process.env.PESEPAY_ENCRYPTION_KEY  || '').replace(/[\r\n\t ]+/g, '').trim();
-// const INTEGRATION_KEY = (process.env.PESEPAY_INTEGRATION_KEY || '').replace(/[^\x20-\x7E]/g, '').trim();
-// const ENCRYPTION_KEY  = (process.env.PESEPAY_ENCRYPTION_KEY  || '').replace(/[^\x20-\x7E]/g, '').trim();
+// Hardcoded keys (env vars had hidden characters)
+const INTEGRATION_KEY = 'a10148d9-755e-44f2-af64-444595169507';
+const ENCRYPTION_KEY  = 'd4fc6074f15d4142a0af36133ac9615e';
+
+// Sanitize URLs from environment
 const RESULT_URL = (process.env.PESEPAY_RESULT_URL || '').replace(/[^\x20-\x7E]/g, '').trim();
 const RETURN_URL = (process.env.PESEPAY_RETURN_URL || '').replace(/[^\x20-\x7E]/g, '').trim();
+
+console.log('🔑 Integration Key:', JSON.stringify(INTEGRATION_KEY));
+console.log('🔑 Encryption Key:', JSON.stringify(ENCRYPTION_KEY));
 console.log('🔗 Result URL sanitized:', JSON.stringify(RESULT_URL));
 console.log('🔗 Return URL sanitized:', JSON.stringify(RETURN_URL));
-const RESULT_URL      = process.env.PESEPAY_RESULT_URL!;
-const RETURN_URL      = process.env.PESEPAY_RETURN_URL!;
 
-// ✅ FIX 1: Production URLs (your dashboard keys are production keys)
+// Production URLs
 const INITIATE_URL = 'https://api.pesepay.com/api/payments-engine/v1/payments/initiate';
 const CHECK_URL    = 'https://api.pesepay.com/api/payments-engine/v1/payments/check-payment';
 
@@ -26,10 +27,10 @@ function encryptPayload(data: object): string {
   if (ENCRYPTION_KEY.length !== 32) {
     throw new Error(`Encryption key must be 32 characters. Got: ${ENCRYPTION_KEY.length}`);
   }
-  const key      = Buffer.from(ENCRYPTION_KEY, 'utf8');
-  const iv       = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
-  const cipher   = crypto.createCipheriv('aes-256-cbc', key, iv);
-  const json     = JSON.stringify(data);
+  const key       = Buffer.from(ENCRYPTION_KEY, 'utf8');
+  const iv        = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
+  const cipher    = crypto.createCipheriv('aes-256-cbc', key, iv);
+  const json      = JSON.stringify(data);
   const encrypted = Buffer.concat([
     cipher.update(Buffer.from(json, 'utf8')),
     cipher.final()
@@ -39,9 +40,9 @@ function encryptPayload(data: object): string {
 
 // Decrypt Pesepay response
 function decryptPayload(encryptedBase64: string): any {
-  const key      = Buffer.from(ENCRYPTION_KEY, 'utf8');
-  const iv       = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
-  const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+  const key       = Buffer.from(ENCRYPTION_KEY, 'utf8');
+  const iv        = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
+  const decipher  = crypto.createDecipheriv('aes-256-cbc', key, iv);
   const decrypted = Buffer.concat([
     decipher.update(Buffer.from(encryptedBase64, 'base64')),
     decipher.final()
@@ -66,7 +67,6 @@ export const initiatePayment = async (data: {
     ? `${data.reason} | Delivery: ${data.deliveryLocation}`
     : data.reason;
 
-  // Debug keys & URLs
   console.log('🔑 Integration Key length:', INTEGRATION_KEY.length);
   console.log('🔑 Encryption Key length:', ENCRYPTION_KEY.length);
   console.log('🔗 Result URL:', RESULT_URL);
@@ -94,7 +94,6 @@ export const initiatePayment = async (data: {
 
   const encryptedPayload = encryptPayload(requestBody);
 
-  // Make POST request to Pesepay
   let axiosResponse: any;
   try {
     axiosResponse = await axios.post(
@@ -102,7 +101,7 @@ export const initiatePayment = async (data: {
       { payload: encryptedPayload },
       {
         headers: {
-          'authorization': INTEGRATION_KEY, // ✅ FIX 2: lowercase as per Pesepay docs
+          'authorization': INTEGRATION_KEY,
           'Content-Type':  'application/json',
         },
         timeout: 30000,
@@ -135,7 +134,6 @@ export const initiatePayment = async (data: {
     );
   }
 
-  // Save payment in database
   await prisma.payments.create({
     data: {
       order_id:       data.orderId ?? null,
@@ -162,7 +160,7 @@ export const checkPaymentStatus = async (referenceNumber: string) => {
   const axiosResponse = await axios.get(CHECK_URL, {
     params:  { referenceNumber },
     headers: {
-      'authorization': INTEGRATION_KEY, // ✅ FIX 2: lowercase
+      'authorization': INTEGRATION_KEY,
       'Content-Type':  'application/json',
     },
     timeout: 30000,
@@ -213,7 +211,6 @@ export const calculateShippingFee = async (data: {
     freeDelivery: false,
   };
 };
-
 
 
 
