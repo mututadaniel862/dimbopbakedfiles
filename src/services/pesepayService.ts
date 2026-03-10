@@ -5,8 +5,8 @@ import axios from 'axios';
 
 const prisma = new PrismaClient();
 
-const INTEGRATION_KEY = process.env.PESEPAY_INTEGRATION_KEY!;
-const ENCRYPTION_KEY  = process.env.PESEPAY_ENCRYPTION_KEY!;
+const INTEGRATION_KEY = (process.env.PESEPAY_INTEGRATION_KEY || '').replace(/[\r\n\t ]+/g, '').trim();
+const ENCRYPTION_KEY  = (process.env.PESEPAY_ENCRYPTION_KEY  || '').replace(/[\r\n\t ]+/g, '').trim();
 const RESULT_URL      = process.env.PESEPAY_RESULT_URL!;
 const RETURN_URL      = process.env.PESEPAY_RETURN_URL!;
 
@@ -14,10 +14,10 @@ const INITIATE_URL = 'https://api.pesepay.com/api/payments-engine/v1/payments/in
 const CHECK_URL    = 'https://api.pesepay.com/api/payments-engine/v1/payments/check-payment';
 
 function encryptPayload(data: object): string {
-  const key = Buffer.from(ENCRYPTION_KEY, 'utf8');
-  const iv  = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
-  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-  const json = JSON.stringify(data);
+  const key     = Buffer.from(ENCRYPTION_KEY, 'utf8');
+  const iv      = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
+  const cipher  = crypto.createCipheriv('aes-256-cbc', key, iv);
+  const json     = JSON.stringify(data);
   const encrypted = Buffer.concat([
     cipher.update(Buffer.from(json, 'utf8')),
     cipher.final()
@@ -26,8 +26,8 @@ function encryptPayload(data: object): string {
 }
 
 function decryptPayload(encryptedBase64: string): any {
-  const key = Buffer.from(ENCRYPTION_KEY, 'utf8');
-  const iv  = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
+  const key      = Buffer.from(ENCRYPTION_KEY, 'utf8');
+  const iv       = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
   const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
   const decrypted = Buffer.concat([
     decipher.update(Buffer.from(encryptedBase64, 'base64')),
@@ -36,6 +36,7 @@ function decryptPayload(encryptedBase64: string): any {
   return JSON.parse(decrypted.toString('utf8'));
 }
 
+// ── INITIATE PAYMENT ─────────────────────────────────────────
 export const initiatePayment = async (data: {
   orderId?: number;
   userId: number;
@@ -71,23 +72,20 @@ export const initiatePayment = async (data: {
   }
 
   console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
-  console.log('🔑 Integration key:', INTEGRATION_KEY?.substring(0, 8) + '...');
+  console.log('🔑 Key length check — Integration:', INTEGRATION_KEY.length, '| Encryption:', ENCRYPTION_KEY.length);
 
   const encryptedPayload = encryptPayload(requestBody);
-  const bodyString = JSON.stringify({ payload: encryptedPayload });
 
-  console.log('📦 Sending payload length:', bodyString.length);
-
+  // ✅ FIX: Pass object directly — NOT a stringified string
   let axiosResponse: any;
   try {
     axiosResponse = await axios({
-      method: 'POST',
-      url: INITIATE_URL,
-      data: bodyString,
+      method:  'POST',
+      url:     INITIATE_URL,
+      data:    { payload: encryptedPayload },   // ← object, not string
       headers: {
-        'authorization': INTEGRATION_KEY.trim(),
+        authorization:  INTEGRATION_KEY,
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
       },
       timeout: 30000,
     });
@@ -99,8 +97,7 @@ export const initiatePayment = async (data: {
     throw new Error(`Pesepay API error: ${JSON.stringify(errData)}`);
   }
 
-  console.log('📥 Response status:', axiosResponse.status);
-  console.log('📥 Response data:', JSON.stringify(axiosResponse.data, null, 2));
+  console.log('📥 Response:', JSON.stringify(axiosResponse.data, null, 2));
 
   let decrypted: any;
   try {
@@ -140,11 +137,12 @@ export const initiatePayment = async (data: {
   };
 };
 
+// ── CHECK PAYMENT STATUS ─────────────────────────────────────
 export const checkPaymentStatus = async (referenceNumber: string) => {
   const axiosResponse = await axios.get(CHECK_URL, {
     params:  { referenceNumber },
     headers: {
-      'authorization':  INTEGRATION_KEY.trim(),
+      authorization:  INTEGRATION_KEY,
       'Content-Type': 'application/json',
     },
     timeout: 30000,
@@ -166,12 +164,14 @@ export const checkPaymentStatus = async (referenceNumber: string) => {
         where: { id: payment.order_id },
         data:  { status: 'Processing', updated_at: new Date() },
       });
+      console.log(`✅ Order ${payment.order_id} → Processing`);
     }
   }
 
   return { referenceNumber, status, paid, amountDetails: decrypted.amountDetails };
 };
 
+// ── CALCULATE SHIPPING FEE ───────────────────────────────────
 export const calculateShippingFee = async (data: {
   merchantId: number;
   customerCity: string;
@@ -193,7 +193,6 @@ export const calculateShippingFee = async (data: {
     freeDelivery: false,
   };
 };
-
 
 
 
