@@ -11,9 +11,9 @@ const ENCRYPTION_KEY  = (process.env.PESEPAY_ENCRYPTION_KEY  || '').replace(/[\r
 const RESULT_URL      = process.env.PESEPAY_RESULT_URL!;
 const RETURN_URL      = process.env.PESEPAY_RETURN_URL!;
 
-// Use Sandbox URLs for testing
-const INITIATE_URL = 'https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/initiate';
-const CHECK_URL    = 'https://api.test.sandbox.pesepay.com/payments-engine/v1/payments/check-payment';
+// ✅ FIX 1: Production URLs (your dashboard keys are production keys)
+const INITIATE_URL = 'https://api.pesepay.com/api/payments-engine/v1/payments/initiate';
+const CHECK_URL    = 'https://api.pesepay.com/api/payments-engine/v1/payments/check-payment';
 
 // Encrypt request payload using AES-256-CBC
 function encryptPayload(data: object): string {
@@ -96,7 +96,7 @@ export const initiatePayment = async (data: {
       { payload: encryptedPayload },
       {
         headers: {
-          'Authorization': INTEGRATION_KEY, // Must be exact key
+          'authorization': INTEGRATION_KEY, // ✅ FIX 2: lowercase as per Pesepay docs
           'Content-Type':  'application/json',
         },
         timeout: 30000,
@@ -156,7 +156,7 @@ export const checkPaymentStatus = async (referenceNumber: string) => {
   const axiosResponse = await axios.get(CHECK_URL, {
     params:  { referenceNumber },
     headers: {
-      'Authorization': INTEGRATION_KEY,
+      'authorization': INTEGRATION_KEY, // ✅ FIX 2: lowercase
       'Content-Type':  'application/json',
     },
     timeout: 30000,
@@ -207,8 +207,6 @@ export const calculateShippingFee = async (data: {
     freeDelivery: false,
   };
 };
-
-
 
 
 
