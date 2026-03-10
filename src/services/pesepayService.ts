@@ -10,10 +10,10 @@ const prisma = new PrismaClient();
 // const ENCRYPTION_KEY  = (process.env.PESEPAY_ENCRYPTION_KEY  || '').replace(/[\r\n\t ]+/g, '').trim();
 // const INTEGRATION_KEY = (process.env.PESEPAY_INTEGRATION_KEY || '').replace(/[^\x20-\x7E]/g, '').trim();
 // const ENCRYPTION_KEY  = (process.env.PESEPAY_ENCRYPTION_KEY  || '').replace(/[^\x20-\x7E]/g, '').trim();
-const INTEGRATION_KEY = 'a10148d9-755e-44f2-af64-444595169507';
-const ENCRYPTION_KEY  = 'd4fc6074f15d4142a0af36133ac9615e';
-console.log('🔑 Integration Key:', JSON.stringify(INTEGRATION_KEY));
-console.log('🔑 Encryption Key:', JSON.stringify(ENCRYPTION_KEY));
+const RESULT_URL = (process.env.PESEPAY_RESULT_URL || '').replace(/[^\x20-\x7E]/g, '').trim();
+const RETURN_URL = (process.env.PESEPAY_RETURN_URL || '').replace(/[^\x20-\x7E]/g, '').trim();
+console.log('🔗 Result URL sanitized:', JSON.stringify(RESULT_URL));
+console.log('🔗 Return URL sanitized:', JSON.stringify(RETURN_URL));
 const RESULT_URL      = process.env.PESEPAY_RESULT_URL!;
 const RETURN_URL      = process.env.PESEPAY_RETURN_URL!;
 
