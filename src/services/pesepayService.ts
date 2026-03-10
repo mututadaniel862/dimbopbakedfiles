@@ -1,51 +1,94 @@
 // src/services/pesepayService.ts
 import { PrismaClient } from '@prisma/client';
 import * as crypto from 'crypto';
-import axios from 'axios';
+import * as https from 'https';
 
 const prisma = new PrismaClient();
 
-// Hardcoded keys (env vars had hidden characters)
 const INTEGRATION_KEY = 'a10148d9-755e-44f2-af64-444595169507';
 const ENCRYPTION_KEY  = 'd4fc6074f15d4142a0af36133ac9615e';
-
-// Sanitize URLs from environment
 const RESULT_URL = (process.env.PESEPAY_RESULT_URL || '').replace(/[^\x20-\x7E]/g, '').trim();
 const RETURN_URL = (process.env.PESEPAY_RETURN_URL || '').replace(/[^\x20-\x7E]/g, '').trim();
 
-console.log('🔑 Integration Key:', JSON.stringify(INTEGRATION_KEY));
-console.log('🔑 Encryption Key:', JSON.stringify(ENCRYPTION_KEY));
-console.log('🔗 Result URL sanitized:', JSON.stringify(RESULT_URL));
-console.log('🔗 Return URL sanitized:', JSON.stringify(RETURN_URL));
-
-// Production URLs
 const INITIATE_URL = 'https://api.pesepay.com/api/payments-engine/v1/payments/initiate';
 const CHECK_URL    = 'https://api.pesepay.com/api/payments-engine/v1/payments/check-payment';
 
-// Encrypt request payload using AES-256-CBC
+// ── HTTP helper using native https ───────────────────────────
+function httpsPost(url: string, body: object, headers: Record<string, string>): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const bodyStr = JSON.stringify(body);
+    const parsed  = new URL(url);
+    const options = {
+      hostname: parsed.hostname,
+      path:     parsed.pathname,
+      method:   'POST',
+      headers:  {
+        ...headers,
+        'Content-Length': Buffer.byteLength(bodyStr),
+      },
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          resolve({ status: res.statusCode, data: JSON.parse(data) });
+        } catch {
+          reject(new Error(`Non-JSON response (${res.statusCode}): ${data}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.write(bodyStr);
+    req.end();
+  });
+}
+
+function httpsGet(url: string, params: Record<string, string>, headers: Record<string, string>): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    Object.entries(params).forEach(([k, v]) => parsed.searchParams.set(k, v));
+    const options = {
+      hostname: parsed.hostname,
+      path:     parsed.pathname + parsed.search,
+      method:   'GET',
+      headers,
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          resolve({ status: res.statusCode, data: JSON.parse(data) });
+        } catch {
+          reject(new Error(`Non-JSON response (${res.statusCode}): ${data}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+// ── Encrypt / Decrypt ────────────────────────────────────────
 function encryptPayload(data: object): string {
-  if (ENCRYPTION_KEY.length !== 32) {
-    throw new Error(`Encryption key must be 32 characters. Got: ${ENCRYPTION_KEY.length}`);
-  }
   const key       = Buffer.from(ENCRYPTION_KEY, 'utf8');
   const iv        = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
   const cipher    = crypto.createCipheriv('aes-256-cbc', key, iv);
-  const json      = JSON.stringify(data);
   const encrypted = Buffer.concat([
-    cipher.update(Buffer.from(json, 'utf8')),
-    cipher.final()
+    cipher.update(Buffer.from(JSON.stringify(data), 'utf8')),
+    cipher.final(),
   ]);
   return encrypted.toString('base64');
 }
 
-// Decrypt Pesepay response
 function decryptPayload(encryptedBase64: string): any {
   const key       = Buffer.from(ENCRYPTION_KEY, 'utf8');
   const iv        = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
   const decipher  = crypto.createDecipheriv('aes-256-cbc', key, iv);
   const decrypted = Buffer.concat([
     decipher.update(Buffer.from(encryptedBase64, 'base64')),
-    decipher.final()
+    decipher.final(),
   ]);
   return JSON.parse(decrypted.toString('utf8'));
 }
@@ -67,16 +110,8 @@ export const initiatePayment = async (data: {
     ? `${data.reason} | Delivery: ${data.deliveryLocation}`
     : data.reason;
 
-  console.log('🔑 Integration Key length:', INTEGRATION_KEY.length);
-  console.log('🔑 Encryption Key length:', ENCRYPTION_KEY.length);
-  console.log('🔗 Result URL:', RESULT_URL);
-  console.log('🔗 Return URL:', RETURN_URL);
-
   const requestBody: any = {
-    amountDetails: {
-      amount:       totalAmount,
-      currencyCode: 'USD',
-    },
+    amountDetails: { amount: totalAmount, currencyCode: 'USD' },
     reasonForPayment: fullReason,
     resultUrl: RESULT_URL,
     returnUrl: RETURN_URL,
@@ -94,32 +129,31 @@ export const initiatePayment = async (data: {
 
   const encryptedPayload = encryptPayload(requestBody);
 
-  let axiosResponse: any;
+  let response: any;
   try {
-    axiosResponse = await axios.post(
+    response = await httpsPost(
       INITIATE_URL,
       { payload: encryptedPayload },
       {
-        headers: {
-          'authorization': INTEGRATION_KEY,
-          'Content-Type':  'application/json',
-        },
-        timeout: 30000,
+        'authorization': INTEGRATION_KEY,
+        'Content-Type':  'application/json',
       }
     );
   } catch (err: any) {
-    const status  = err?.response?.status;
-    const errData = err?.response?.data ?? err?.message ?? String(err);
-    console.error('❌ Pesepay error status:', status);
-    console.error('❌ Pesepay error body:', JSON.stringify(errData));
-    throw new Error(`Pesepay API error: ${JSON.stringify(errData)}`);
+    console.error('❌ Pesepay request error:', err.message);
+    throw new Error(`Pesepay API error: ${err.message}`);
   }
 
-  console.log('📥 Pesepay response:', JSON.stringify(axiosResponse.data, null, 2));
+  console.log('📥 Pesepay response status:', response.status);
+  console.log('📥 Pesepay response:', JSON.stringify(response.data, null, 2));
+
+  if (response.status !== 200) {
+    throw new Error(`Pesepay API error: ${JSON.stringify(response.data)}`);
+  }
 
   let decrypted: any;
   try {
-    decrypted = decryptPayload(axiosResponse.data.payload);
+    decrypted = decryptPayload(response.data.payload);
   } catch (err: any) {
     console.error('❌ Decrypt failed:', err.message);
     throw new Error('Failed to decrypt Pesepay response: ' + err.message);
@@ -143,7 +177,7 @@ export const initiatePayment = async (data: {
       status:         'Pending',
       processor:      'pesepay',
       net_amount:     totalAmount,
-    }
+    },
   });
 
   console.log(`✅ Payment saved | Ref: ${decrypted.referenceNumber}`);
@@ -157,16 +191,16 @@ export const initiatePayment = async (data: {
 
 // ── CHECK PAYMENT STATUS ─────────────────────────────────────
 export const checkPaymentStatus = async (referenceNumber: string) => {
-  const axiosResponse = await axios.get(CHECK_URL, {
-    params:  { referenceNumber },
-    headers: {
+  const response = await httpsGet(
+    CHECK_URL,
+    { referenceNumber },
+    {
       'authorization': INTEGRATION_KEY,
       'Content-Type':  'application/json',
-    },
-    timeout: 30000,
-  });
+    }
+  );
 
-  const decrypted = decryptPayload(axiosResponse.data.payload);
+  const decrypted = decryptPayload(response.data.payload);
   const status    = decrypted.transactionStatus;
   const paid      = status === 'SUCCESS';
 
@@ -211,8 +245,6 @@ export const calculateShippingFee = async (data: {
     freeDelivery: false,
   };
 };
-
-
 
 
 
