@@ -6,8 +6,12 @@ import axios from 'axios';
 const prisma = new PrismaClient();
 
 // Load keys from environment, remove extra spaces/CR/LF
-const INTEGRATION_KEY = (process.env.PESEPAY_INTEGRATION_KEY || '').replace(/[\r\n\t ]+/g, '').trim();
-const ENCRYPTION_KEY  = (process.env.PESEPAY_ENCRYPTION_KEY  || '').replace(/[\r\n\t ]+/g, '').trim();
+// const INTEGRATION_KEY = (process.env.PESEPAY_INTEGRATION_KEY || '').replace(/[\r\n\t ]+/g, '').trim();
+// const ENCRYPTION_KEY  = (process.env.PESEPAY_ENCRYPTION_KEY  || '').replace(/[\r\n\t ]+/g, '').trim();
+const INTEGRATION_KEY = (process.env.PESEPAY_INTEGRATION_KEY || '').replace(/[^\x20-\x7E]/g, '').trim();
+const ENCRYPTION_KEY  = (process.env.PESEPAY_ENCRYPTION_KEY  || '').replace(/[^\x20-\x7E]/g, '').trim();
+console.log('🔑 Integration Key:', JSON.stringify(INTEGRATION_KEY));
+console.log('🔑 Encryption Key:', JSON.stringify(ENCRYPTION_KEY));
 const RESULT_URL      = process.env.PESEPAY_RESULT_URL!;
 const RETURN_URL      = process.env.PESEPAY_RETURN_URL!;
 
