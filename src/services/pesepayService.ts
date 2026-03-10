@@ -2,6 +2,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as crypto from 'crypto';
 import * as https from 'https';
+import axios from 'axios';
 
 const prisma = new PrismaClient();
 
@@ -10,89 +11,11 @@ const ENCRYPTION_KEY  = 'd4fc6074f15d4142a0af36133ac9615e';
 const RESULT_URL = (process.env.PESEPAY_RESULT_URL || '').replace(/[^\x20-\x7E]/g, '').trim();
 const RETURN_URL = (process.env.PESEPAY_RETURN_URL || '').replace(/[^\x20-\x7E]/g, '').trim();
 
-const INITIATE_HOST = 'api.pesepay.com';
-const INITIATE_PATH = '/api/payments-engine/v1/payments/initiate';
-const CHECK_HOST    = 'api.pesepay.com';
-const CHECK_PATH    = '/api/payments-engine/v1/payments/check-payment';
+const INITIATE_URL = 'https://api.pesepay.com/api/payments-engine/v1/payments/initiate';
+const CHECK_URL    = 'https://api.pesepay.com/api/payments-engine/v1/payments/check-payment';
 
-// ── HTTP helper using native https ───────────────────────────
-function httpsPost(host: string, path: string, body: object, extraHeaders: Record<string, string>): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const bodyStr = JSON.stringify(body);
-    const options: https.RequestOptions = {
-      hostname: host,
-      port: 443,
-      path,
-      method: 'POST',
-      headers: {
-        'Host':             host,
-        'authorization':    extraHeaders['authorization'],
-        'Content-Type':     'application/json',
-        'Content-Length':   Buffer.byteLength(bodyStr).toString(),
-        'Connection':       'close',
-      },
-    };
-
-    console.log('📡 HTTPS options:', JSON.stringify({ hostname: options.hostname, path: options.path, headers: options.headers }));
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        console.log('📡 Response status:', res.statusCode);
-        console.log('📡 Response headers:', JSON.stringify(res.headers));
-        console.log('📡 Raw response body:', data);
-        try {
-          resolve({ status: res.statusCode, data: JSON.parse(data) });
-        } catch {
-          reject(new Error(`Non-JSON response (${res.statusCode}): ${data}`));
-        }
-      });
-    });
-
-    req.on('error', (err) => {
-      console.error('📡 Request error:', err.message, (err as any).code);
-      reject(err);
-    });
-
-    req.write(bodyStr);
-    req.end();
-  });
-}
-
-function httpsGet(host: string, path: string, params: Record<string, string>, extraHeaders: Record<string, string>): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const query    = new URLSearchParams(params).toString();
-    const fullPath = `${path}?${query}`;
-    const options: https.RequestOptions = {
-      hostname: host,
-      port: 443,
-      path: fullPath,
-      method: 'GET',
-      headers: {
-        'Host':          host,
-        'authorization': extraHeaders['authorization'],
-        'Content-Type':  'application/json',
-        'Connection':    'close',
-      },
-    };
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        try {
-          resolve({ status: res.statusCode, data: JSON.parse(data) });
-        } catch {
-          reject(new Error(`Non-JSON response (${res.statusCode}): ${data}`));
-        }
-      });
-    });
-
-    req.on('error', reject);
-    req.end();
-  });
-}
+// Force HTTP/1.1 — prevents HPE_CR_EXPECTED error caused by HTTP/2 responses
+const http1Agent = new https.Agent({ keepAlive: false });
 
 // ── Encrypt / Decrypt ────────────────────────────────────────
 function encryptPayload(data: object): string {
@@ -153,26 +76,33 @@ export const initiatePayment = async (data: {
 
   const encryptedPayload = encryptPayload(requestBody);
 
-  let response: any;
+  let axiosResponse: any;
   try {
-    response = await httpsPost(
-      INITIATE_HOST,
-      INITIATE_PATH,
+    axiosResponse = await axios.post(
+      INITIATE_URL,
       { payload: encryptedPayload },
-      { 'authorization': INTEGRATION_KEY }
+      {
+        httpsAgent: http1Agent,   // ← forces HTTP/1.1
+        headers: {
+          'authorization': INTEGRATION_KEY,
+          'Content-Type':  'application/json',
+        },
+        timeout: 30000,
+      }
     );
   } catch (err: any) {
-    console.error('❌ Pesepay request error:', err.message);
-    throw new Error(`Pesepay API error: ${err.message}`);
+    const status  = err?.response?.status;
+    const errData = err?.response?.data ?? err?.message ?? String(err);
+    console.error('❌ Pesepay error status:', status);
+    console.error('❌ Pesepay error body:', JSON.stringify(errData));
+    throw new Error(`Pesepay API error: ${JSON.stringify(errData)}`);
   }
 
-  if (response.status !== 200) {
-    throw new Error(`Pesepay API error: ${JSON.stringify(response.data)}`);
-  }
+  console.log('📥 Pesepay response:', JSON.stringify(axiosResponse.data, null, 2));
 
   let decrypted: any;
   try {
-    decrypted = decryptPayload(response.data.payload);
+    decrypted = decryptPayload(axiosResponse.data.payload);
   } catch (err: any) {
     console.error('❌ Decrypt failed:', err.message);
     throw new Error('Failed to decrypt Pesepay response: ' + err.message);
@@ -210,14 +140,17 @@ export const initiatePayment = async (data: {
 
 // ── CHECK PAYMENT STATUS ─────────────────────────────────────
 export const checkPaymentStatus = async (referenceNumber: string) => {
-  const response = await httpsGet(
-    CHECK_HOST,
-    CHECK_PATH,
-    { referenceNumber },
-    { 'authorization': INTEGRATION_KEY }
-  );
+  const axiosResponse = await axios.get(CHECK_URL, {
+    httpsAgent: http1Agent,
+    params:  { referenceNumber },
+    headers: {
+      'authorization': INTEGRATION_KEY,
+      'Content-Type':  'application/json',
+    },
+    timeout: 30000,
+  });
 
-  const decrypted = decryptPayload(response.data.payload);
+  const decrypted = decryptPayload(axiosResponse.data.payload);
   const status    = decrypted.transactionStatus;
   const paid      = status === 'SUCCESS';
 
