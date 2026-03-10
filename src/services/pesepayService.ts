@@ -10,27 +10,38 @@ const ENCRYPTION_KEY  = 'd4fc6074f15d4142a0af36133ac9615e';
 const RESULT_URL = (process.env.PESEPAY_RESULT_URL || '').replace(/[^\x20-\x7E]/g, '').trim();
 const RETURN_URL = (process.env.PESEPAY_RETURN_URL || '').replace(/[^\x20-\x7E]/g, '').trim();
 
-const INITIATE_URL = 'https://api.pesepay.com/api/payments-engine/v1/payments/initiate';
-const CHECK_URL    = 'https://api.pesepay.com/api/payments-engine/v1/payments/check-payment';
+const INITIATE_HOST = 'api.pesepay.com';
+const INITIATE_PATH = '/api/payments-engine/v1/payments/initiate';
+const CHECK_HOST    = 'api.pesepay.com';
+const CHECK_PATH    = '/api/payments-engine/v1/payments/check-payment';
 
 // ── HTTP helper using native https ───────────────────────────
-function httpsPost(url: string, body: object, headers: Record<string, string>): Promise<any> {
+function httpsPost(host: string, path: string, body: object, extraHeaders: Record<string, string>): Promise<any> {
   return new Promise((resolve, reject) => {
     const bodyStr = JSON.stringify(body);
-    const parsed  = new URL(url);
-    const options = {
-      hostname: parsed.hostname,
-      path:     parsed.pathname,
-      method:   'POST',
-      headers:  {
-        ...headers,
-        'Content-Length': Buffer.byteLength(bodyStr),
+    const options: https.RequestOptions = {
+      hostname: host,
+      port: 443,
+      path,
+      method: 'POST',
+      headers: {
+        'Host':             host,
+        'authorization':    extraHeaders['authorization'],
+        'Content-Type':     'application/json',
+        'Content-Length':   Buffer.byteLength(bodyStr).toString(),
+        'Connection':       'close',
       },
     };
+
+    console.log('📡 HTTPS options:', JSON.stringify({ hostname: options.hostname, path: options.path, headers: options.headers }));
+
     const req = https.request(options, (res) => {
       let data = '';
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
+        console.log('📡 Response status:', res.statusCode);
+        console.log('📡 Response headers:', JSON.stringify(res.headers));
+        console.log('📡 Raw response body:', data);
         try {
           resolve({ status: res.statusCode, data: JSON.parse(data) });
         } catch {
@@ -38,22 +49,34 @@ function httpsPost(url: string, body: object, headers: Record<string, string>): 
         }
       });
     });
-    req.on('error', reject);
+
+    req.on('error', (err) => {
+      console.error('📡 Request error:', err.message, (err as any).code);
+      reject(err);
+    });
+
     req.write(bodyStr);
     req.end();
   });
 }
 
-function httpsGet(url: string, params: Record<string, string>, headers: Record<string, string>): Promise<any> {
+function httpsGet(host: string, path: string, params: Record<string, string>, extraHeaders: Record<string, string>): Promise<any> {
   return new Promise((resolve, reject) => {
-    const parsed = new URL(url);
-    Object.entries(params).forEach(([k, v]) => parsed.searchParams.set(k, v));
-    const options = {
-      hostname: parsed.hostname,
-      path:     parsed.pathname + parsed.search,
-      method:   'GET',
-      headers,
+    const query    = new URLSearchParams(params).toString();
+    const fullPath = `${path}?${query}`;
+    const options: https.RequestOptions = {
+      hostname: host,
+      port: 443,
+      path: fullPath,
+      method: 'GET',
+      headers: {
+        'Host':          host,
+        'authorization': extraHeaders['authorization'],
+        'Content-Type':  'application/json',
+        'Connection':    'close',
+      },
     };
+
     const req = https.request(options, (res) => {
       let data = '';
       res.on('data', (chunk) => { data += chunk; });
@@ -65,6 +88,7 @@ function httpsGet(url: string, params: Record<string, string>, headers: Record<s
         }
       });
     });
+
     req.on('error', reject);
     req.end();
   });
@@ -132,20 +156,15 @@ export const initiatePayment = async (data: {
   let response: any;
   try {
     response = await httpsPost(
-      INITIATE_URL,
+      INITIATE_HOST,
+      INITIATE_PATH,
       { payload: encryptedPayload },
-      {
-        'authorization': INTEGRATION_KEY,
-        'Content-Type':  'application/json',
-      }
+      { 'authorization': INTEGRATION_KEY }
     );
   } catch (err: any) {
     console.error('❌ Pesepay request error:', err.message);
     throw new Error(`Pesepay API error: ${err.message}`);
   }
-
-  console.log('📥 Pesepay response status:', response.status);
-  console.log('📥 Pesepay response:', JSON.stringify(response.data, null, 2));
 
   if (response.status !== 200) {
     throw new Error(`Pesepay API error: ${JSON.stringify(response.data)}`);
@@ -192,12 +211,10 @@ export const initiatePayment = async (data: {
 // ── CHECK PAYMENT STATUS ─────────────────────────────────────
 export const checkPaymentStatus = async (referenceNumber: string) => {
   const response = await httpsGet(
-    CHECK_URL,
+    CHECK_HOST,
+    CHECK_PATH,
     { referenceNumber },
-    {
-      'authorization': INTEGRATION_KEY,
-      'Content-Type':  'application/json',
-    }
+    { 'authorization': INTEGRATION_KEY }
   );
 
   const decrypted = decryptPayload(response.data.payload);
