@@ -13,12 +13,9 @@ const RETURN_URL      = process.env.PESEPAY_RETURN_URL!;
 const INITIATE_URL = 'https://api.pesepay.com/api/payments-engine/v1/payments/initiate';
 const CHECK_URL    = 'https://api.pesepay.com/api/payments-engine/v1/payments/check-payment';
 
-// ── Pesepay uses CryptoJS-style AES-256-CBC ──────────────────
-// IV = first 16 chars of encryption key
-// Key = full 32-char encryption key
 function encryptPayload(data: object): string {
-  const key = Buffer.from(ENCRYPTION_KEY, 'utf8');         // 32 bytes
-  const iv  = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8'); // 16 bytes
+  const key = Buffer.from(ENCRYPTION_KEY, 'utf8');
+  const iv  = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
   const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
   const json = JSON.stringify(data);
   const encrypted = Buffer.concat([
@@ -39,7 +36,6 @@ function decryptPayload(encryptedBase64: string): any {
   return JSON.parse(decrypted.toString('utf8'));
 }
 
-// ── INITIATE PAYMENT ─────────────────────────────────────────
 export const initiatePayment = async (data: {
   orderId?: number;
   userId: number;
@@ -66,64 +62,63 @@ export const initiatePayment = async (data: {
     returnUrl: RETURN_URL,
   };
 
-  // Add customer info if provided
   if (data.customerEmail || data.customerName || data.customerPhone) {
     requestBody.customer = {
-      email:       data.customerEmail  ?? null,
-      name:        data.customerName   ?? null,
-      phoneNumber: data.customerPhone  ?? null,
+      email:       data.customerEmail ?? null,
+      name:        data.customerName  ?? null,
+      phoneNumber: data.customerPhone ?? null,
     };
   }
 
-  console.log('📤 Pesepay request:', JSON.stringify(requestBody, null, 2));
-  console.log('🔑 Keys loaded - Integration:', !!INTEGRATION_KEY, '| Encryption:', !!ENCRYPTION_KEY);
-  console.log('🔗 Result URL:', RESULT_URL);
-  console.log('🔗 Return URL:', RETURN_URL);
+  console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
+  console.log('🔑 Integration key:', INTEGRATION_KEY?.substring(0, 8) + '...');
 
-  // Encrypt and send
   const encryptedPayload = encryptPayload(requestBody);
-  console.log('🔒 Encrypted payload (first 50 chars):', encryptedPayload.substring(0, 50));
+  const bodyString = JSON.stringify({ payload: encryptedPayload });
+
+  console.log('📦 Sending payload length:', bodyString.length);
 
   let axiosResponse: any;
   try {
-    axiosResponse = await axios.post(
-      INITIATE_URL,
-      { payload: encryptedPayload },
-      {
-        headers: {
-          authorization:  INTEGRATION_KEY,
-          'content-type': 'application/json',
-        },
-        timeout: 30000,
-      }
-    );
+    axiosResponse = await axios({
+      method: 'POST',
+      url: INITIATE_URL,
+      data: bodyString,
+      headers: {
+        'authorization': INTEGRATION_KEY.trim(),
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      timeout: 30000,
+    });
   } catch (err: any) {
-    const errData = err?.response?.data ?? err?.message ?? err;
-    console.error('❌ Axios error calling Pesepay:', JSON.stringify(errData));
+    const status  = err?.response?.status;
+    const errData = err?.response?.data ?? err?.message ?? String(err);
+    console.error('❌ Pesepay error status:', status);
+    console.error('❌ Pesepay error data:', JSON.stringify(errData));
     throw new Error(`Pesepay API error: ${JSON.stringify(errData)}`);
   }
 
-  console.log('📥 Pesepay raw response:', JSON.stringify(axiosResponse.data, null, 2));
+  console.log('📥 Response status:', axiosResponse.status);
+  console.log('📥 Response data:', JSON.stringify(axiosResponse.data, null, 2));
 
-  // Decrypt response
   let decrypted: any;
   try {
     decrypted = decryptPayload(axiosResponse.data.payload);
   } catch (err: any) {
-    console.error('❌ Failed to decrypt Pesepay response:', err.message);
-    throw new Error('Failed to decrypt Pesepay response');
+    console.error('❌ Decrypt failed:', err.message);
+    throw new Error('Failed to decrypt Pesepay response: ' + err.message);
   }
 
-  console.log('🔓 Decrypted response:', JSON.stringify(decrypted, null, 2));
+  console.log('🔓 Decrypted:', JSON.stringify(decrypted, null, 2));
 
   if (!decrypted?.redirectUrl) {
     throw new Error(
-      `Pesepay: no redirectUrl. Status: ${decrypted?.transactionStatus}. ` +
+      `No redirectUrl. Status: ${decrypted?.transactionStatus}. ` +
       `Desc: ${decrypted?.transactionStatusDescription}`
     );
   }
 
-  // Save to DB
   await prisma.payments.create({
     data: {
       order_id:       data.orderId ?? null,
@@ -145,11 +140,13 @@ export const initiatePayment = async (data: {
   };
 };
 
-// ── CHECK PAYMENT STATUS ─────────────────────────────────────
 export const checkPaymentStatus = async (referenceNumber: string) => {
   const axiosResponse = await axios.get(CHECK_URL, {
     params:  { referenceNumber },
-    headers: { authorization: INTEGRATION_KEY, 'content-type': 'application/json' },
+    headers: {
+      'authorization':  INTEGRATION_KEY.trim(),
+      'Content-Type': 'application/json',
+    },
     timeout: 30000,
   });
 
@@ -169,14 +166,12 @@ export const checkPaymentStatus = async (referenceNumber: string) => {
         where: { id: payment.order_id },
         data:  { status: 'Processing', updated_at: new Date() },
       });
-      console.log(`✅ Order ${payment.order_id} → Processing`);
     }
   }
 
   return { referenceNumber, status, paid, amountDetails: decrypted.amountDetails };
 };
 
-// ── CALCULATE SHIPPING FEE ───────────────────────────────────
 export const calculateShippingFee = async (data: {
   merchantId: number;
   customerCity: string;
@@ -198,9 +193,6 @@ export const calculateShippingFee = async (data: {
     freeDelivery: false,
   };
 };
-
-
-
 
 
 
