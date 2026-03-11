@@ -18,7 +18,7 @@ export const PaymentController = {
   async initiatePayment(
     request: FastifyRequest<{
       Body: {
-        orderId: number;
+        orderId?: number;
         userId: number;
         amount: number;
         reason?: string;
@@ -47,8 +47,8 @@ export const PaymentController = {
         merchantId,
       } = request.body;
 
-      if (!orderId || !userId || !amount) {
-        return reply.status(400).send({ error: 'orderId, userId and amount are required' });
+      if (!userId || !amount) {
+        return reply.status(400).send({ error: 'userId and amount are required' });
       }
 
       // Calculate shipping if requested
@@ -65,11 +65,12 @@ export const PaymentController = {
       }
 
       const paymentData: Parameters<typeof initiatePayment>[0] = {
-        orderId,
         userId,
         amount,
         reason: reason ?? 'Online Purchase - Multimart',
       };
+
+      if (orderId)          paymentData.orderId          = orderId;
 
       if (customerEmail)    paymentData.customerEmail    = customerEmail;
       if (customerName)     paymentData.customerName     = customerName;

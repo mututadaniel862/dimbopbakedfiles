@@ -16,7 +16,7 @@ export default async (fastify: FastifyInstance) => {
     schema: {
       body: {
         type: 'object',
-        required: ['orderId', 'userId', 'amount'],
+        required: ['userId', 'amount'],
         properties: {
           orderId:         { type: 'number' },
           userId:          { type: 'number' },
