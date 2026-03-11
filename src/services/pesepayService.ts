@@ -85,7 +85,8 @@ export const initiatePayment = async (data: {
       INITIATE_URL,
       { payload: encryptedPayload },
       {
-        httpsAgent: http1Agent,   // ← forces HTTP/1.1
+        httpsAgent: http1Agent,
+        insecureHTTPParser: true, // Enable lenient parsing for the response
         headers: {
           'authorization': INTEGRATION_KEY,
           'Content-Type':  'application/json',
@@ -145,6 +146,7 @@ export const initiatePayment = async (data: {
 export const checkPaymentStatus = async (referenceNumber: string) => {
   const axiosResponse = await axios.get(CHECK_URL, {
     httpsAgent: http1Agent,
+    insecureHTTPParser: true, // Enable lenient parsing here too
     params:  { referenceNumber },
     headers: {
       'authorization': INTEGRATION_KEY,
