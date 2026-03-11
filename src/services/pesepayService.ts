@@ -15,7 +15,10 @@ const INITIATE_URL = 'https://api.pesepay.com/api/payments-engine/v1/payments/in
 const CHECK_URL    = 'https://api.pesepay.com/api/payments-engine/v1/payments/check-payment';
 
 // Force HTTP/1.1 — prevents HPE_CR_EXPECTED error caused by HTTP/2 responses
-const http1Agent = new https.Agent({ keepAlive: false });
+const http1Agent = new https.Agent({ 
+  keepAlive: false,
+  insecureHTTPParser: true // Allow non-standard line endings in headers 
+} as any);
 
 // ── Encrypt / Decrypt ────────────────────────────────────────
 function encryptPayload(data: object): string {
