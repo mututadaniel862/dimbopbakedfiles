@@ -6,6 +6,30 @@ import { authenticate } from '../middlewares/auth';
 export default async (fastify: FastifyInstance) => {
 
   // ──────────────────────────────────────────────────────────
+  // POST /api/payments/checkout  ← REAL checkout from cart
+  // Reads cart → creates order → initiates Pesepay → clears cart
+  // ──────────────────────────────────────────────────────────
+  fastify.post('/checkout', {
+    preHandler: [authenticate],
+    handler: PaymentController.checkout,
+    schema: {
+      body: {
+        type: 'object',
+        required: ['userId'],
+        properties: {
+          userId:          { type: 'number' },
+          customerEmail:   { type: 'string' },
+          customerName:    { type: 'string' },
+          customerPhone:   { type: 'string' },
+          includeShipping: { type: 'boolean' },
+          deliveryCity:    { type: 'string' },
+          merchantId:      { type: 'number' },
+        }
+      }
+    }
+  });
+
+  // ──────────────────────────────────────────────────────────
   // POST /api/payments/initiate
   // Customer clicks Pay → backend creates Pesepay transaction
   // Returns redirectUrl → frontend redirects customer there

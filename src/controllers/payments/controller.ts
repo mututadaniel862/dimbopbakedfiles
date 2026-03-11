@@ -5,16 +5,134 @@ import {
   checkPaymentStatus,
   calculateShippingFee,
 } from '../../services/pesepayService';
-import { PrismaClient } from '@prisma/client';
+import { getUserCart, clearUserCart } from '../../services/productservice';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export const PaymentController = {
 
   // ─────────────────────────────────────────────
-  // POST /api/payments/initiate
-  // Frontend calls this when customer clicks Pay
+  // POST /api/payments/checkout
+  // The REAL checkout: reads cart → creates order → pays via Pesepay
   // ─────────────────────────────────────────────
+  async checkout(
+    request: FastifyRequest<{
+      Body: {
+        userId: number;
+        customerEmail?: string;
+        customerName?: string;
+        customerPhone?: string;
+        // Optional shipping
+        includeShipping?: boolean;
+        deliveryCity?: string;
+        merchantId?: number;
+      }
+    }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const {
+        userId,
+        customerEmail,
+        customerName,
+        customerPhone,
+        includeShipping,
+        deliveryCity,
+        merchantId,
+      } = request.body;
+
+      if (!userId) {
+        return reply.status(400).send({ error: 'userId is required' });
+      }
+
+      // 1️⃣ Get user's real cart
+      const cart = await getUserCart(userId);
+
+      if (!cart.items.length) {
+        return reply.status(400).send({ error: 'Your cart is empty' });
+      }
+
+      // 2️⃣ Calculate shipping if requested
+      let shippingFee = 0;
+      let deliveryLocation = '';
+
+      if (includeShipping && deliveryCity && merchantId) {
+        const shipping = await calculateShippingFee({
+          merchantId,
+          customerCity: deliveryCity,
+        });
+        shippingFee = shipping.shippingFee;
+        deliveryLocation = deliveryCity;
+      }
+
+      // 3️⃣ Calculate final total: grandTotal (after discounts) + shipping
+      const cartTotal   = cart.grandTotal;
+      const totalAmount = parseFloat((cartTotal + shippingFee).toFixed(2));
+
+      // 4️⃣ Create the real order with all cart items
+      const order = await prisma.orders.create({
+        data: {
+          user_id:     userId,
+          total_price: new Prisma.Decimal(totalAmount),
+          status:      'Pending',
+          created_at:  new Date(),
+          updated_at:  new Date(),
+          order_items: {
+            create: cart.items.map(item => ({
+              product_id: item.product_id,
+              quantity:   item.quantity,
+              price:      item.price,
+            })),
+          },
+        },
+        include: { order_items: true },
+      });
+
+      console.log(`🛒 Order #${order.id} created | Items: ${cart.items.length} | Total: $${totalAmount}`);
+
+      // 5️⃣ Initiate Pesepay payment with the real order total
+      const itemNames = cart.items
+        .map(i => `${i.products?.name ?? 'Item'} x${i.quantity}`)
+        .join(', ');
+
+      const paymentData: Parameters<typeof initiatePayment>[0] = {
+        orderId: order.id,
+        userId,
+        amount: totalAmount,
+        reason: `Order #${order.id}: ${itemNames}`.substring(0, 200),
+      };
+
+      if (customerEmail)    paymentData.customerEmail    = customerEmail;
+      if (customerName)     paymentData.customerName     = customerName;
+      if (customerPhone)    paymentData.customerPhone    = customerPhone;
+      if (shippingFee)      paymentData.shippingFee      = 0; // Already included in totalAmount
+      if (deliveryLocation) paymentData.deliveryLocation = deliveryLocation;
+
+      const result = await initiatePayment(paymentData);
+
+      // 6️⃣ Clear the cart after successful payment initiation
+      await clearUserCart(userId);
+
+      console.log(`✅ Checkout complete | Order #${order.id} | Ref: ${result.referenceNumber}`);
+
+      return reply.send({
+        success: true,
+        orderId: order.id,
+        redirectUrl: result.redirectUrl,
+        referenceNumber: result.referenceNumber,
+        totalAmount: result.totalAmount,
+        cartTotal,
+        shippingFee,
+        itemCount: cart.totalItems,
+      });
+
+    } catch (error: any) {
+      console.error('❌ Checkout error:', error.message);
+      return reply.status(500).send({ error: error.message });
+    }
+  },
+
   async initiatePayment(
     request: FastifyRequest<{
       Body: {
