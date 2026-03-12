@@ -21,6 +21,7 @@ import { startSubscriptionCron } from './jobs/subscriptionCron';
 import subscriptionRoutes from './routes/subscription';
 import paymentRoutes from './routes/payments';
 import deliveryRoutes from './routes/delivery';
+import { startCartExpiryJob } from './jobs/cartExpiryJob';
 
 
 
@@ -79,6 +80,7 @@ declare module '@fastify/jwt' {
 }
 
 startSubscriptionCron();
+startCartExpiryJob();
 
 // Register routes
 app.register(authRoutes, { prefix: '/api/auth' });

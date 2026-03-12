@@ -15,12 +15,12 @@ const INITIATE_URL = 'https://api.pesepay.com/api/payments-engine/v1/payments/in
 const CHECK_URL    = 'https://api.pesepay.com/api/payments-engine/v1/payments/check-payment';
 
 // Force HTTP/1.1 — prevents HPE_CR_EXPECTED error caused by HTTP/2 responses
-const http1Agent = new https.Agent({ 
+const http1Agent = new https.Agent({
   keepAlive: false,
-  insecureHTTPParser: true // Allow non-standard line endings in headers 
+  insecureHTTPParser: true,
 } as any);
 
-// ── Encrypt / Decrypt ────────────────────────────────────────
+// ── Encrypt / Decrypt ─────────────────────────────────────────
 function encryptPayload(data: object): string {
   const key       = Buffer.from(ENCRYPTION_KEY, 'utf8');
   const iv        = Buffer.from(ENCRYPTION_KEY.substring(0, 16), 'utf8');
@@ -52,17 +52,11 @@ export const initiatePayment = async (data: {
   customerEmail?: string;
   customerName?: string;
   customerPhone?: string;
-  shippingFee?: number;
-  deliveryLocation?: string;
+  merchantId?: number;         // The client_admin who owns the products
 }) => {
-  const totalAmount = data.amount + (data.shippingFee ?? 0);
-  const fullReason  = data.deliveryLocation
-    ? `${data.reason} | Delivery: ${data.deliveryLocation}`
-    : data.reason;
-
   const requestBody: any = {
-    amountDetails: { amount: totalAmount, currencyCode: 'USD' },
-    reasonForPayment: fullReason,
+    amountDetails: { amount: data.amount, currencyCode: 'USD' },
+    reasonForPayment: data.reason,
     resultUrl: RESULT_URL,
     returnUrl: RETURN_URL,
   };
@@ -86,7 +80,7 @@ export const initiatePayment = async (data: {
       { payload: encryptedPayload },
       {
         httpsAgent: http1Agent,
-        insecureHTTPParser: true, // Enable lenient parsing for the response
+        insecureHTTPParser: true,
         headers: {
           'authorization': INTEGRATION_KEY,
           'Content-Type':  'application/json',
@@ -121,32 +115,36 @@ export const initiatePayment = async (data: {
     );
   }
 
-  await prisma.payments.create({
+  // Save payment record
+  const payment = await prisma.payments.create({
     data: {
       order_id:       data.orderId ?? null,
       user_id:        data.userId,
+      merchant_id:    data.merchantId ?? null,
       transaction_id: decrypted.referenceNumber,
       payment_method: 'pesepay',
       status:         'Pending',
       processor:      'pesepay',
-      net_amount:     totalAmount,
+      net_amount:     data.amount,
+      is_held:        true,    // Will be held in escrow until delivery
     },
   });
 
-  console.log(`✅ Payment saved | Ref: ${decrypted.referenceNumber}`);
+  console.log(`✅ Payment saved | Ref: ${decrypted.referenceNumber} | ID: ${payment.id}`);
 
   return {
     redirectUrl:     decrypted.redirectUrl,
     referenceNumber: decrypted.referenceNumber,
-    totalAmount,
+    totalAmount:     data.amount,
+    paymentId:       payment.id,
   };
 };
 
-// ── CHECK PAYMENT STATUS ─────────────────────────────────────
+// ── CHECK PAYMENT STATUS & CREATE ESCROW HOLD ─────────────────
 export const checkPaymentStatus = async (referenceNumber: string) => {
   const axiosResponse = await axios.get(CHECK_URL, {
     httpsAgent: http1Agent,
-    insecureHTTPParser: true, // Enable lenient parsing here too
+    insecureHTTPParser: true,
     params:  { referenceNumber },
     headers: {
       'authorization': INTEGRATION_KEY,
@@ -165,200 +163,62 @@ export const checkPaymentStatus = async (referenceNumber: string) => {
   });
 
   if (paid) {
-    const payment = await prisma.payments.findFirst({ where: { transaction_id: referenceNumber } });
+    const payment = await prisma.payments.findFirst({
+      where: { transaction_id: referenceNumber },
+    });
+
     if (payment?.order_id) {
+      // Update order to Processing
       await prisma.orders.update({
         where: { id: payment.order_id },
         data:  { status: 'Processing', updated_at: new Date() },
       });
       console.log(`✅ Order ${payment.order_id} → Processing`);
+
+      // ── Create Escrow / Payment Hold ──────────────────────────
+      // Determine merchant_id: use the one saved on payment, or look up from order items
+      let merchantId = payment.merchant_id;
+
+      if (!merchantId) {
+        // Fallback: find from order items' products.uploaded_by
+        const orderItem = await prisma.order_items.findFirst({
+          where: { order_id: payment.order_id },
+          include: { products: { select: { uploaded_by: true } } },
+        });
+        merchantId = orderItem?.products?.uploaded_by ?? null;
+      }
+
+      if (merchantId) {
+        // Check no hold already exists for this payment
+        const existingHold = await prisma.payment_holds.findUnique({
+          where: { payment_id: payment.id },
+        });
+
+        if (!existingHold) {
+          const holdUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+          await prisma.payment_holds.create({
+            data: {
+              payment_id:   payment.id,
+              order_id:     payment.order_id,
+              amount:       payment.net_amount ?? 0,
+              merchant_id:  merchantId,
+              processor:    'pesepay',
+              hold_until:   holdUntil,
+              status:       'holding',
+            },
+          });
+
+          console.log(
+            `🔒 Escrow created | Payment #${payment.id} | ` +
+            `Merchant #${merchantId} | Release after: ${holdUntil.toISOString()}`
+          );
+        }
+      } else {
+        console.warn(`⚠️ No merchant found for order #${payment.order_id} — escrow skipped`);
+      }
     }
   }
 
   return { referenceNumber, status, paid, amountDetails: decrypted.amountDetails };
 };
-
-// ── CALCULATE SHIPPING FEE ───────────────────────────────────
-export const calculateShippingFee = async (data: {
-  merchantId: number;
-  customerCity: string;
-}) => {
-  const merchant = await prisma.users.findUnique({
-    where:  { id: data.merchantId },
-    select: { physical_address: true },
-  });
-
-  if (!merchant) throw new Error('Merchant not found');
-
-  const customerCity = data.customerCity.toLowerCase();
-  const shippingFee  = customerCity.includes('harare') ? 10 : 15;
-
-  return {
-    shippingFee,
-    merchantCity: merchant.physical_address ?? '',
-    customerCity: data.customerCity,
-    freeDelivery: false,
-  };
-};
-
-
-
-
-// // src/services/pesepayService.ts
-// import { PrismaClient } from '@prisma/client';
-// // eslint-disable-next-line @typescript-eslint/no-var-requires
-// const { Pesepay } = require('pesepay');
-
-// const prisma = new PrismaClient();
-
-// const pesepay = new Pesepay(
-//   process.env.PESEPAY_INTEGRATION_KEY!,
-//   process.env.PESEPAY_ENCRYPTION_KEY!
-// );
-
-// pesepay.resultUrl = process.env.PESEPAY_RESULT_URL!;
-// pesepay.returnUrl  = process.env.PESEPAY_RETURN_URL!;
-
-// // ─────────────────────────────────────────────────────────────
-// // INITIATE PAYMENT
-// // Called when customer clicks "Pay Now"
-// // Returns a redirectUrl → send this to the frontend
-// // ─────────────────────────────────────────────────────────────
-// export const initiatePayment = async (data: {
-//   orderId: number;
-//   userId: number;
-//   amount: number;
-//   reason: string;
-//   customerEmail?: string;
-//   customerName?: string;
-//   customerPhone?: string;
-//   shippingFee?: number;       // Added for delivery fee
-//   deliveryLocation?: string;  // e.g. "Harare" or "Outside Harare"
-// }) => {
-//   const totalAmount = data.amount + (data.shippingFee ?? 0);
-
-//   // Build reason including delivery info
-//   const fullReason = data.deliveryLocation
-//     ? `${data.reason} | Delivery: ${data.deliveryLocation}`
-//     : data.reason;
-
-//   // Create transaction using pesepay npm library
-//   const transaction = pesepay.createTransaction(totalAmount, 'USD', fullReason);
-
-//   // Attach customer info if available
-//   if (data.customerEmail || data.customerName || data.customerPhone) {
-//     (transaction as any).customer = {
-//       email: data.customerEmail ?? null,
-//       name: data.customerName ?? null,
-//       phoneNumber: data.customerPhone ?? null,
-//     };
-//   }
-
-//   // Add order reference so we can match it in resultUrl callback
-//   (transaction as any).merchantReference = `ORDER-${data.orderId}`;
-
-//   const response = await pesepay.initiateTransaction(transaction);
-
-//   if (!response?.redirectUrl) {
-//     throw new Error('Failed to get redirect URL from Pesepay');
-//   }
-
-//   // Save payment record in DB (status = Pending)
-//   await prisma.payments.create({
-//     data: {
-//       order_id: data.orderId,
-//       user_id: data.userId,
-//       transaction_id: response.referenceNumber,
-//       payment_method: 'pesepay',
-//       status: 'Pending',
-//       processor: 'pesepay',
-//       net_amount: totalAmount,
-//     }
-//   });
-
-//   console.log(`✅ Payment initiated | Order: ${data.orderId} | Ref: ${response.referenceNumber}`);
-
-//   return {
-//     redirectUrl: response.redirectUrl,
-//     referenceNumber: response.referenceNumber,
-//     totalAmount,
-//   };
-// };
-
-// // ─────────────────────────────────────────────────────────────
-// // CHECK PAYMENT STATUS
-// // Call this to verify if a payment succeeded
-// // ─────────────────────────────────────────────────────────────
-// export const checkPaymentStatus = async (referenceNumber: string) => {
-//   const response = await pesepay.checkPayment(referenceNumber);
-//   const status = response.transactionStatus;
-//   const paid = status === 'SUCCESS';
-
-//   // Update payment in DB
-//   await prisma.payments.updateMany({
-//     where: { transaction_id: referenceNumber },
-//     data: { status: paid ? 'Success' : status }
-//   });
-
-//   // If paid → update order status
-//   if (paid) {
-//     await prisma.payments.findFirst({
-//       where: { transaction_id: referenceNumber }
-//     }).then(async (payment) => {
-//       if (payment?.order_id) {
-//         await prisma.orders.update({
-//           where: { id: payment.order_id },
-//           data: { status: 'Processing', updated_at: new Date() }
-//         });
-//         console.log(`✅ Order ${payment.order_id} marked as Processing`);
-//       }
-//     });
-//   }
-
-//   return {
-//     referenceNumber,
-//     status,
-//     paid,
-//     amountDetails: response.amountDetails,
-//   };
-// };
-
-// // ─────────────────────────────────────────────────────────────
-// // CALCULATE SHIPPING FEE
-// // Based on merchant location vs customer location
-// // client_admin sets their own delivery fee in their profile
-// // ─────────────────────────────────────────────────────────────
-// export const calculateShippingFee = async (data: {
-//   merchantId: number;
-//   customerCity: string;
-// }) => {
-//   const merchant = await prisma.users.findUnique({
-//     where: { id: data.merchantId },
-//     select: {
-//       physical_address: true,
-//       geo_latitude: true,
-//       geo_longitude: true,
-//     }
-//   });
-
-//   if (!merchant) throw new Error('Merchant not found');
-
-//   // Default fees — merchant can override these via their dashboard
-//   // Harare = $10, Outside Harare = $15
-//   // TODO: In future, merchant sets custom fee in their profile
-//   const merchantCity = merchant.physical_address?.toLowerCase() ?? '';
-//   const customerCity = data.customerCity.toLowerCase();
-
-//   let shippingFee = 15; // Default: outside Harare
-
-//   if (merchantCity.includes(customerCity) || customerCity.includes('harare')) {
-//     shippingFee = 10; // Same city or Harare
-//   }
-
-//   return {
-//     shippingFee,
-//     merchantCity,
-//     customerCity,
-//     freeDelivery: false,
-//   };
-// };

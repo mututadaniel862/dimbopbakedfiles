@@ -3,8 +3,9 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import {
   initiatePayment,
   checkPaymentStatus,
-  calculateShippingFee,
 } from '../../services/pesepayService';
+import { calculateDeliveryFee } from '../../services/deliveryService';
+import { calculateFees } from '../../config/feeConfig';
 import { getUserCart, clearUserCart } from '../../services/productservice';
 import { PrismaClient, Prisma } from '@prisma/client';
 
@@ -53,28 +54,43 @@ export const PaymentController = {
         return reply.status(400).send({ error: 'Your cart is empty' });
       }
 
-      // 2️⃣ Calculate shipping if requested
+      // 2️⃣ Auto-detect Merchant ID from the first product in cart
+      const firstProduct = cart.items[0]?.products;
+      const autoMerchantId = firstProduct?.uploaded_by;
+
+      if (!autoMerchantId) {
+        return reply.status(400).send({ error: 'Could not determine merchant for these products' });
+      }
+
+      // 3️⃣ Calculate shipping if requested
       let shippingFee = 0;
       let deliveryLocation = '';
 
-      if (includeShipping && deliveryCity && merchantId) {
-        const shipping = await calculateShippingFee({
-          merchantId,
+      if (includeShipping && deliveryCity) {
+        const shipping = await calculateDeliveryFee({
+          merchantId: autoMerchantId,
           customerCity: deliveryCity,
+          orderAmount: cart.grandTotal
         });
-        shippingFee = shipping.shippingFee;
-        deliveryLocation = deliveryCity;
+        
+        if (shipping.deliveryAvailable) {
+          shippingFee = shipping.fee;
+          deliveryLocation = deliveryCity;
+        } else {
+          return reply.status(400).send({ error: shipping.message });
+        }
       }
 
-      // 3️⃣ Calculate final total: grandTotal (after discounts) + shipping
-      const cartTotal   = cart.grandTotal;
-      const totalAmount = parseFloat((cartTotal + shippingFee).toFixed(2));
+      // 4️⃣ Calculate fees ("Tax Charges")
+      const cartTotal = cart.grandTotal;
+      const subtotalBeforeTax = cartTotal + shippingFee;
+      const { taxCharge, grandTotal: finalAmount } = calculateFees(subtotalBeforeTax);
 
-      // 4️⃣ Create the real order with all cart items
+      // 5️⃣ Create the real order
       const order = await prisma.orders.create({
         data: {
           user_id:     userId,
-          total_price: new Prisma.Decimal(totalAmount),
+          total_price: new Prisma.Decimal(finalAmount),
           status:      'Pending',
           created_at:  new Date(),
           updated_at:  new Date(),
@@ -89,7 +105,7 @@ export const PaymentController = {
         include: { order_items: true },
       });
 
-      console.log(`🛒 Order #${order.id} created | Items: ${cart.items.length} | Total: $${totalAmount}`);
+      console.log(`🛒 Order #${order.id} created | Items: ${cart.items.length} | Total: $${finalAmount}`);
 
       // 5️⃣ Initiate Pesepay payment with the real order total
       const itemNames = cart.items
@@ -99,15 +115,16 @@ export const PaymentController = {
       const paymentData: Parameters<typeof initiatePayment>[0] = {
         orderId: order.id,
         userId,
-        amount: totalAmount,
+        amount: finalAmount,
         reason: `Order #${order.id}: ${itemNames}`.substring(0, 200),
+        merchantId: autoMerchantId,
       };
 
       if (customerEmail)    paymentData.customerEmail    = customerEmail;
       if (customerName)     paymentData.customerName     = customerName;
       if (customerPhone)    paymentData.customerPhone    = customerPhone;
-      if (shippingFee)      paymentData.shippingFee      = 0; // Already included in totalAmount
-      if (deliveryLocation) paymentData.deliveryLocation = deliveryLocation;
+      // shippingFee is already in finalAmount, but we can pass it as reference if needed
+      if (deliveryLocation) (paymentData as any).deliveryLocation = deliveryLocation;
 
       const result = await initiatePayment(paymentData);
 
@@ -124,6 +141,7 @@ export const PaymentController = {
         totalAmount: result.totalAmount,
         cartTotal,
         shippingFee,
+        taxCharge, // Frontend shows as "Tax Charges"
         itemCount: cart.totalItems,
       });
 
@@ -174,18 +192,26 @@ export const PaymentController = {
       let deliveryLocation = '';
 
       if (includeShipping && deliveryCity && merchantId) {
-        const shipping = await calculateShippingFee({
+        const shipping = await calculateDeliveryFee({
           merchantId,
           customerCity: deliveryCity,
+          orderAmount: amount
         });
-        shippingFee = shipping.shippingFee;
-        deliveryLocation = deliveryCity;
+
+        if (shipping.deliveryAvailable) {
+          shippingFee = shipping.fee;
+          deliveryLocation = deliveryCity;
+        }
       }
 
-      const paymentData: Parameters<typeof initiatePayment>[0] = {
+      // Calculate final amount with tax
+      const { taxCharge, grandTotal: finalAmount } = calculateFees(amount + shippingFee);
+
+      const paymentData: any = {
         userId,
-        amount,
+        amount: finalAmount,
         reason: reason ?? 'Online Purchase - Multimart',
+        merchantId: merchantId,
       };
 
       if (orderId)          paymentData.orderId          = orderId;
@@ -204,6 +230,7 @@ export const PaymentController = {
         referenceNumber: result.referenceNumber,
         totalAmount: result.totalAmount,
         shippingFee,
+        taxCharge,
       });
 
     } catch (error: any) {
@@ -277,12 +304,13 @@ export const PaymentController = {
         return reply.status(400).send({ error: 'merchantId and customerCity are required' });
       }
 
-      const result = await calculateShippingFee({
+      const result = await calculateDeliveryFee({
         merchantId: parseInt(merchantId),
         customerCity,
+        orderAmount: 0 // Mock total for just checking fee
       });
 
-      return reply.send({ success: true, ...result });
+      return reply.send({ success: true, ...result, shippingFee: result.fee });
 
     } catch (error: any) {
       return reply.status(500).send({ error: error.message });

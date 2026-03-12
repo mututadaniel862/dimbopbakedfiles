@@ -58,6 +58,7 @@ const subscriptionCron_1 = require("./jobs/subscriptionCron");
 const subscription_1 = __importDefault(require("./routes/subscription"));
 const payments_1 = __importDefault(require("./routes/payments"));
 const delivery_1 = __importDefault(require("./routes/delivery"));
+const cartExpiryJob_1 = require("./jobs/cartExpiryJob");
 dotenv.config();
 const app = (0, fastify_1.default)({
     logger: true,
@@ -100,6 +101,7 @@ app.register(jwt_1.default, {
     },
 });
 (0, subscriptionCron_1.startSubscriptionCron)();
+(0, cartExpiryJob_1.startCartExpiryJob)();
 // Register routes
 app.register(auth_1.default, { prefix: '/api/auth' });
 app.register(oauth_1.default, { prefix: '/api/oauth' });
