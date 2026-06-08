@@ -25,14 +25,61 @@ const extractPublicIdFromUrl = (url: string): string | null => {
 };
 
 export const getAllProducts = async () => {
-  return await prisma.products.findMany({
+  const products = await prisma.products.findMany({
     include: {
       categories: true,
       reviews: true,
       cart: true,
       order_items: true,
+      uploaded_by_user: {
+        select: {
+          id: true,
+          geo_latitude: true,
+          geo_longitude: true,
+          physical_address: true,
+          merchant_name: true,
+        },
+      },
     },
   });
+
+  // Flatten merchant location to top-level fields for easy frontend access
+  return products.map((p) => ({
+    ...p,
+    merchant_latitude: p.uploaded_by_user?.geo_latitude ?? null,
+    merchant_longitude: p.uploaded_by_user?.geo_longitude ?? null,
+    merchant_address: p.uploaded_by_user?.physical_address ?? null,
+  }));
+};
+
+export const getProductsByMerchant = async (merchantId: number) => {
+  const products = await prisma.products.findMany({
+    where: {
+      uploaded_by: merchantId
+    },
+    include: {
+      categories: true,
+      reviews: true,
+      cart: true,
+      order_items: true,
+      uploaded_by_user: {
+        select: {
+          id: true,
+          geo_latitude: true,
+          geo_longitude: true,
+          physical_address: true,
+          merchant_name: true,
+        },
+      },
+    },
+  });
+
+  return products.map((p) => ({
+    ...p,
+    merchant_latitude: p.uploaded_by_user?.geo_latitude ?? null,
+    merchant_longitude: p.uploaded_by_user?.geo_longitude ?? null,
+    merchant_address: p.uploaded_by_user?.physical_address ?? null,
+  }));
 };
 
 export const getProductById = async (id: number) => {

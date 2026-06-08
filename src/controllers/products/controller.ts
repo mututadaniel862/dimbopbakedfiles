@@ -10,6 +10,7 @@ import {
   deleteCartItem,
   getUserCart,
   getAllProductImages,
+  getProductsByMerchant,
   ReviewService, 
   ReviewLikeService, 
   ReviewCommentService, 
@@ -86,6 +87,17 @@ export const getProductsHandler = async (request: FastifyRequest, reply: Fastify
     reply.send(products);
   } catch (error) {
     reply.status(500).send({ message: 'Error fetching products' });
+  }
+};
+
+export const getMerchantProductsHandler = async (request: FastifyRequest<{ Params: { merchantId: string } }>, reply: FastifyReply) => {
+  try {
+    const { merchantId } = request.params;
+    const products = await getProductsByMerchant(parseInt(merchantId));
+    reply.send({ success: true, data: products });
+  } catch (error) {
+    console.error('Error fetching merchant products:', error);
+    reply.status(500).send({ message: 'Error fetching merchant products' });
   }
 };
 

@@ -1,6 +1,6 @@
 // src/services/authService.ts
 import { PrismaClient, users } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import bcrypt from '../../node_modules/bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { 
   PREDEFINED_USERS,
@@ -168,6 +168,9 @@ if (authProvider === 'email') {
     if (existingUser.phone === phone) throw new Error('Phone number already in use');
   }
 
+  const trialEndsAt = new Date();
+  trialEndsAt.setDate(trialEndsAt.getDate() + 90);
+
   const user = await prisma.users.create({
     data: {
       merchant_name: merchantName,
@@ -177,10 +180,24 @@ if (authProvider === 'email') {
       geo_latitude: geoLocation.latitude,
       geo_longitude: geoLocation.longitude,
       role: 'client_admin',
+      subscription_status: 'trial',
+      trial_ends_at: trialEndsAt,
       auth_provider: authProvider,
       google_id: googleId || null,
-      password_hash: null,
+      password_hash: hashedPassword, // Use the hashed password
       last_login: new Date()
+    }
+  });
+
+  // Also create a subscription record for tracking
+  await prisma.subscriptions.create({
+    data: {
+      user_id: user.id,
+      plan_type: 'free_trial',
+      start_date: new Date(),
+      end_date: trialEndsAt,
+      is_trial: true,
+      is_active: true
     }
   });
 

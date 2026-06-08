@@ -309,7 +309,7 @@ export const registerNewAgent = async (request: FastifyRequest, reply: FastifyRe
 
     const { PrismaClient } = await import('@prisma/client');
     const prisma = new PrismaClient();
-    const bcrypt = await import('bcryptjs');
+    const bcrypt = await import('../../../node_modules/bcryptjs');
 
     // Check if email already exists
     const existingUser = await prisma.users.findUnique({

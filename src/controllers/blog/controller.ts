@@ -11,7 +11,7 @@ import { pipeline } from 'stream/promises';
 // Type definitions for request parameters
 type BlogParams = { id: string };
 type BlogImageParams = { id: string; imageId?: string };
-type BlogQuery = { page?: string; limit?: string; status?: 'visible' | 'hidden' | 'draft' };
+type BlogQuery = { page?: string; limit?: string; status?: 'visible' | 'hidden' | 'draft'; authorId?: string };
 type BlogBody = z.infer<typeof blogSchema>;
 type BlogImageBody = z.infer<typeof blogImageSchema>;
 
@@ -25,11 +25,12 @@ export const BlogController = {
   ) {
     try {
       request.log.info('Fetching all blogs');
-      const { page = '1', limit = '10', status } = request.query;
+      const { page = '1', limit = '10', status, authorId } = request.query;
       const blogs = await BlogService.getAllBlogs(
         parseInt(page),
         parseInt(limit),
-        status
+        status,
+        authorId ? parseInt(authorId) : undefined
       );
       reply.send(blogs);
     } catch (error) {

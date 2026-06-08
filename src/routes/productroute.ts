@@ -32,7 +32,13 @@ export default async (fastify: FastifyInstance) => {
     handler: productController.createProductHandler,
   });
   
-  // Get my products (merchant's own products)
+  // Get products by merchant ID
+  fastify.get('/merchant/:merchantId', {
+    preHandler: [authenticate],
+    handler: productController.getMerchantProductsHandler,
+  });
+
+  // Get my products (merchant's own products) - Legacy endpoint updated to use the new handler or remain as is
   fastify.get('/my-products', {
     preHandler: [authenticate],
     handler: ProductApprovalController.getMerchantProducts

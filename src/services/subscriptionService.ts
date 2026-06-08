@@ -112,7 +112,7 @@ export const approveActivationPayment = async (
   
   if (action === 'approve') {
     const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 30);
+    trialEndsAt.setDate(trialEndsAt.getDate() + 90); // Updated to 3 months (90 days)
     
     await prisma.$transaction([
       prisma.payment_proofs.update({
@@ -548,13 +548,28 @@ export const getMerchantSubscription = async (merchantId: number): Promise<any> 
     where: { id: merchantId },
     select: {
       subscription_status: true,
-      trial_ends_at: true
+      trial_ends_at: true,
+      created_at: true
     }
   });
-  
+
+  if (!merchant) throw new Error('Merchant not found');
+
+  // Logic: Everyone gets at least 90 days from registration
+  const createdAt = merchant.created_at || new Date();
+  const defaultTrialEndsAt = new Date(createdAt);
+  defaultTrialEndsAt.setDate(defaultTrialEndsAt.getDate() + 90);
+
+  const now = new Date();
+  const trialEndsAt = merchant.trial_ends_at || defaultTrialEndsAt;
+  const isWithinTrial = trialEndsAt > now;
+
   return {
     ...merchant,
-    currentSubscription: subscription
+    trial_ends_at: trialEndsAt,
+    subscription_status: (merchant.subscription_status === 'inactive' && isWithinTrial) ? 'trial' : merchant.subscription_status,
+    currentSubscription: subscription,
+    isTrialActive: isWithinTrial
   };
 };
 

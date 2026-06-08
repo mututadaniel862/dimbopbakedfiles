@@ -1,6 +1,6 @@
 // src/services/authService.ts
 import { PrismaClient, users } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import bcrypt from '../../node_modules/bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { 
   PREDEFINED_USERS,

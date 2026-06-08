@@ -1,6 +1,6 @@
 // src/services/agentService.ts
 import { PrismaClient, Prisma } from '@prisma/client';
-import bcrypt from "bcryptjs";
+import bcrypt from "../../node_modules/bcryptjs";
 
 const prisma = new PrismaClient();
 
