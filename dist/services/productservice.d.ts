@@ -1,7 +1,10 @@
 import { Prisma } from "@prisma/client";
 import { productSchema } from "../models/products";
 import { z } from "zod";
-export declare const getAllProducts: () => Promise<({
+export declare const getAllProducts: () => Promise<{
+    merchant_latitude: number | null;
+    merchant_longitude: number | null;
+    merchant_address: string | null;
     cart: {
         id: number;
         user_id: number | null;
@@ -33,7 +36,13 @@ export declare const getAllProducts: () => Promise<({
         id: number;
         name: string;
     } | null;
-} & {
+    uploaded_by_user: {
+        id: number;
+        merchant_name: string | null;
+        physical_address: string | null;
+        geo_latitude: number | null;
+        geo_longitude: number | null;
+    } | null;
     id: number;
     name: string;
     description: string | null;
@@ -53,7 +62,69 @@ export declare const getAllProducts: () => Promise<({
     rejection_reason: string | null;
     approval_deadline: Date | null;
     is_visible: boolean;
-})[]>;
+}[]>;
+export declare const getProductsByMerchant: (merchantId: number) => Promise<{
+    merchant_latitude: number | null;
+    merchant_longitude: number | null;
+    merchant_address: string | null;
+    cart: {
+        id: number;
+        user_id: number | null;
+        product_id: number | null;
+        quantity: number;
+        price: Prisma.Decimal;
+        created_at: Date | null;
+        updated_at: Date | null;
+    }[];
+    reviews: {
+        id: number;
+        user_id: number | null;
+        product_id: number | null;
+        rating: number | null;
+        comment: string | null;
+        username: string;
+        created_at: Date | null;
+    }[];
+    order_items: {
+        id: number;
+        order_id: number | null;
+        product_id: number | null;
+        quantity: number;
+        price: Prisma.Decimal;
+        created_at: Date | null;
+        updated_at: Date | null;
+    }[];
+    categories: {
+        id: number;
+        name: string;
+    } | null;
+    uploaded_by_user: {
+        id: number;
+        merchant_name: string | null;
+        physical_address: string | null;
+        geo_latitude: number | null;
+        geo_longitude: number | null;
+    } | null;
+    id: number;
+    name: string;
+    description: string | null;
+    price: Prisma.Decimal;
+    stock_quantity: number | null;
+    category_id: number | null;
+    image_url: string | null;
+    created_at: Date | null;
+    updated_at: Date | null;
+    discount_percentage: number | null;
+    views: number | null;
+    whatsapp_number: string | null;
+    uploaded_by: number | null;
+    approval_status: string;
+    approved_by: number | null;
+    approved_at: Date | null;
+    rejection_reason: string | null;
+    approval_deadline: Date | null;
+    is_visible: boolean;
+}[]>;
 export declare const getProductById: (id: number) => Promise<({
     cart: {
         id: number;

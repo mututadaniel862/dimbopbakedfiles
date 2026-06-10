@@ -15,8 +15,8 @@ import {
   ReviewLikeService, 
   ReviewCommentService, 
   ProductViewService 
-} from '../../services/productservice';
-import { productSchema } from '../../models/products';
+} from '../../services/productservice.js';
+import { productSchema } from '../../models/products.js';
 import { z } from 'zod';
 
 type ProductParams = {

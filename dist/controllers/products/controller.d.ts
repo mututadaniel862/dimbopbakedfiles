@@ -4,6 +4,11 @@ type ProductParams = {
 };
 export declare const createProductHandler: (request: FastifyRequest, reply: FastifyReply) => Promise<undefined>;
 export declare const getProductsHandler: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+export declare const getMerchantProductsHandler: (request: FastifyRequest<{
+    Params: {
+        merchantId: string;
+    };
+}>, reply: FastifyReply) => Promise<void>;
 export declare const getProductImagesHandler: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
 export declare const getUserCartHandler: (request: FastifyRequest<{
     Params: {

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProductViewController = exports.ReviewCommentController = exports.ReviewLikeController = exports.ReviewController = exports.deleteProductHandler = exports.updateProductHandler = exports.getProductHandler = exports.updateCartItemQuantityHandler = exports.addProductToCartHandler = exports.deleteCartItemHandler = exports.getUserCartHandler = exports.getProductImagesHandler = exports.getProductsHandler = exports.createProductHandler = void 0;
-const productservice_1 = require("../../services/productservice");
-const products_1 = require("../../models/products");
+exports.ProductViewController = exports.ReviewCommentController = exports.ReviewLikeController = exports.ReviewController = exports.deleteProductHandler = exports.updateProductHandler = exports.getProductHandler = exports.updateCartItemQuantityHandler = exports.addProductToCartHandler = exports.deleteCartItemHandler = exports.getUserCartHandler = exports.getProductImagesHandler = exports.getMerchantProductsHandler = exports.getProductsHandler = exports.createProductHandler = void 0;
+const productservice_js_1 = require("../../services/productservice.js");
+const products_js_1 = require("../../models/products.js");
 const createProductHandler = async (request, reply) => {
     try {
         const data = await request.file();
@@ -27,7 +27,7 @@ const createProductHandler = async (request, reply) => {
             views: formData.views ? parseInt(formData.views, 10) : undefined,
         };
         // Validate form fields against productSchema
-        const validatedData = products_1.productSchema.parse(convertedData);
+        const validatedData = products_js_1.productSchema.parse(convertedData);
         // Handle file upload - convert to buffer for Cloudinary
         let fileInfo;
         if (data.file) {
@@ -40,7 +40,7 @@ const createProductHandler = async (request, reply) => {
             console.log('📁 File received:', data.filename, 'Size:', buffer.length, 'bytes');
         }
         // Create product with validated data and file info
-        const product = await (0, productservice_1.createProduct)(validatedData, fileInfo);
+        const product = await (0, productservice_js_1.createProduct)(validatedData, fileInfo);
         reply.status(201).send(product);
     }
     catch (error) {
@@ -54,7 +54,7 @@ const createProductHandler = async (request, reply) => {
 exports.createProductHandler = createProductHandler;
 const getProductsHandler = async (request, reply) => {
     try {
-        const products = await (0, productservice_1.getAllProducts)();
+        const products = await (0, productservice_js_1.getAllProducts)();
         reply.send(products);
     }
     catch (error) {
@@ -62,9 +62,21 @@ const getProductsHandler = async (request, reply) => {
     }
 };
 exports.getProductsHandler = getProductsHandler;
+const getMerchantProductsHandler = async (request, reply) => {
+    try {
+        const { merchantId } = request.params;
+        const products = await (0, productservice_js_1.getProductsByMerchant)(parseInt(merchantId));
+        reply.send({ success: true, data: products });
+    }
+    catch (error) {
+        console.error('Error fetching merchant products:', error);
+        reply.status(500).send({ message: 'Error fetching merchant products' });
+    }
+};
+exports.getMerchantProductsHandler = getMerchantProductsHandler;
 const getProductImagesHandler = async (request, reply) => {
     try {
-        const imageUrls = await (0, productservice_1.getAllProductImages)();
+        const imageUrls = await (0, productservice_js_1.getAllProductImages)();
         reply.send(imageUrls);
     }
     catch (error) {
@@ -76,7 +88,7 @@ exports.getProductImagesHandler = getProductImagesHandler;
 const getUserCartHandler = async (request, reply) => {
     try {
         const { userId } = request.params;
-        const cartItems = await (0, productservice_1.getUserCart)(parseInt(userId));
+        const cartItems = await (0, productservice_js_1.getUserCart)(parseInt(userId));
         if (!cartItems) {
             reply.status(404).send({ message: 'Cart not found' });
             return;
@@ -91,7 +103,7 @@ exports.getUserCartHandler = getUserCartHandler;
 const deleteCartItemHandler = async (request, reply) => {
     try {
         const { cartItemId, userId } = request.params;
-        const deletedItem = await (0, productservice_1.deleteCartItem)(parseInt(cartItemId), parseInt(userId));
+        const deletedItem = await (0, productservice_js_1.deleteCartItem)(parseInt(cartItemId), parseInt(userId));
         if (!deletedItem) {
             reply.status(404).send({ message: 'Cart item not found' });
             return;
@@ -124,7 +136,7 @@ const addProductToCartHandler = async (request, reply) => {
             productId: productIdNum,
             quantity: quantityNum
         });
-        const cartItem = await (0, productservice_1.addProductToCart)(userIdNum, productIdNum, quantityNum);
+        const cartItem = await (0, productservice_js_1.addProductToCart)(userIdNum, productIdNum, quantityNum);
         reply.send(cartItem);
     }
     catch (error) {
@@ -140,7 +152,7 @@ const updateCartItemQuantityHandler = async (request, reply) => {
     try {
         const { cartItemId, userId } = request.params;
         const { quantity } = request.body;
-        const updatedItem = await (0, productservice_1.updateCartItemQuantity)(parseInt(cartItemId), parseInt(userId), quantity);
+        const updatedItem = await (0, productservice_js_1.updateCartItemQuantity)(parseInt(cartItemId), parseInt(userId), quantity);
         if (!updatedItem) {
             reply.status(404).send({ message: 'Cart item not found' });
             return;
@@ -155,7 +167,7 @@ exports.updateCartItemQuantityHandler = updateCartItemQuantityHandler;
 const getProductHandler = async (request, reply) => {
     try {
         const { id } = request.params;
-        const product = await (0, productservice_1.getProductById)(parseInt(id));
+        const product = await (0, productservice_js_1.getProductById)(parseInt(id));
         if (!product) {
             reply.status(404).send({ message: 'Product not found' });
             return;
@@ -202,7 +214,7 @@ const updateProductHandler = async (request, reply) => {
             formData.discount_percentage = parseFloat(formData.discount_percentage);
         if (formData.views)
             formData.views = parseInt(formData.views, 10);
-        const updatedProduct = await (0, productservice_1.updateProduct)(parseInt(id), formData, fileInfo);
+        const updatedProduct = await (0, productservice_js_1.updateProduct)(parseInt(id), formData, fileInfo);
         if (!updatedProduct) {
             reply.status(404).send({ message: 'Product not found' });
             return;
@@ -221,7 +233,7 @@ exports.updateProductHandler = updateProductHandler;
 const deleteProductHandler = async (request, reply) => {
     try {
         const { id } = request.params;
-        await (0, productservice_1.deleteProduct)(parseInt(id));
+        await (0, productservice_js_1.deleteProduct)(parseInt(id));
         reply.status(204).send();
     }
     catch (error) {
@@ -253,7 +265,7 @@ class ReviewController {
             };
             if (user_id !== undefined)
                 reviewData.user_id = user_id;
-            const review = await productservice_1.ReviewService.addReview(parseInt(id), reviewData);
+            const review = await productservice_js_1.ReviewService.addReview(parseInt(id), reviewData);
             reply.status(201).send(review);
         }
         catch (error) {
@@ -263,7 +275,7 @@ class ReviewController {
     static async getReviews(request, reply) {
         try {
             const { id } = request.params;
-            const reviews = await productservice_1.ReviewService.getProductReviews(parseInt(id));
+            const reviews = await productservice_js_1.ReviewService.getProductReviews(parseInt(id));
             reply.send(reviews);
         }
         catch (error) {
@@ -274,7 +286,7 @@ class ReviewController {
         try {
             const { reviewId } = request.params;
             const { user_id } = request.body;
-            await productservice_1.ReviewService.deleteReview(parseInt(reviewId), user_id);
+            await productservice_js_1.ReviewService.deleteReview(parseInt(reviewId), user_id);
             reply.send({ message: "Review deleted successfully" });
         }
         catch (error) {
@@ -292,7 +304,7 @@ class ReviewLikeController {
                 // Allow anonymous likes - generate a temporary ID based on IP
                 return reply.status(400).send({ message: "user_id is required for likes" });
             }
-            const result = await productservice_1.ReviewLikeService.toggleReviewLike(parseInt(reviewId), user_id, is_like);
+            const result = await productservice_js_1.ReviewLikeService.toggleReviewLike(parseInt(reviewId), user_id, is_like);
             reply.send(result);
         }
         catch (error) {
@@ -306,7 +318,7 @@ class ReviewLikeController {
             if (!user_id) {
                 return reply.status(400).send({ message: "user_id is required" });
             }
-            const status = await productservice_1.ReviewLikeService.getReviewLikeStatus(parseInt(reviewId), parseInt(user_id));
+            const status = await productservice_js_1.ReviewLikeService.getReviewLikeStatus(parseInt(reviewId), parseInt(user_id));
             reply.send({ like_status: status });
         }
         catch (error) {
@@ -323,7 +335,7 @@ class ReviewCommentController {
             if (!comment?.trim()) {
                 return reply.status(400).send({ message: "Comment is required" });
             }
-            const result = await productservice_1.ReviewCommentService.addReviewComment(parseInt(reviewId), {
+            const result = await productservice_js_1.ReviewCommentService.addReviewComment(parseInt(reviewId), {
                 user_id,
                 comment,
                 username: username || "Anonymous"
@@ -337,7 +349,7 @@ class ReviewCommentController {
     static async getComments(request, reply) {
         try {
             const { reviewId } = request.params;
-            const comments = await productservice_1.ReviewCommentService.getReviewComments(parseInt(reviewId));
+            const comments = await productservice_js_1.ReviewCommentService.getReviewComments(parseInt(reviewId));
             reply.send(comments);
         }
         catch (error) {
@@ -348,7 +360,7 @@ class ReviewCommentController {
         try {
             const { commentId } = request.params;
             const { user_id } = request.body;
-            await productservice_1.ReviewCommentService.deleteReviewComment(parseInt(commentId), user_id);
+            await productservice_js_1.ReviewCommentService.deleteReviewComment(parseInt(commentId), user_id);
             reply.send({ message: "Comment deleted successfully" });
         }
         catch (error) {
@@ -376,7 +388,7 @@ class ProductViewController {
             if (user_agent !== undefined) {
                 viewData.user_agent = user_agent;
             }
-            const view = await productservice_1.ProductViewService.trackProductView(parseInt(id), viewData);
+            const view = await productservice_js_1.ProductViewService.trackProductView(parseInt(id), viewData);
             if (view) {
                 reply.status(201).send({ message: "View tracked", view });
             }
@@ -391,7 +403,7 @@ class ProductViewController {
     static async getViewStats(request, reply) {
         try {
             const { id } = request.params;
-            const stats = await productservice_1.ProductViewService.getProductViewCount(parseInt(id));
+            const stats = await productservice_js_1.ProductViewService.getProductViewCount(parseInt(id));
             reply.send(stats);
         }
         catch (error) {
@@ -401,7 +413,7 @@ class ProductViewController {
     static async getProductWithViews(request, reply) {
         try {
             const { id } = request.params;
-            const product = await productservice_1.ProductViewService.getProductWithViews(parseInt(id));
+            const product = await productservice_js_1.ProductViewService.getProductWithViews(parseInt(id));
             if (!product) {
                 return reply.status(404).send({ message: "Product not found" });
             }
@@ -415,7 +427,7 @@ class ProductViewController {
         try {
             const { limit } = request.query;
             const limitNumber = parseInt(limit || '10');
-            const products = await productservice_1.ProductViewService.getMostViewedProducts(limitNumber);
+            const products = await productservice_js_1.ProductViewService.getMostViewedProducts(limitNumber);
             reply.send(products);
         }
         catch (error) {

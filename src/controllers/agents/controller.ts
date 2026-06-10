@@ -1,13 +1,13 @@
 // src/controllers/agents/controller.ts
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { users } from '@prisma/client';
-import * as agentService from '../../services/agentService';
-import { generateToken } from '../../utils/jwt';
+import * as agentService from '../../services/agentService.js';
+import { generateToken } from '../../utils/jwt.js';
 import { 
   agentRegisterSchema,
   recordAgentSaleSchema,
   createPayoutSchema
-} from '../../utils/schemas';
+} from '../../utils/schemas.js';
 
 // ============================================
 // REGISTER AS AGENT
@@ -309,7 +309,7 @@ export const registerNewAgent = async (request: FastifyRequest, reply: FastifyRe
 
     const { PrismaClient } = await import('@prisma/client');
     const prisma = new PrismaClient();
-    const bcrypt = await import('../../../node_modules/bcryptjs');
+    const bcrypt = await import('bcryptjs');
 
     // Check if email already exists
     const existingUser = await prisma.users.findUnique({

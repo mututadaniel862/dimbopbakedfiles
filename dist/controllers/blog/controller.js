@@ -16,8 +16,8 @@ exports.BlogController = {
     async getAllBlogs(request, reply) {
         try {
             request.log.info('Fetching all blogs');
-            const { page = '1', limit = '10', status } = request.query;
-            const blogs = await blog_1.BlogService.getAllBlogs(parseInt(page), parseInt(limit), status);
+            const { page = '1', limit = '10', status, authorId } = request.query;
+            const blogs = await blog_1.BlogService.getAllBlogs(parseInt(page), parseInt(limit), status, authorId ? parseInt(authorId) : undefined);
             reply.send(blogs);
         }
         catch (error) {

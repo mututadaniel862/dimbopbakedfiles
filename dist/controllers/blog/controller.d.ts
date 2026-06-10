@@ -8,6 +8,7 @@ type BlogQuery = {
     page?: string;
     limit?: string;
     status?: 'visible' | 'hidden' | 'draft';
+    authorId?: string;
 };
 type BlogBody = z.infer<typeof blogSchema>;
 export declare const BlogController: {

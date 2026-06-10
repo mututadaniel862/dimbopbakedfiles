@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProductViewService = exports.ReviewCommentService = exports.ReviewLikeService = exports.ReviewService = exports.getAllProductImages = exports.deleteProduct = exports.updateProduct = exports.clearUserCart = exports.getUserCart = exports.deleteCartItem = exports.updateCartItemQuantity = exports.addProductToCart = exports.createProduct = exports.getProductById = exports.getAllProducts = void 0;
+exports.ProductViewService = exports.ReviewCommentService = exports.ReviewLikeService = exports.ReviewService = exports.getAllProductImages = exports.deleteProduct = exports.updateProduct = exports.clearUserCart = exports.getUserCart = exports.deleteCartItem = exports.updateCartItemQuantity = exports.addProductToCart = exports.createProduct = exports.getProductById = exports.getProductsByMerchant = exports.getAllProducts = void 0;
 const client_1 = require("@prisma/client");
 const products_1 = require("../models/products");
 const cloudinary_1 = __importDefault(require("../config/cloudinary"));
@@ -27,16 +27,61 @@ const extractPublicIdFromUrl = (url) => {
     }
 };
 const getAllProducts = async () => {
-    return await prisma.products.findMany({
+    const products = await prisma.products.findMany({
         include: {
             categories: true,
             reviews: true,
             cart: true,
             order_items: true,
+            uploaded_by_user: {
+                select: {
+                    id: true,
+                    geo_latitude: true,
+                    geo_longitude: true,
+                    physical_address: true,
+                    merchant_name: true,
+                },
+            },
         },
     });
+    // Flatten merchant location to top-level fields for easy frontend access
+    return products.map((p) => ({
+        ...p,
+        merchant_latitude: p.uploaded_by_user?.geo_latitude ?? null,
+        merchant_longitude: p.uploaded_by_user?.geo_longitude ?? null,
+        merchant_address: p.uploaded_by_user?.physical_address ?? null,
+    }));
 };
 exports.getAllProducts = getAllProducts;
+const getProductsByMerchant = async (merchantId) => {
+    const products = await prisma.products.findMany({
+        where: {
+            uploaded_by: merchantId
+        },
+        include: {
+            categories: true,
+            reviews: true,
+            cart: true,
+            order_items: true,
+            uploaded_by_user: {
+                select: {
+                    id: true,
+                    geo_latitude: true,
+                    geo_longitude: true,
+                    physical_address: true,
+                    merchant_name: true,
+                },
+            },
+        },
+    });
+    return products.map((p) => ({
+        ...p,
+        merchant_latitude: p.uploaded_by_user?.geo_latitude ?? null,
+        merchant_longitude: p.uploaded_by_user?.geo_longitude ?? null,
+        merchant_address: p.uploaded_by_user?.physical_address ?? null,
+    }));
+};
+exports.getProductsByMerchant = getProductsByMerchant;
 const getProductById = async (id) => {
     return await prisma.products.findUnique({
         where: { id },

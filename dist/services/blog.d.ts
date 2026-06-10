@@ -109,7 +109,7 @@ export declare const BlogService: {
         meta_post_twitter: string | null;
         status: string | null;
     }) | null>;
-    getAllBlogs(page?: number, limit?: number, status?: "visible" | "hidden" | "draft"): Promise<{
+    getAllBlogs(page?: number, limit?: number, status?: "visible" | "hidden" | "draft", authorId?: number): Promise<{
         data: ({
             blog_images: {
                 id: number;

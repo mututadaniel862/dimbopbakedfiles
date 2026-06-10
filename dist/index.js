@@ -40,25 +40,25 @@ const dotenv = __importStar(require("dotenv"));
 const fastify_1 = __importDefault(require("fastify"));
 const cors_1 = __importDefault(require("@fastify/cors"));
 const jwt_1 = __importDefault(require("@fastify/jwt"));
-const db_1 = __importDefault(require("./config/db"));
-const auth_1 = __importDefault(require("./routes/auth"));
-const serachroute_1 = __importDefault(require("./routes/serachroute"));
-// import userpayments from './routes/user';
-const productroute_1 = __importDefault(require("./routes/productroute"));
-const blog_1 = __importDefault(require("./routes/blog"));
-const aiRouts_1 = __importDefault(require("./routes/aiRouts"));
-const analytics_1 = __importDefault(require("./routes/analytics"));
-const productAgents_1 = __importDefault(require("./routes/productAgents"));
-const order_1 = __importDefault(require("./routes/order"));
+const db_js_1 = __importDefault(require("./config/db.js"));
+const auth_js_1 = __importDefault(require("./routes/auth.js"));
+const serachroute_js_1 = __importDefault(require("./routes/serachroute.js"));
+// import userpayments from './routes/user.js';
+const productroute_js_1 = __importDefault(require("./routes/productroute.js"));
+const blog_js_1 = __importDefault(require("./routes/blog.js"));
+const aiRouts_js_1 = __importDefault(require("./routes/aiRouts.js"));
+const analytics_js_1 = __importDefault(require("./routes/analytics.js"));
+const productAgents_js_1 = __importDefault(require("./routes/productAgents.js"));
+const order_js_1 = __importDefault(require("./routes/order.js"));
 const multipart_1 = __importDefault(require("@fastify/multipart"));
-const oauth_1 = __importDefault(require("./routes/oauth"));
-const businessDocuments_1 = __importDefault(require("./routes/businessDocuments"));
-const agents_1 = __importDefault(require("./routes/agents"));
-const subscriptionCron_1 = require("./jobs/subscriptionCron");
-const subscription_1 = __importDefault(require("./routes/subscription"));
-const payments_1 = __importDefault(require("./routes/payments"));
-const delivery_1 = __importDefault(require("./routes/delivery"));
-const cartExpiryJob_1 = require("./jobs/cartExpiryJob");
+const oauth_js_1 = __importDefault(require("./routes/oauth.js"));
+const businessDocuments_js_1 = __importDefault(require("./routes/businessDocuments.js"));
+const agents_js_1 = __importDefault(require("./routes/agents.js"));
+const subscriptionCron_js_1 = require("./jobs/subscriptionCron.js");
+const subscription_js_1 = __importDefault(require("./routes/subscription.js"));
+const payments_js_1 = __importDefault(require("./routes/payments.js"));
+const delivery_js_1 = __importDefault(require("./routes/delivery.js"));
+const cartExpiryJob_js_1 = require("./jobs/cartExpiryJob.js");
 dotenv.config();
 const app = (0, fastify_1.default)({
     logger: true,
@@ -100,24 +100,24 @@ app.register(jwt_1.default, {
         expiresIn: '1d',
     },
 });
-(0, subscriptionCron_1.startSubscriptionCron)();
-(0, cartExpiryJob_1.startCartExpiryJob)();
+(0, subscriptionCron_js_1.startSubscriptionCron)();
+(0, cartExpiryJob_js_1.startCartExpiryJob)();
 // Register routes
-app.register(auth_1.default, { prefix: '/api/auth' });
-app.register(oauth_1.default, { prefix: '/api/oauth' });
-app.register(productroute_1.default, { prefix: '/api/products' });
-app.register(blog_1.default, { prefix: '/api/blogs' });
-app.register(analytics_1.default, { prefix: '/api/analytics' });
-app.register(order_1.default, { prefix: '/api/order' });
-app.register(aiRouts_1.default, { prefix: '/api/assitence' });
-app.register(serachroute_1.default, { prefix: '/api/search' });
-app.register(businessDocuments_1.default, { prefix: '/api/business-documents' });
-app.register(agents_1.default, { prefix: '/api/agents' });
-app.register(subscription_1.default, { prefix: '/api/v1' });
-app.register(payments_1.default, { prefix: '/api/payments' });
-app.register(delivery_1.default, { prefix: '/api/delivery' });
+app.register(auth_js_1.default, { prefix: '/api/auth' });
+app.register(oauth_js_1.default, { prefix: '/api/oauth' });
+app.register(productroute_js_1.default, { prefix: '/api/products' });
+app.register(blog_js_1.default, { prefix: '/api/blogs' });
+app.register(analytics_js_1.default, { prefix: '/api/analytics' });
+app.register(order_js_1.default, { prefix: '/api/order' });
+app.register(aiRouts_js_1.default, { prefix: '/api/assitence' });
+app.register(serachroute_js_1.default, { prefix: '/api/search' });
+app.register(businessDocuments_js_1.default, { prefix: '/api/business-documents' });
+app.register(agents_js_1.default, { prefix: '/api/agents' });
+app.register(subscription_js_1.default, { prefix: '/api/v1' });
+app.register(payments_js_1.default, { prefix: '/api/payments' });
+app.register(delivery_js_1.default, { prefix: '/api/delivery' });
 // Register routes
-app.register(productAgents_1.default, { prefix: '/api/agentproduct' });
+app.register(productAgents_js_1.default, { prefix: '/api/agentproduct' });
 // app.register(userpayments, { prefix: '/api/userpayments' });
 // Health check endpoints
 app.get('/', async (request, reply) => {
@@ -157,7 +157,7 @@ app.decorate('authenticate', async (request, reply) => {
 });
 const start = async () => {
     try {
-        await db_1.default.$connect();
+        await db_js_1.default.$connect();
         console.log('✅ Database connected successfully');
         const address = await app.listen({
             port: Number(process.env.PORT) || 3000,
@@ -175,7 +175,7 @@ const start = async () => {
 ['SIGTERM', 'SIGINT'].forEach((signal) => {
     process.on(signal, async () => {
         console.log(`\n⚠️  Received ${signal}, closing server gracefully...`);
-        await db_1.default.$disconnect();
+        await db_js_1.default.$disconnect();
         await app.close();
         console.log('✅ Server closed');
         process.exit(0);

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUser = exports.resetPassword = exports.forgotPassword = exports.changePassword = exports.getAllUsers = exports.getUser = exports.loginUser = exports.registerClient = exports.registerClientAdmin = exports.verifyOTP = exports.sendOTP = exports.seedPredefinedUsers = void 0;
 // src/services/authService.ts
 const client_1 = require("@prisma/client");
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const bcryptjs_1 = __importDefault(require("../../node_modules/bcryptjs"));
 const uuid_1 = require("uuid");
 const schemas_1 = require("../utils/schemas");
 const emailService_1 = require("./emailService"); // Add this import

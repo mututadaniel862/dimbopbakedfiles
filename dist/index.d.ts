@@ -1,4 +1,4 @@
-import { JwtUser } from './utils/jwt';
+import { JwtUser } from './utils/jwt.js';
 declare module '@fastify/jwt' {
     interface FastifyJWT {
         user: JwtUser;

@@ -45,6 +45,10 @@ export declare const OrderService: {
         created_at: Date | null;
         browser_used: string | null;
         updated_at: Date | null;
+        physical_address: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        distance: number | null;
     })[]>;
     getOrderById(id: number): Promise<({
         payments: {
@@ -89,6 +93,10 @@ export declare const OrderService: {
         created_at: Date | null;
         browser_used: string | null;
         updated_at: Date | null;
+        physical_address: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        distance: number | null;
     }) | null>;
     createOrder(data: z.infer<typeof orderSchema>): Promise<{
         payments: {
@@ -133,6 +141,10 @@ export declare const OrderService: {
         created_at: Date | null;
         browser_used: string | null;
         updated_at: Date | null;
+        physical_address: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        distance: number | null;
     }>;
     updateOrder(id: number, data: Partial<z.infer<typeof orderSchema>>): Promise<{
         id: number;
@@ -144,6 +156,10 @@ export declare const OrderService: {
         created_at: Date | null;
         browser_used: string | null;
         updated_at: Date | null;
+        physical_address: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        distance: number | null;
     }>;
     deleteOrder(id: number): Promise<{
         id: number;
@@ -155,6 +171,10 @@ export declare const OrderService: {
         created_at: Date | null;
         browser_used: string | null;
         updated_at: Date | null;
+        physical_address: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        distance: number | null;
     }>;
     addOrderItem(orderId: number, itemData: {
         product_id: number | null;
@@ -200,6 +220,10 @@ export declare const OrderService: {
         created_at: Date | null;
         browser_used: string | null;
         updated_at: Date | null;
+        physical_address: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        distance: number | null;
     }>;
     getOrdersByUserId(userId: number, page: number, limit: number, status?: string): Promise<({
         payments: {
@@ -244,5 +268,9 @@ export declare const OrderService: {
         created_at: Date | null;
         browser_used: string | null;
         updated_at: Date | null;
+        physical_address: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        distance: number | null;
     })[]>;
 };

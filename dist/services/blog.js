@@ -119,11 +119,15 @@ exports.BlogService = {
         }
     },
     // Get all blogs (paginated)
-    async getAllBlogs(page = 1, limit = 10, status) {
+    async getAllBlogs(page = 1, limit = 10, status, authorId) {
         try {
-            console.log(`Fetching blogs: page=${page}, limit=${limit}, status=${status}`);
+            console.log(`Fetching blogs: page=${page}, limit=${limit}, status=${status}, authorId=${authorId}`);
             const skip = (page - 1) * limit;
-            const where = status ? { status } : {};
+            const where = {};
+            if (status)
+                where.status = status;
+            if (authorId)
+                where.author_id = authorId;
             const [blogs, total] = await Promise.all([
                 prisma.blogs.findMany({
                     where,
