@@ -14,11 +14,11 @@ export declare const shippingDetailsSchema: z.ZodObject<{
         id: z.ZodNumber;
         email: z.ZodString;
     }, "strip", z.ZodTypeAny, {
-        email: string;
         id: number;
+        email: string;
     }, {
-        email: string;
         id: number;
+        email: string;
     }>>;
 }, "strip", z.ZodTypeAny, {
     email: string;
@@ -28,11 +28,11 @@ export declare const shippingDetailsSchema: z.ZodObject<{
     city: string;
     street: string;
     postal_code: string;
-    user?: {
-        email: string;
-        id: number;
-    } | undefined;
     created_at?: Date | undefined;
+    user?: {
+        id: number;
+        email: string;
+    } | undefined;
     user_id?: number | null | undefined;
     apartment?: string | undefined;
 }, {
@@ -43,11 +43,11 @@ export declare const shippingDetailsSchema: z.ZodObject<{
     city: string;
     street: string;
     postal_code: string;
-    user?: {
-        email: string;
-        id: number;
-    } | undefined;
     created_at?: Date | undefined;
+    user?: {
+        id: number;
+        email: string;
+    } | undefined;
     user_id?: number | null | undefined;
     apartment?: string | undefined;
 }>;

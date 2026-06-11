@@ -36,11 +36,11 @@ export declare const reportRequestSchema: z.ZodObject<{
     start_date: z.ZodOptional<z.ZodString>;
     end_date: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    report_type: "users" | "blogs" | "products" | "content" | "revenue" | "product-sales" | "inventory" | "user-activity" | "customers" | "articles" | "sales" | "financial" | "general" | "overview";
+    report_type: "blogs" | "users" | "products" | "content" | "revenue" | "product-sales" | "inventory" | "user-activity" | "customers" | "articles" | "sales" | "financial" | "general" | "overview";
     start_date?: string | undefined;
     end_date?: string | undefined;
 }, {
-    report_type: "users" | "blogs" | "products" | "content" | "revenue" | "product-sales" | "inventory" | "user-activity" | "customers" | "articles" | "sales" | "financial" | "general" | "overview";
+    report_type: "blogs" | "users" | "products" | "content" | "revenue" | "product-sales" | "inventory" | "user-activity" | "customers" | "articles" | "sales" | "financial" | "general" | "overview";
     start_date?: string | undefined;
     end_date?: string | undefined;
 }>;

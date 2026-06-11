@@ -33,52 +33,52 @@ export declare const registerNewAgentSchema: z.ZodEffects<z.ZodObject<{
     role: z.ZodOptional<z.ZodLiteral<"agent">>;
 }, "strip", z.ZodTypeAny, {
     email: string;
-    name: string;
     phone: string;
+    name: string;
     password: string;
     confirmPassword: string;
     commissionRate: number;
     minPayoutAmount: number;
+    role?: "agent" | undefined;
     payoutMethod?: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash" | undefined;
     payoutNumber?: string | undefined;
     payoutName?: string | undefined;
-    role?: "agent" | undefined;
 }, {
     email: string;
-    name: string;
     phone: string;
+    name: string;
     password: string;
     confirmPassword: string;
+    role?: "agent" | undefined;
     commissionRate?: number | undefined;
     payoutMethod?: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash" | undefined;
     payoutNumber?: string | undefined;
     payoutName?: string | undefined;
     minPayoutAmount?: number | undefined;
-    role?: "agent" | undefined;
 }>, {
     email: string;
-    name: string;
     phone: string;
+    name: string;
     password: string;
     confirmPassword: string;
     commissionRate: number;
     minPayoutAmount: number;
+    role?: "agent" | undefined;
     payoutMethod?: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash" | undefined;
     payoutNumber?: string | undefined;
     payoutName?: string | undefined;
-    role?: "agent" | undefined;
 }, {
     email: string;
-    name: string;
     phone: string;
+    name: string;
     password: string;
     confirmPassword: string;
+    role?: "agent" | undefined;
     commissionRate?: number | undefined;
     payoutMethod?: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash" | undefined;
     payoutNumber?: string | undefined;
     payoutName?: string | undefined;
     minPayoutAmount?: number | undefined;
-    role?: "agent" | undefined;
 }>;
 export declare const agentRegisterSchema: z.ZodObject<{
     commissionRate: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
@@ -239,8 +239,8 @@ export declare const clientRegisterSchema: z.ZodEffects<z.ZodEffects<z.ZodObject
     role: z.ZodLiteral<"client">;
 }, "strip", z.ZodTypeAny, {
     email: string;
-    name: string;
     phone: string;
+    name: string;
     role: "client";
     authProvider: "email" | "google" | "apple" | "facebook";
     password?: string | undefined;
@@ -250,8 +250,8 @@ export declare const clientRegisterSchema: z.ZodEffects<z.ZodEffects<z.ZodObject
     facebookId?: string | undefined;
 }, {
     email: string;
-    name: string;
     phone: string;
+    name: string;
     role: "client";
     authProvider: "email" | "google" | "apple" | "facebook";
     password?: string | undefined;
@@ -261,8 +261,8 @@ export declare const clientRegisterSchema: z.ZodEffects<z.ZodEffects<z.ZodObject
     facebookId?: string | undefined;
 }>, {
     email: string;
-    name: string;
     phone: string;
+    name: string;
     role: "client";
     authProvider: "email" | "google" | "apple" | "facebook";
     password?: string | undefined;
@@ -272,8 +272,8 @@ export declare const clientRegisterSchema: z.ZodEffects<z.ZodEffects<z.ZodObject
     facebookId?: string | undefined;
 }, {
     email: string;
-    name: string;
     phone: string;
+    name: string;
     role: "client";
     authProvider: "email" | "google" | "apple" | "facebook";
     password?: string | undefined;
@@ -283,8 +283,8 @@ export declare const clientRegisterSchema: z.ZodEffects<z.ZodEffects<z.ZodObject
     facebookId?: string | undefined;
 }>, {
     email: string;
-    name: string;
     phone: string;
+    name: string;
     role: "client";
     authProvider: "email" | "google" | "apple" | "facebook";
     password?: string | undefined;
@@ -294,8 +294,8 @@ export declare const clientRegisterSchema: z.ZodEffects<z.ZodEffects<z.ZodObject
     facebookId?: string | undefined;
 }, {
     email: string;
-    name: string;
     phone: string;
+    name: string;
     role: "client";
     authProvider: "email" | "google" | "apple" | "facebook";
     password?: string | undefined;
@@ -330,14 +330,14 @@ export declare const superAdminLoginSchema: z.ZodObject<{
     phone: z.ZodOptional<z.ZodString>;
     role: z.ZodLiteral<"super_admin">;
 }, "strip", z.ZodTypeAny, {
-    password: string;
-    role: "super_admin";
     username: "super_admin";
+    role: "super_admin";
+    password: string;
     phone?: string | undefined;
 }, {
-    password: string;
-    role: "super_admin";
     username: "super_admin";
+    role: "super_admin";
+    password: string;
     phone?: string | undefined;
 }>;
 export declare const digitalMarketerAdminLoginSchema: z.ZodObject<{
@@ -345,13 +345,13 @@ export declare const digitalMarketerAdminLoginSchema: z.ZodObject<{
     password: z.ZodString;
     role: z.ZodLiteral<"digital_marketer_admin">;
 }, "strip", z.ZodTypeAny, {
-    password: string;
-    role: "digital_marketer_admin";
     username: "dmark_alpha" | "dmark_beta";
+    role: "digital_marketer_admin";
+    password: string;
 }, {
-    password: string;
-    role: "digital_marketer_admin";
     username: "dmark_alpha" | "dmark_beta";
+    role: "digital_marketer_admin";
+    password: string;
 }>;
 export declare const loginSchema: z.ZodEffects<z.ZodObject<{
     username: z.ZodOptional<z.ZodString>;
@@ -364,45 +364,45 @@ export declare const loginSchema: z.ZodEffects<z.ZodObject<{
     facebookId: z.ZodOptional<z.ZodString>;
     role: z.ZodOptional<z.ZodEnum<["super_admin", "digital_marketer_admin", "client_admin", "client"]>>;
 }, "strip", z.ZodTypeAny, {
+    username?: string | undefined;
     email?: string | undefined;
     phone?: string | undefined;
-    password?: string | undefined;
     role?: "super_admin" | "digital_marketer_admin" | "client_admin" | "client" | undefined;
+    password?: string | undefined;
     authProvider?: "email" | "google" | "apple" | "facebook" | undefined;
     googleId?: string | undefined;
     appleId?: string | undefined;
     facebookId?: string | undefined;
-    username?: string | undefined;
 }, {
+    username?: string | undefined;
     email?: string | undefined;
     phone?: string | undefined;
-    password?: string | undefined;
     role?: "super_admin" | "digital_marketer_admin" | "client_admin" | "client" | undefined;
+    password?: string | undefined;
     authProvider?: "email" | "google" | "apple" | "facebook" | undefined;
     googleId?: string | undefined;
     appleId?: string | undefined;
     facebookId?: string | undefined;
-    username?: string | undefined;
 }>, {
+    username?: string | undefined;
     email?: string | undefined;
     phone?: string | undefined;
-    password?: string | undefined;
     role?: "super_admin" | "digital_marketer_admin" | "client_admin" | "client" | undefined;
+    password?: string | undefined;
     authProvider?: "email" | "google" | "apple" | "facebook" | undefined;
     googleId?: string | undefined;
     appleId?: string | undefined;
     facebookId?: string | undefined;
-    username?: string | undefined;
 }, {
+    username?: string | undefined;
     email?: string | undefined;
     phone?: string | undefined;
-    password?: string | undefined;
     role?: "super_admin" | "digital_marketer_admin" | "client_admin" | "client" | undefined;
+    password?: string | undefined;
     authProvider?: "email" | "google" | "apple" | "facebook" | undefined;
     googleId?: string | undefined;
     appleId?: string | undefined;
     facebookId?: string | undefined;
-    username?: string | undefined;
 }>;
 export declare const changePasswordSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
     currentPassword: z.ZodString;
@@ -480,8 +480,8 @@ export declare const updateUserSchema: z.ZodObject<{
     isActive: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
     email?: string | undefined;
-    name?: string | undefined;
     phone?: string | undefined;
+    name?: string | undefined;
     merchantName?: string | undefined;
     physicalAddress?: string | undefined;
     geoLocation?: {
@@ -491,8 +491,8 @@ export declare const updateUserSchema: z.ZodObject<{
     isActive?: boolean | undefined;
 }, {
     email?: string | undefined;
-    name?: string | undefined;
     phone?: string | undefined;
+    name?: string | undefined;
     merchantName?: string | undefined;
     physicalAddress?: string | undefined;
     geoLocation?: {
@@ -721,14 +721,14 @@ export declare const schemas: {
         phone: z.ZodOptional<z.ZodString>;
         role: z.ZodLiteral<"super_admin">;
     }, "strip", z.ZodTypeAny, {
-        password: string;
-        role: "super_admin";
         username: "super_admin";
+        role: "super_admin";
+        password: string;
         phone?: string | undefined;
     }, {
-        password: string;
-        role: "super_admin";
         username: "super_admin";
+        role: "super_admin";
+        password: string;
         phone?: string | undefined;
     }>;
     digitalMarketerAdminLoginSchema: z.ZodObject<{
@@ -736,13 +736,13 @@ export declare const schemas: {
         password: z.ZodString;
         role: z.ZodLiteral<"digital_marketer_admin">;
     }, "strip", z.ZodTypeAny, {
-        password: string;
-        role: "digital_marketer_admin";
         username: "dmark_alpha" | "dmark_beta";
+        role: "digital_marketer_admin";
+        password: string;
     }, {
-        password: string;
-        role: "digital_marketer_admin";
         username: "dmark_alpha" | "dmark_beta";
+        role: "digital_marketer_admin";
+        password: string;
     }>;
     clientAdminRegisterSchema: z.ZodObject<{
         merchantName: z.ZodString;
@@ -819,8 +819,8 @@ export declare const schemas: {
         role: z.ZodLiteral<"client">;
     }, "strip", z.ZodTypeAny, {
         email: string;
-        name: string;
         phone: string;
+        name: string;
         role: "client";
         authProvider: "email" | "google" | "apple" | "facebook";
         password?: string | undefined;
@@ -830,8 +830,8 @@ export declare const schemas: {
         facebookId?: string | undefined;
     }, {
         email: string;
-        name: string;
         phone: string;
+        name: string;
         role: "client";
         authProvider: "email" | "google" | "apple" | "facebook";
         password?: string | undefined;
@@ -841,8 +841,8 @@ export declare const schemas: {
         facebookId?: string | undefined;
     }>, {
         email: string;
-        name: string;
         phone: string;
+        name: string;
         role: "client";
         authProvider: "email" | "google" | "apple" | "facebook";
         password?: string | undefined;
@@ -852,8 +852,8 @@ export declare const schemas: {
         facebookId?: string | undefined;
     }, {
         email: string;
-        name: string;
         phone: string;
+        name: string;
         role: "client";
         authProvider: "email" | "google" | "apple" | "facebook";
         password?: string | undefined;
@@ -863,8 +863,8 @@ export declare const schemas: {
         facebookId?: string | undefined;
     }>, {
         email: string;
-        name: string;
         phone: string;
+        name: string;
         role: "client";
         authProvider: "email" | "google" | "apple" | "facebook";
         password?: string | undefined;
@@ -874,8 +874,8 @@ export declare const schemas: {
         facebookId?: string | undefined;
     }, {
         email: string;
-        name: string;
         phone: string;
+        name: string;
         role: "client";
         authProvider: "email" | "google" | "apple" | "facebook";
         password?: string | undefined;
@@ -895,45 +895,45 @@ export declare const schemas: {
         facebookId: z.ZodOptional<z.ZodString>;
         role: z.ZodOptional<z.ZodEnum<["super_admin", "digital_marketer_admin", "client_admin", "client"]>>;
     }, "strip", z.ZodTypeAny, {
+        username?: string | undefined;
         email?: string | undefined;
         phone?: string | undefined;
-        password?: string | undefined;
         role?: "super_admin" | "digital_marketer_admin" | "client_admin" | "client" | undefined;
+        password?: string | undefined;
         authProvider?: "email" | "google" | "apple" | "facebook" | undefined;
         googleId?: string | undefined;
         appleId?: string | undefined;
         facebookId?: string | undefined;
-        username?: string | undefined;
     }, {
+        username?: string | undefined;
         email?: string | undefined;
         phone?: string | undefined;
-        password?: string | undefined;
         role?: "super_admin" | "digital_marketer_admin" | "client_admin" | "client" | undefined;
+        password?: string | undefined;
         authProvider?: "email" | "google" | "apple" | "facebook" | undefined;
         googleId?: string | undefined;
         appleId?: string | undefined;
         facebookId?: string | undefined;
-        username?: string | undefined;
     }>, {
+        username?: string | undefined;
         email?: string | undefined;
         phone?: string | undefined;
-        password?: string | undefined;
         role?: "super_admin" | "digital_marketer_admin" | "client_admin" | "client" | undefined;
+        password?: string | undefined;
         authProvider?: "email" | "google" | "apple" | "facebook" | undefined;
         googleId?: string | undefined;
         appleId?: string | undefined;
         facebookId?: string | undefined;
-        username?: string | undefined;
     }, {
+        username?: string | undefined;
         email?: string | undefined;
         phone?: string | undefined;
-        password?: string | undefined;
         role?: "super_admin" | "digital_marketer_admin" | "client_admin" | "client" | undefined;
+        password?: string | undefined;
         authProvider?: "email" | "google" | "apple" | "facebook" | undefined;
         googleId?: string | undefined;
         appleId?: string | undefined;
         facebookId?: string | undefined;
-        username?: string | undefined;
     }>;
     requestOTPSchema: z.ZodObject<{
         email: z.ZodString;
@@ -1031,8 +1031,8 @@ export declare const schemas: {
         isActive: z.ZodOptional<z.ZodBoolean>;
     }, "strip", z.ZodTypeAny, {
         email?: string | undefined;
-        name?: string | undefined;
         phone?: string | undefined;
+        name?: string | undefined;
         merchantName?: string | undefined;
         physicalAddress?: string | undefined;
         geoLocation?: {
@@ -1042,8 +1042,8 @@ export declare const schemas: {
         isActive?: boolean | undefined;
     }, {
         email?: string | undefined;
-        name?: string | undefined;
         phone?: string | undefined;
+        name?: string | undefined;
         merchantName?: string | undefined;
         physicalAddress?: string | undefined;
         geoLocation?: {
@@ -1085,52 +1085,52 @@ export declare const schemas: {
         role: z.ZodOptional<z.ZodLiteral<"agent">>;
     }, "strip", z.ZodTypeAny, {
         email: string;
-        name: string;
         phone: string;
+        name: string;
         password: string;
         confirmPassword: string;
         commissionRate: number;
         minPayoutAmount: number;
+        role?: "agent" | undefined;
         payoutMethod?: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash" | undefined;
         payoutNumber?: string | undefined;
         payoutName?: string | undefined;
-        role?: "agent" | undefined;
     }, {
         email: string;
-        name: string;
         phone: string;
+        name: string;
         password: string;
         confirmPassword: string;
+        role?: "agent" | undefined;
         commissionRate?: number | undefined;
         payoutMethod?: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash" | undefined;
         payoutNumber?: string | undefined;
         payoutName?: string | undefined;
         minPayoutAmount?: number | undefined;
-        role?: "agent" | undefined;
     }>, {
         email: string;
-        name: string;
         phone: string;
+        name: string;
         password: string;
         confirmPassword: string;
         commissionRate: number;
         minPayoutAmount: number;
+        role?: "agent" | undefined;
         payoutMethod?: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash" | undefined;
         payoutNumber?: string | undefined;
         payoutName?: string | undefined;
-        role?: "agent" | undefined;
     }, {
         email: string;
-        name: string;
         phone: string;
+        name: string;
         password: string;
         confirmPassword: string;
+        role?: "agent" | undefined;
         commissionRate?: number | undefined;
         payoutMethod?: "ecocash" | "bank" | "paynow" | "onemoney" | "telecash" | undefined;
         payoutNumber?: string | undefined;
         payoutName?: string | undefined;
         minPayoutAmount?: number | undefined;
-        role?: "agent" | undefined;
     }>;
     recordAgentSaleSchema: z.ZodObject<{
         orderId: z.ZodNumber;

@@ -8,15 +8,15 @@ export declare const financialSchema: z.ZodObject<{
     created_at: z.ZodOptional<z.ZodDate>;
 }, "strip", z.ZodTypeAny, {
     amount: number;
+    created_at?: Date | undefined;
     type?: string | undefined;
     description?: string | undefined;
-    created_at?: Date | undefined;
     order_id?: number | null | undefined;
 }, {
     amount: number;
+    created_at?: Date | undefined;
     type?: string | undefined;
     description?: string | undefined;
-    created_at?: Date | undefined;
     order_id?: number | null | undefined;
 }>;
 export type Financial = z.infer<typeof financialSchema>;

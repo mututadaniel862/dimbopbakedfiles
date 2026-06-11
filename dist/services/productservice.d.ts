@@ -436,15 +436,10 @@ export declare class ReviewService {
         likes_count: number;
         dislikes_count: number;
         comments_count: number;
-        users: {
-            email: string;
-            username: string | null;
-            id: number;
-        } | null;
         review_likes: ({
             users: {
-                username: string | null;
                 id: number;
+                username: string | null;
             } | null;
         } & {
             id: number;
@@ -455,8 +450,8 @@ export declare class ReviewService {
         })[];
         review_comments: ({
             users: {
-                username: string | null;
                 id: number;
+                username: string | null;
             } | null;
         } & {
             id: number;
@@ -466,6 +461,11 @@ export declare class ReviewService {
             username: string;
             created_at: Date;
         })[];
+        users: {
+            id: number;
+            username: string | null;
+            email: string;
+        } | null;
         id: number;
         user_id: number | null;
         product_id: number | null;
@@ -500,8 +500,8 @@ export declare class ReviewCommentService {
         username?: string;
     }): Promise<{
         users: {
-            username: string | null;
             id: number;
+            username: string | null;
         } | null;
     } & {
         id: number;
@@ -514,8 +514,8 @@ export declare class ReviewCommentService {
     static getReviewComments(reviewId: number): Promise<{
         username: string;
         users: {
-            username: string | null;
             id: number;
+            username: string | null;
         } | null;
         id: number;
         review_id: number;
@@ -555,11 +555,11 @@ export declare class ProductViewService {
     }>;
     static getProductWithViews(productId: number): Promise<({
         product_views: {
-            users: {
-                username: string | null;
-                id: number;
-            } | null;
             id: number;
+            users: {
+                id: number;
+                username: string | null;
+            } | null;
             viewed_at: Date;
         }[];
         _count: {

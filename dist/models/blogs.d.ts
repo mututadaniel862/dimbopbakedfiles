@@ -67,8 +67,8 @@ export declare const blogSchema: z.ZodObject<{
     title: string;
     description: string;
     content: string;
-    status?: "visible" | "hidden" | "draft" | undefined;
     created_at?: Date | undefined;
+    status?: "visible" | "hidden" | "draft" | undefined;
     image_url?: string | null | undefined;
     categories?: string | null | undefined;
     hero_image?: string | null | undefined;
@@ -111,8 +111,8 @@ export declare const blogSchema: z.ZodObject<{
     title: string;
     description: string;
     content: string;
-    status?: "visible" | "hidden" | "draft" | undefined;
     created_at?: Date | undefined;
+    status?: "visible" | "hidden" | "draft" | undefined;
     image_url?: string | null | undefined;
     categories?: string | null | undefined;
     hero_image?: string | null | undefined;

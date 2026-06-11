@@ -30,15 +30,15 @@ export declare const orderSchema: z.ZodObject<{
         created_at: z.ZodOptional<z.ZodDate>;
     }, "strip", z.ZodTypeAny, {
         amount: number;
+        created_at?: Date | undefined;
         type?: string | undefined;
         description?: string | undefined;
-        created_at?: Date | undefined;
         order_id?: number | null | undefined;
     }, {
         amount: number;
+        created_at?: Date | undefined;
         type?: string | undefined;
         description?: string | undefined;
-        created_at?: Date | undefined;
         order_id?: number | null | undefined;
     }>, "many">>;
     payments: z.ZodOptional<z.ZodArray<z.ZodObject<{
@@ -86,14 +86,13 @@ export declare const orderSchema: z.ZodObject<{
     browser_used?: string | undefined;
     financials?: {
         amount: number;
+        created_at?: Date | undefined;
         type?: string | undefined;
         description?: string | undefined;
-        created_at?: Date | undefined;
         order_id?: number | null | undefined;
     }[] | undefined;
 }, {
     total_price: number;
-    status?: string | undefined;
     created_at?: Date | undefined;
     updated_at?: Date | undefined;
     payments?: {
@@ -104,6 +103,7 @@ export declare const orderSchema: z.ZodObject<{
         payment_method?: string | undefined;
         customerMsisdn?: string | null | undefined;
     }[] | undefined;
+    status?: string | undefined;
     user_id?: number | null | undefined;
     order_items?: {
         price: number;
@@ -114,9 +114,9 @@ export declare const orderSchema: z.ZodObject<{
     browser_used?: string | undefined;
     financials?: {
         amount: number;
+        created_at?: Date | undefined;
         type?: string | undefined;
         description?: string | undefined;
-        created_at?: Date | undefined;
         order_id?: number | null | undefined;
     }[] | undefined;
 }>;

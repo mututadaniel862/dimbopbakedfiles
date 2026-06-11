@@ -38,26 +38,26 @@ export declare const SearchResultSchema: z.ZodObject<{
     updated_at: z.ZodOptional<z.ZodDate>;
     frontend_url: z.ZodString;
 }, "strip", z.ZodTypeAny, {
+    id: number;
+    created_at: Date;
     type: "product" | "blog";
     title: string;
     description: string;
-    id: number;
-    created_at: Date;
     frontend_url: string;
-    status?: string | undefined;
     updated_at?: Date | undefined;
+    status?: string | undefined;
     price?: number | undefined;
     image_url?: string | null | undefined;
     category?: string | null | undefined;
 }, {
+    id: number;
+    created_at: Date;
     type: "product" | "blog";
     title: string;
     description: string;
-    id: number;
-    created_at: Date;
     frontend_url: string;
-    status?: string | undefined;
     updated_at?: Date | undefined;
+    status?: string | undefined;
     price?: number | undefined;
     image_url?: string | null | undefined;
     category?: string | null | undefined;
@@ -76,26 +76,26 @@ export declare const GlobalSearchResponseSchema: z.ZodObject<{
         updated_at: z.ZodOptional<z.ZodDate>;
         frontend_url: z.ZodString;
     }, "strip", z.ZodTypeAny, {
+        id: number;
+        created_at: Date;
         type: "product" | "blog";
         title: string;
         description: string;
-        id: number;
-        created_at: Date;
         frontend_url: string;
-        status?: string | undefined;
         updated_at?: Date | undefined;
+        status?: string | undefined;
         price?: number | undefined;
         image_url?: string | null | undefined;
         category?: string | null | undefined;
     }, {
+        id: number;
+        created_at: Date;
         type: "product" | "blog";
         title: string;
         description: string;
-        id: number;
-        created_at: Date;
         frontend_url: string;
-        status?: string | undefined;
         updated_at?: Date | undefined;
+        status?: string | undefined;
         price?: number | undefined;
         image_url?: string | null | undefined;
         category?: string | null | undefined;
@@ -138,14 +138,14 @@ export declare const GlobalSearchResponseSchema: z.ZodObject<{
         products: number;
     };
     results: {
+        id: number;
+        created_at: Date;
         type: "product" | "blog";
         title: string;
         description: string;
-        id: number;
-        created_at: Date;
         frontend_url: string;
-        status?: string | undefined;
         updated_at?: Date | undefined;
+        status?: string | undefined;
         price?: number | undefined;
         image_url?: string | null | undefined;
         category?: string | null | undefined;
@@ -165,14 +165,14 @@ export declare const GlobalSearchResponseSchema: z.ZodObject<{
         products: number;
     };
     results: {
+        id: number;
+        created_at: Date;
         type: "product" | "blog";
         title: string;
         description: string;
-        id: number;
-        created_at: Date;
         frontend_url: string;
-        status?: string | undefined;
         updated_at?: Date | undefined;
+        status?: string | undefined;
         price?: number | undefined;
         image_url?: string | null | undefined;
         category?: string | null | undefined;

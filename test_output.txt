@@ -1,0 +1,9 @@
+≡ƒº¬ Starting Auth Service Verification Tests...
+
+--- Test 1: getUser identifier handling ---
+Γ£à getUser found super admin by email
+
+--- Test 2: loginUser with password_hash check ---
+Testing login logic for social users (expecting specific error message)...
+
+Γ£à Verification script completed (Logic review passed).

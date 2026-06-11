@@ -119,7 +119,6 @@ export declare const productSchema: z.ZodObject<{
     views: number;
     approval_status: "pending" | "approved" | "rejected";
     is_visible: boolean;
-    description?: string | undefined;
     created_at?: Date | undefined;
     updated_at?: Date | undefined;
     cart?: {
@@ -151,6 +150,7 @@ export declare const productSchema: z.ZodObject<{
         ip_address?: string | undefined;
         user_agent?: string | undefined;
     }[] | undefined;
+    description?: string | undefined;
     image_url?: string | undefined;
     whatsapp_number?: string | undefined;
     uploaded_by?: number | undefined;
@@ -168,7 +168,6 @@ export declare const productSchema: z.ZodObject<{
 }, {
     name: string;
     price: number;
-    description?: string | undefined;
     created_at?: Date | undefined;
     updated_at?: Date | undefined;
     cart?: {
@@ -200,6 +199,7 @@ export declare const productSchema: z.ZodObject<{
         ip_address?: string | undefined;
         user_agent?: string | undefined;
     }[] | undefined;
+    description?: string | undefined;
     stock_quantity?: number | undefined;
     image_url?: string | undefined;
     discount_percentage?: number | undefined;
